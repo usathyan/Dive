@@ -1,12 +1,9 @@
-import './App.scss'
-import Chat from './views/Chat'
+import { RouterProvider } from "react-router-dom"
+import { router } from "./router"
+import "./App.scss"
 
 function App() {
-  return (
-    <div className="main-container">
-      <Chat />
-    </div>
-  )
+  return <RouterProvider router={router} />
 }
 
 export default App

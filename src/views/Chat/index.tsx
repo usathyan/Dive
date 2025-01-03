@@ -1,6 +1,7 @@
 import React, { useRef, useState, useCallback, useEffect } from "react"
 import ChatMessages, { Message } from "./ChatMessages"
 import ChatInput from "./ChatInput"
+import { useLocation, useNavigate } from "react-router-dom"
 
 interface ChatHistory {
   id: string
@@ -9,6 +10,7 @@ interface ChatHistory {
 }
 
 const ChatWindow = () => {
+  const location = useLocation()
   const [messages, setMessages] = useState<Message[]>([])
   const [isSidebarVisible, setSidebarVisible] = useState(false)
   const [isAiStreaming, setAiStreaming] = useState(false)
@@ -17,6 +19,8 @@ const ChatWindow = () => {
   const [isHistoryVisible, setHistoryVisible] = useState(false)
   const [histories, setHistories] = useState<ChatHistory[]>([])
   const currentChatId = useRef<string | null>(null)
+  const navigate = useNavigate()
+  const isInitialMessageHandled = useRef(false)
 
   const scrollToBottom = useCallback(() => {
     if (chatContainerRef.current) {
@@ -48,10 +52,18 @@ const ChatWindow = () => {
       timestamp: Date.now(),
       files: files ? Array.from(files) : undefined
     }
-    setMessages(prev => [...prev, userMessage])
+
+    const aiMessage: Message = {
+      id: `${currentId.current++}`,
+      text: "",
+      isSent: false,
+      timestamp: Date.now()
+    }
+
+    setMessages(prev => [...prev, userMessage, aiMessage])
+    setAiStreaming(true)
     scrollToBottom()
 
-    setAiStreaming(true)
     try {
       const response = await fetch("/api/chat", {
         method: "POST",
@@ -81,13 +93,17 @@ const ChatWindow = () => {
           try {
             const dataObj = JSON.parse(dataStr)
             if (dataObj.error) {
-              setMessages(prev => [...prev, {
-                id: `${currentId.current++}`,
-                text: `Error: ${dataObj.error}`,
-                isSent: false,
-                timestamp: Date.now(),
-                isError: true
-              }])
+              setMessages(prev => {
+                const newMessages = [...prev]
+                newMessages[newMessages.length - 1] = {
+                  id: `${currentId.current++}`,
+                  text: `Error: ${dataObj.error}`,
+                  isSent: false,
+                  timestamp: Date.now(),
+                  isError: true
+                }
+                return newMessages
+              })
               break
             }
 
@@ -97,35 +113,30 @@ const ChatWindow = () => {
                 currentText += data.content
                 setMessages(prev => {
                   const newMessages = [...prev]
-                  const lastMessage = newMessages[newMessages.length - 1]
-                  if (!lastMessage.isSent) {
-                    lastMessage.text = currentText
-                  } else {
-                    newMessages.push({
-                      id: `${currentId.current++}`,
-                      text: currentText,
-                      isSent: false,
-                      timestamp: Date.now()
-                    })
-                  }
+                  newMessages[newMessages.length - 1].text = currentText
                   return newMessages
                 })
                 scrollToBottom()
                 break
 
               case "chat_info":
-                document.title = `${data.content.title} - BigGo MCP`
+                document.title = `${data.content.title} - Dive AI`
                 currentChatId.current = data.content.id
+                navigate(`/chat/${data.content.id}`, { replace: true })
                 break
 
               case "error":
-                setMessages(prev => [...prev, {
-                  id: `${currentId.current++}`,
-                  text: `Error: ${data.content}`,
-                  isSent: false,
-                  timestamp: Date.now(),
-                  isError: true
-                }])
+                setMessages(prev => {
+                  const newMessages = [...prev]
+                  newMessages[newMessages.length - 1] = {
+                    id: `${currentId.current++}`,
+                    text: `Error: ${data.content}`,
+                    isSent: false,
+                    timestamp: Date.now(),
+                    isError: true
+                  }
+                  return newMessages
+                })
                 break
             }
           } catch (error) {
@@ -134,13 +145,17 @@ const ChatWindow = () => {
         }
       }
     } catch (error: any) {
-      setMessages(prev => [...prev, {
-        id: `${currentId.current++}`,
-        text: `Error: ${error.message}`,
-        isSent: false,
-        timestamp: Date.now(),
-        isError: true
-      }])
+      setMessages(prev => {
+        const newMessages = [...prev]
+        newMessages[newMessages.length - 1] = {
+          id: `${currentId.current++}`,
+          text: `Error: ${error.message}`,
+          isSent: false,
+          timestamp: Date.now(),
+          isError: true
+        }
+        return newMessages
+      })
     } finally {
       setAiStreaming(false)
       scrollToBottom()
@@ -170,7 +185,8 @@ const ChatWindow = () => {
 
       if (data.success) {
         currentChatId.current = chatId
-        document.title = `${data.data.chat.title} - BigGo MCP`
+        document.title = `${data.data.chat.title} - Dive AI`
+        navigate(`/chat/${chatId}`, { replace: true })
 
         // 轉換訊息格式
         const convertedMessages = data.data.messages.map((msg: any) => ({
@@ -189,13 +205,28 @@ const ChatWindow = () => {
     } finally {
       setAiStreaming(false)
     }
-  }, [scrollToBottom])
+  }, [scrollToBottom, navigate])
 
   const startNewChat = useCallback(() => {
     setMessages([])
     currentChatId.current = null
-    document.title = "BigGo MCP"
-  }, [])
+    document.title = "Dive AI"
+    navigate('/')
+  }, [navigate])
+
+  const handleInitialMessage = useCallback((message: string) => {
+    onSendMsg(message)
+    navigate(location.pathname, { replace: true, state: {} })
+  }, [onSendMsg, navigate, location.pathname])
+
+  useEffect(() => {
+    const state = location.state as { initialMessage?: string } | null
+    
+    if (state?.initialMessage && !isInitialMessageHandled.current) {
+      isInitialMessageHandled.current = true
+      handleInitialMessage(state.initialMessage)
+    }
+  }, [handleInitialMessage])
 
   useEffect(() => {
     if (isHistoryVisible) {
@@ -216,7 +247,7 @@ const ChatWindow = () => {
   }
 
   return (
-    <>
+    <div className="chat-page">
       <div 
         className="history-trigger"
         onMouseEnter={showHistory}
@@ -243,7 +274,7 @@ const ChatWindow = () => {
           </div>
         ))}
       </div>
-      <div className="chat-container" ref={chatContainerRef}>
+      <div className="chat-container">
         <div className="chat-window">
           <ChatMessages
             messages={messages}
@@ -260,7 +291,7 @@ const ChatWindow = () => {
           {/* 側邊欄內容 */}
         </div>
       </div>
-    </>
+    </div>
   )
 }
 
