@@ -1,9 +1,11 @@
-import React, { useState, useRef, useCallback } from "react"
+import React, { useState, useRef } from "react"
 import { useNavigate } from "react-router-dom"
 import Toast from "../components/Toast"
 
 const formatFileSize = (bytes: number) => {
-  if (bytes === 0) return '0 Bytes'
+  if (bytes === 0)
+    return '0 Bytes'
+
   const k = 1024
   const sizes = ['Bytes', 'KB', 'MB', 'GB']
   const i = Math.floor(Math.log(bytes) / Math.log(k))
