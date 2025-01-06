@@ -1,9 +1,10 @@
 import React, { useRef, useState, useCallback, useEffect } from "react"
+import { useLocation, useNavigate, useParams } from "react-router-dom"
 import ChatMessages, { Message } from "./ChatMessages"
 import ChatInput from "./ChatInput"
-import { useLocation, useNavigate } from "react-router-dom"
 
 const ChatWindow = () => {
+  const { chatId } = useParams()
   const location = useLocation()
   const [messages, setMessages] = useState<Message[]>([])
   const [isAiStreaming, setAiStreaming] = useState(false)
@@ -12,6 +13,42 @@ const ChatWindow = () => {
   const currentChatId = useRef<string | null>(null)
   const navigate = useNavigate()
   const isInitialMessageHandled = useRef(false)
+  const [selectedCode, setSelectedCode] = useState<{ code: string; language: string } | null>(null)
+
+  const loadChat = useCallback(async (id: string) => {
+    try {
+      setAiStreaming(true)
+      const response = await fetch(`/api/chat/${id}`)
+      const data = await response.json()
+
+      if (data.success) {
+        currentChatId.current = id
+        document.title = `${data.data.chat.title} - Dive AI`
+
+        // 轉換訊息格式
+        const convertedMessages = data.data.messages.map((msg: any) => ({
+          id: msg.id || String(currentId.current++),
+          text: msg.content,
+          isSent: msg.role === "user",
+          timestamp: new Date(msg.createdAt).getTime(),
+          files: msg.files
+        }))
+
+        setMessages(convertedMessages)
+      }
+    } catch (error) {
+      console.warn("Failed to load chat:", error)
+    } finally {
+      setAiStreaming(false)
+    }
+  }, [])
+
+  // 處理 URL 中的 chatId
+  useEffect(() => {
+    if (chatId && chatId !== currentChatId.current) {
+      loadChat(chatId)
+    }
+  }, [chatId, loadChat])
 
   const scrollToBottom = useCallback(() => {
     if (chatContainerRef.current) {
@@ -178,6 +215,7 @@ const ChatWindow = () => {
           <ChatMessages
             messages={messages}
             isLoading={isAiStreaming}
+            onCodeSelect={setSelectedCode}
           />
           <ChatInput
             onSendMessage={onSendMsg}
@@ -185,6 +223,26 @@ const ChatWindow = () => {
           />
         </div>
       </div>
+      {selectedCode && (
+        <div className="code-modal">
+          <div className="code-modal-content">
+            <div className="code-modal-header">
+              <span className="language">{selectedCode.language}</span>
+              <button 
+                className="close-btn"
+                onClick={() => setSelectedCode(null)}
+              >
+                ×
+              </button>
+            </div>
+            <pre>
+              <code className={selectedCode.language}>
+                {selectedCode.code}
+              </code>
+            </pre>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

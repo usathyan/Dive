@@ -392,6 +392,8 @@ body {
   justify-content: center;
   height: 100vh;
   overflow: hidden;
+  gap: 20px;
+  padding: 20px;
 }
 
 .chat-container {
@@ -596,7 +598,7 @@ body {
 
 .message {
   width: max-content;
-  max-width: 70%;
+  max-width: 100%;
   margin: 10px 0;
   padding: 10px 15px;
   border-radius: 18px;
@@ -683,6 +685,213 @@ body {
         }
       }
     }
+
+    .code-block {
+      margin: 10px 0;
+      border-radius: 8px;
+      overflow: hidden;
+      
+      @media (prefers-color-scheme: light) {
+        background: rgba(0, 0, 0, 0.05);
+      }
+      
+      @media (prefers-color-scheme: dark) {
+        background: rgba(255, 255, 255, 0.05);
+      }
+
+      .code-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 8px 12px;
+        background: rgba(0, 0, 0, 0.1);
+        
+        @media (prefers-color-scheme: dark) {
+          background: rgba(255, 255, 255, 0.1);
+        }
+
+        .language {
+          font-size: 12px;
+          color: #666;
+          
+          @media (prefers-color-scheme: dark) {
+            color: #999;
+          }
+        }
+
+        .copy-btn {
+          padding: 4px 8px;
+          font-size: 12px;
+          border: none;
+          border-radius: 4px;
+          cursor: pointer;
+          background: rgba(29, 161, 242, 0.1);
+          color: $primary-blue;
+          transition: all 0.2s;
+
+          &:hover {
+            background: rgba(29, 161, 242, 0.2);
+          }
+        }
+      }
+      
+      pre {
+        margin: 0;
+        padding: 12px;
+        overflow-x: auto;
+        
+        code {
+          font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, Courier, monospace;
+          font-size: 14px;
+          line-height: 1.4;
+          white-space: pre;
+        }
+      }
+    }
+  }
+
+  .code-block-button {
+    width: 100%;
+    text-align: left;
+    background: none;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    
+    .code-preview {
+      margin: 10px 0;
+      border-radius: 8px;
+      overflow: hidden;
+      transition: all 0.2s;
+      
+      @media (prefers-color-scheme: light) {
+        background: rgba(0, 0, 0, 0.05);
+      }
+      
+      @media (prefers-color-scheme: dark) {
+        background: rgba(255, 255, 255, 0.05);
+      }
+      
+      &:hover {
+        transform: translateX(5px);
+      }
+
+      .code-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 8px 12px;
+        background: rgba(0, 0, 0, 0.1);
+        
+        @media (prefers-color-scheme: dark) {
+          background: rgba(255, 255, 255, 0.1);
+        }
+
+        .language {
+          font-size: 12px;
+          color: #666;
+          
+          @media (prefers-color-scheme: dark) {
+            color: #999;
+          }
+        }
+
+        .view-icon {
+          color: $primary-blue;
+        }
+      }
+      
+      pre {
+        margin: 0;
+        padding: 12px;
+        overflow: hidden;
+        max-height: 150px;
+        
+        code {
+          font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, Courier, monospace;
+          font-size: 14px;
+          line-height: 1.4;
+          white-space: pre;
+        }
+      }
+    }
+  }
+}
+
+.code-modal {
+  flex: 1;
+  max-width: $chat-width;
+  height: 80vh;
+  margin: auto 0;
+  
+  .code-modal-content {
+    height: 100%;
+    background: #1e1e1e;
+    color: #d4d4d4;
+    display: flex;
+    flex-direction: column;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    
+    .code-modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 16px;
+      background: #2d2d2d;
+      border-radius: 8px 8px 0 0;
+      
+      .language {
+        font-size: 14px;
+        color: #999;
+      }
+      
+      .close-btn {
+        background: none;
+        border: none;
+        color: #999;
+        font-size: 24px;
+        cursor: pointer;
+        padding: 0 8px;
+        
+        &:hover {
+          color: white;
+        }
+      }
+    }
+    
+    pre {
+      flex: 1;
+      margin: 0;
+      padding: 16px;
+      overflow: auto;
+      
+      code {
+        font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, Courier, monospace;
+        font-size: 14px;
+        line-height: 1.5;
+      }
+    }
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideIn {
+  from {
+    right: -100%;
+  }
+  to {
+    right: -102%;
   }
 }
 
@@ -947,12 +1156,10 @@ body {
   height: 100vh;
   
   @media (prefers-color-scheme: light) {
-    background: $light-bg;
     color: $light-text;
   }
   
   @media (prefers-color-scheme: dark) {
-    background: $dark-bg;
     color: $dark-text;
   }
 } 

@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react'
+import React, { useMemo, useState } from 'react'
 import Markdown from 'marked-react'
 
 interface MessageProps {
@@ -8,9 +8,37 @@ interface MessageProps {
   files?: (File | string)[]
   isError?: boolean
   isLoading?: boolean
+  onCodeSelect?: (code: { code: string; language: string }) => void
 }
 
-const Message = ({ text, isSent, files, isError, isLoading }: MessageProps) => {
+const Message = ({ text, isSent, files, isError, isLoading, onCodeSelect }: MessageProps) => {
+  const [selectedCode, setSelectedCode] = useState<{ code: string; language: string } | null>(null)
+
+  // 自定義渲染器
+  const renderer = {
+    code(code: string, language: string) {
+      return (
+        <button 
+          className="code-block-button"
+          onClick={() => onCodeSelect?.({ code, language })}
+        >
+          <div className="code-preview">
+            <div className="code-header">
+              <span className="language">{language}</span>
+              <span className="view-icon">→</span>
+            </div>
+            <pre>
+              <code className={language}>
+                {code.split('\n').slice(0, 3).join('\n')}
+                {code.split('\n').length > 3 && '...'}
+              </code>
+            </pre>
+          </div>
+        </button>
+      )
+    }
+  }
+
   const formattedText = useMemo(() => {
     if (isSent) {
       const splitText = text.split("\n")
@@ -22,7 +50,7 @@ const Message = ({ text, isSent, files, isError, isLoading }: MessageProps) => {
       ))
     }
     
-    return <Markdown>{text}</Markdown>
+    return <Markdown renderer={renderer}>{text}</Markdown>
   }, [text, isSent])
 
   return (
