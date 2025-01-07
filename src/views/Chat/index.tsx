@@ -2,6 +2,10 @@ import React, { useRef, useState, useCallback, useEffect } from "react"
 import { useLocation, useNavigate, useParams } from "react-router-dom"
 import ChatMessages, { Message } from "./ChatMessages"
 import ChatInput from "./ChatInput"
+import { eventBus } from "../../utils/eventBus"
+import { PrismAsyncLight as SyntaxHighlighter } from "react-syntax-highlighter"
+import { tomorrow, oneLight } from 'react-syntax-highlighter/dist/esm/styles/prism'
+import { useColorScheme } from "../../hooks/useColorScheme"
 
 const ChatWindow = () => {
   const { chatId } = useParams()
@@ -13,7 +17,10 @@ const ChatWindow = () => {
   const currentChatId = useRef<string | null>(null)
   const navigate = useNavigate()
   const isInitialMessageHandled = useRef(false)
-  const [selectedCode, setSelectedCode] = useState<{ code: string; language: string } | null>(null)
+  const [selectedCode, setSelectedCode] = useState<{ code: string; language: string; isStreaming: boolean } | null>(null)
+  const [streamingCode, setStreamingCode] = useState<{ code: string; language: string } | null>(null)
+  const [isStreaming, setIsStreaming] = useState(false)
+  const colorScheme = useColorScheme()
 
   const loadChat = useCallback(async (id: string) => {
     try {
@@ -91,6 +98,7 @@ const ChatWindow = () => {
     setMessages(prev => [...prev, userMessage, aiMessage])
     setAiStreaming(true)
     scrollToBottom()
+    eventBus.emit('code-streaming-start', undefined)
 
     try {
       const response = await fetch("/api/chat", {
@@ -115,8 +123,10 @@ const ChatWindow = () => {
             continue
 
           const dataStr = line.slice(5)
-          if (dataStr.trim() === "[DONE]")
+          if (dataStr.trim() === "[DONE]") {
+            eventBus.emit('code-streaming-end', undefined)
             break
+          }
 
           try {
             const dataObj = JSON.parse(dataStr)
@@ -207,6 +217,29 @@ const ChatWindow = () => {
   useEffect(() => {
     scrollToBottom()
   }, [messages, scrollToBottom])
+  
+  useEffect(() => {
+    const handleCodeStreaming = (data: { code: string; language: string }) => { 
+      setStreamingCode(data)
+    }
+    
+    const handleCodeStreamingStart = () => {
+      setIsStreaming(true)
+    }
+
+    const handleCodeStreamingEnd = () => {
+      setIsStreaming(false)
+    }
+
+    eventBus.on('code-streaming', handleCodeStreaming)
+    eventBus.on('code-streaming-start', handleCodeStreamingStart)
+    eventBus.on('code-streaming-end', handleCodeStreamingEnd)
+    return () => {
+      eventBus.remove('code-streaming', handleCodeStreaming)
+      eventBus.remove('code-streaming-start', handleCodeStreamingStart)
+      eventBus.remove('code-streaming-end', handleCodeStreamingEnd)
+    }
+  }, [])
 
   return (
     <div className="chat-page">
@@ -235,11 +268,26 @@ const ChatWindow = () => {
                 ×
               </button>
             </div>
-            <pre>
-              <code className={selectedCode.language}>
-                {selectedCode.code}
-              </code>
-            </pre>
+            <div className="code-modal-body">
+              <SyntaxHighlighter
+                language={selectedCode.language.toLowerCase()}
+                style={colorScheme === "dark" ? tomorrow : oneLight}
+                showLineNumbers={true}
+                customStyle={{
+                  margin: 0,
+                  height: '100%',
+                  background: 'transparent'
+                }}
+                codeTagProps={{
+                  style: {
+                    fontSize: '14px',
+                    lineHeight: '1.5'
+                  }
+                }}
+              >
+                {selectedCode.isStreaming && isStreaming ? streamingCode?.code || "" : selectedCode.code}
+              </SyntaxHighlighter>
+            </div>
           </div>
         </div>
       )}

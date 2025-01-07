@@ -13,7 +13,7 @@ export interface Message {
 interface Props {
   messages: Message[]
   isLoading?: boolean
-  onCodeSelect?: (code: { code: string; language: string }) => void
+  onCodeSelect?: (code: { code: string; language: string; isStreaming: boolean }) => void
 }
 
 const ChatMessages = ({ messages, isLoading, onCodeSelect }: Props) => {

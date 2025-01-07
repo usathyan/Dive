@@ -549,35 +549,48 @@ body {
     bottom: 100%;
     left: 0;
     right: 0;
-    padding: 10px;
+    padding: 10px 20px;
     display: flex;
     gap: 8px;
     flex-wrap: wrap;
-    background: inherit;
     border-top: 1px solid rgba(0, 0, 0, 0.1);
+    
+    @media (prefers-color-scheme: light) {
+      @include theme-colors($light-bg, $light-text);
+    }
     
     @media (prefers-color-scheme: dark) {
       border-color: rgba(255, 255, 255, 0.1);
+      @include theme-colors($dark-bg, $dark-text);
     }
     
     .preview-item {
       position: relative;
-      width: 100px;
-      height: 100px;
+      height: 50px;
+      padding: 2px;
+      border-radius: 4px;
+      
+      @media (prefers-color-scheme: light) {
+        background: rgba(0, 0, 0, 0.05);
+      }
+      
+      @media (prefers-color-scheme: dark) {
+        background: rgba(255, 255, 255, 0.05);
+      }
       
       img {
-        width: 100%;
         height: 100%;
-        object-fit: cover;
-        border-radius: 8px;
+        width: auto;
+        object-fit: contain;
+        border-radius: 4px;
       }
       
       .remove-preview {
         position: absolute;
-        top: -8px;
-        right: -8px;
-        width: 20px;
-        height: 20px;
+        top: -6px;
+        right: -6px;
+        width: 18px;
+        height: 18px;
         border-radius: 50%;
         background: rgba(0, 0, 0, 0.5);
         color: white;
@@ -587,6 +600,7 @@ body {
         align-items: center;
         justify-content: center;
         font-size: 12px;
+        padding: 0;
         
         &:hover {
           background: rgba(0, 0, 0, 0.7);
@@ -751,69 +765,31 @@ body {
   }
 
   .code-block-button {
-    width: 100%;
-    text-align: left;
-    background: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: $primary-blue;
+    color: white;
     border: none;
-    padding: 0;
+    padding: 8px 16px;
+    border-radius: 20px;
     cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    margin: 10px 0;
+    transition: all 0.2s ease;
     
-    .code-preview {
-      margin: 10px 0;
-      border-radius: 8px;
-      overflow: hidden;
-      transition: all 0.2s;
-      
-      @media (prefers-color-scheme: light) {
-        background: rgba(0, 0, 0, 0.05);
-      }
-      
-      @media (prefers-color-scheme: dark) {
-        background: rgba(255, 255, 255, 0.05);
-      }
-      
-      &:hover {
-        transform: translateX(5px);
-      }
-
-      .code-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 8px 12px;
-        background: rgba(0, 0, 0, 0.1);
-        
-        @media (prefers-color-scheme: dark) {
-          background: rgba(255, 255, 255, 0.1);
-        }
-
-        .language {
-          font-size: 12px;
-          color: #666;
-          
-          @media (prefers-color-scheme: dark) {
-            color: #999;
-          }
-        }
-
-        .view-icon {
-          color: $primary-blue;
-        }
-      }
-      
-      pre {
-        margin: 0;
-        padding: 12px;
-        overflow: hidden;
-        max-height: 150px;
-        
-        code {
-          font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, Courier, monospace;
-          font-size: 14px;
-          line-height: 1.4;
-          white-space: pre;
-        }
-      }
+    svg {
+      fill: currentColor;
+    }
+    
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(29, 161, 242, 0.3);
+    }
+    
+    &:active {
+      transform: translateY(0);
     }
   }
 }
@@ -860,16 +836,14 @@ body {
       }
     }
     
-    pre {
+    .code-modal-body {
       flex: 1;
-      margin: 0;
-      padding: 16px;
       overflow: auto;
       
-      code {
-        font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, Courier, monospace;
-        font-size: 14px;
-        line-height: 1.5;
+      pre {
+        margin: 0 !important;
+        border-radius: 0 !important;
+        height: 100% !important;
       }
     }
   }
