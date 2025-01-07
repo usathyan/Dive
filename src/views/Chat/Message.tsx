@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react'
+import React, { useMemo } from 'react'
 import Markdown from 'marked-react'
 
 interface MessageProps {
@@ -12,8 +12,6 @@ interface MessageProps {
 }
 
 const Message = ({ text, isSent, files, isError, isLoading, onCodeSelect }: MessageProps) => {
-  const [selectedCode, setSelectedCode] = useState<{ code: string; language: string } | null>(null)
-
   // 自定義渲染器
   const renderer = {
     code(code: string, language: string) {
