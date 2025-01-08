@@ -796,8 +796,9 @@ body {
 
 .code-modal {
   flex: 1;
-  height: 80vh;
+  height: 90vh;
   margin: auto 0;
+  max-width: 1024px;
   
   .code-modal-content {
     height: 100%;

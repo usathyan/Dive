@@ -212,8 +212,13 @@ const ChatWindow = () => {
     scrollToBottom()
   }, [messages, scrollToBottom])
 
+  const lastChatId = useRef(chatId)
   useEffect(() => {
-    updateStreamingCode({ code: "", language: "" })
+    if (lastChatId.current && lastChatId.current !== chatId) {
+      updateStreamingCode({ code: "", language: "" })
+    }
+
+    lastChatId.current = chatId
   }, [updateStreamingCode, chatId])
 
   return (
