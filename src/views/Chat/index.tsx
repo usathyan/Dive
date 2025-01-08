@@ -2,10 +2,9 @@ import React, { useRef, useState, useCallback, useEffect } from "react"
 import { useLocation, useNavigate, useParams } from "react-router-dom"
 import ChatMessages, { Message } from "./ChatMessages"
 import ChatInput from "./ChatInput"
-import { eventBus } from "../../utils/eventBus"
-import { PrismAsyncLight as SyntaxHighlighter } from "react-syntax-highlighter"
-import { tomorrow, oneLight } from 'react-syntax-highlighter/dist/esm/styles/prism'
-import { useColorScheme } from "../../hooks/useColorScheme"
+import CodeModal from './CodeModal'
+import { useSetAtom } from 'jotai'
+import { updateStreamingCodeAtom } from '../../atoms/codeStreaming'
 
 const ChatWindow = () => {
   const { chatId } = useParams()
@@ -17,10 +16,7 @@ const ChatWindow = () => {
   const currentChatId = useRef<string | null>(null)
   const navigate = useNavigate()
   const isInitialMessageHandled = useRef(false)
-  const [selectedCode, setSelectedCode] = useState<{ code: string; language: string; isStreaming: boolean } | null>(null)
-  const [streamingCode, setStreamingCode] = useState<{ code: string; language: string } | null>(null)
-  const [isStreaming, setIsStreaming] = useState(false)
-  const colorScheme = useColorScheme()
+  const updateStreamingCode = useSetAtom(updateStreamingCodeAtom)
 
   const loadChat = useCallback(async (id: string) => {
     try {
@@ -98,7 +94,6 @@ const ChatWindow = () => {
     setMessages(prev => [...prev, userMessage, aiMessage])
     setAiStreaming(true)
     scrollToBottom()
-    eventBus.emit('code-streaming-start', undefined)
 
     try {
       const response = await fetch("/api/chat", {
@@ -124,7 +119,6 @@ const ChatWindow = () => {
 
           const dataStr = line.slice(5)
           if (dataStr.trim() === "[DONE]") {
-            eventBus.emit('code-streaming-end', undefined)
             break
           }
 
@@ -217,29 +211,10 @@ const ChatWindow = () => {
   useEffect(() => {
     scrollToBottom()
   }, [messages, scrollToBottom])
-  
+
   useEffect(() => {
-    const handleCodeStreaming = (data: { code: string; language: string }) => { 
-      setStreamingCode(data)
-    }
-    
-    const handleCodeStreamingStart = () => {
-      setIsStreaming(true)
-    }
-
-    const handleCodeStreamingEnd = () => {
-      setIsStreaming(false)
-    }
-
-    eventBus.on('code-streaming', handleCodeStreaming)
-    eventBus.on('code-streaming-start', handleCodeStreamingStart)
-    eventBus.on('code-streaming-end', handleCodeStreamingEnd)
-    return () => {
-      eventBus.remove('code-streaming', handleCodeStreaming)
-      eventBus.remove('code-streaming-start', handleCodeStreamingStart)
-      eventBus.remove('code-streaming-end', handleCodeStreamingEnd)
-    }
-  }, [])
+    updateStreamingCode({ code: "", language: "" })
+  }, [updateStreamingCode, chatId])
 
   return (
     <div className="chat-page">
@@ -248,7 +223,6 @@ const ChatWindow = () => {
           <ChatMessages
             messages={messages}
             isLoading={isAiStreaming}
-            onCodeSelect={setSelectedCode}
           />
           <ChatInput
             onSendMessage={onSendMsg}
@@ -256,41 +230,7 @@ const ChatWindow = () => {
           />
         </div>
       </div>
-      {selectedCode && (
-        <div className="code-modal">
-          <div className="code-modal-content">
-            <div className="code-modal-header">
-              <span className="language">{selectedCode.language}</span>
-              <button 
-                className="close-btn"
-                onClick={() => setSelectedCode(null)}
-              >
-                ×
-              </button>
-            </div>
-            <div className="code-modal-body">
-              <SyntaxHighlighter
-                language={selectedCode.language.toLowerCase()}
-                style={colorScheme === "dark" ? tomorrow : oneLight}
-                showLineNumbers={true}
-                customStyle={{
-                  margin: 0,
-                  height: '100%',
-                  background: 'transparent'
-                }}
-                codeTagProps={{
-                  style: {
-                    fontSize: '14px',
-                    lineHeight: '1.5'
-                  }
-                }}
-              >
-                {selectedCode.isStreaming && isStreaming ? streamingCode?.code || "" : selectedCode.code}
-              </SyntaxHighlighter>
-            </div>
-          </div>
-        </div>
-      )}
+      <CodeModal />
     </div>
   )
 }

@@ -1,6 +1,8 @@
-import React, { useState, useRef } from "react"
+import React, { useState, useRef, KeyboardEvent, useEffect } from "react"
 import { useNavigate } from "react-router-dom"
 import Toast from "../components/Toast"
+import { useSetAtom } from 'jotai'
+import { updateStreamingCodeAtom } from '../atoms/codeStreaming'
 
 const formatFileSize = (bytes: number) => {
   if (bytes === 0)
@@ -18,6 +20,11 @@ const Welcome = () => {
   const [uploadedFiles, setUploadedFiles] = useState<File[]>([])
   const [toast, setToast] = useState<{ message: string; type: 'info' | 'warning' | 'error' } | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const updateStreamingCode = useSetAtom(updateStreamingCodeAtom)
+
+  useEffect(() => {
+    updateStreamingCode({ code: "", language: "" })
+  }, [updateStreamingCode])
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -28,6 +35,25 @@ const Welcome = () => {
           files: uploadedFiles
         } 
       })
+    }
+  }
+
+  const handleKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === 'Enter') {
+      if (e.shiftKey) {
+        // Shift + Enter: 換行
+        return
+      }
+      // Enter: 送出
+      e.preventDefault()
+      if (message.trim() || uploadedFiles.length > 0) {
+        navigate("/chat", { 
+          state: { 
+            initialMessage: message,
+            files: uploadedFiles
+          } 
+        })
+      }
     }
   }
 
@@ -70,7 +96,8 @@ const Welcome = () => {
             <textarea
               value={message}
               onChange={(e) => setMessage(e.target.value)}
-              placeholder="傳送任何問題..."
+              onKeyDown={handleKeyDown}
+              placeholder="傳送任何問題... (Enter 送出，Shift + Enter 換行)"
               rows={1}
             />
             <div className="input-actions">

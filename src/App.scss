@@ -796,7 +796,6 @@ body {
 
 .code-modal {
   flex: 1;
-  max-width: $chat-width;
   height: 80vh;
   margin: auto 0;
   
@@ -844,6 +843,35 @@ body {
         margin: 0 !important;
         border-radius: 0 !important;
         height: 100% !important;
+      }
+    }
+    
+    .code-modal-footer {
+      display: flex;
+      justify-content: flex-end;
+      padding: 12px 16px;
+      background: #2d2d2d;
+      border-radius: 0 0 8px 8px;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+      
+      .copy-btn {
+        padding: 6px 12px;
+        font-size: 14px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        background: $primary-blue;
+        color: white;
+        transition: all 0.2s;
+        
+        &:hover {
+          background: darken($primary-blue, 5%);
+          transform: translateY(-1px);
+        }
+        
+        &:active {
+          transform: translateY(0);
+        }
       }
     }
   }

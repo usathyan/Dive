@@ -13,10 +13,9 @@ export interface Message {
 interface Props {
   messages: Message[]
   isLoading?: boolean
-  onCodeSelect?: (code: { code: string; language: string; isStreaming: boolean }) => void
 }
 
-const ChatMessages = ({ messages, isLoading, onCodeSelect }: Props) => {
+const ChatMessages = ({ messages, isLoading }: Props) => {
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
   const scrollToBottom = () => {
@@ -38,7 +37,6 @@ const ChatMessages = ({ messages, isLoading, onCodeSelect }: Props) => {
           files={message.files}
           isError={message.isError}
           isLoading={!message.isSent && index === messages.length - 1 && isLoading}
-          onCodeSelect={onCodeSelect}
         />
       ))}
       <div ref={messagesEndRef} />

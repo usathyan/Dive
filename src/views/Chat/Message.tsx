@@ -1,9 +1,10 @@
 import React, { useMemo } from "react"
 import Markdown from "marked-react"
-import { eventBus } from "../../utils/eventBus"
 import { PrismAsyncLight as SyntaxHighlighter } from "react-syntax-highlighter";
 import { tomorrow, oneLight } from 'react-syntax-highlighter/dist/esm/styles/prism'
 import { useColorScheme } from "../../hooks/useColorScheme";
+import { useSetAtom } from 'jotai'
+import { updateStreamingCodeAtom } from '../../atoms/codeStreaming'
 
 interface MessageProps {
   text: string
@@ -12,12 +13,20 @@ interface MessageProps {
   files?: (File | string)[]
   isError?: boolean
   isLoading?: boolean
-  onCodeSelect?: (code: { code: string; language: string; isStreaming: boolean }) => void
 }
 
-const Message = ({ text, isSent, files, isError, isLoading, onCodeSelect }: MessageProps) => {
+const Message = ({ text, isSent, files, isError, isLoading }: MessageProps) => {
   const colorScheme = useColorScheme()
-  // 自定義渲染器
+  const updateStreamingCode = useSetAtom(updateStreamingCodeAtom)
+  
+  const copyToClipboard = async (text: string) => {
+    try {
+      await navigator.clipboard.writeText(text)
+    } catch (err) {
+      console.error('Failed to copy text: ', err)
+    }
+  }
+
   const renderer = {
     code(code: string, language: string) {
       const lines = code.split('\n')
@@ -27,16 +36,11 @@ const Message = ({ text, isSent, files, isError, isLoading, onCodeSelect }: Mess
         const cleanText = text.replace(/\s+(?=```)/gm, '')
         const isBlockComplete = cleanText.includes(code.trim() + "```")
         const handleClick = () => {
-          onCodeSelect?.({ code, language, isStreaming: !isBlockComplete })
+          updateStreamingCode({ code, language })
         }
         
-        if (!isBlockComplete) {
-          setTimeout(() => {
-            eventBus.emit("code-streaming", {
-              code,
-              language,
-            })
-          }, 0)
+        if (!isBlockComplete && isLoading) {
+          updateStreamingCode({ code, language })
         }
 
         return (
@@ -54,6 +58,15 @@ const Message = ({ text, isSent, files, isError, isLoading, onCodeSelect }: Mess
 
       return (
         <div className="code-block">
+          <div className="code-header">
+            <span className="language">{language}</span>
+            <button 
+              className="copy-btn"
+              onClick={() => copyToClipboard(code)}
+            >
+              複製
+            </button>
+          </div>
           <SyntaxHighlighter
             language={language.toLowerCase()}
             style={colorScheme === "dark" ? tomorrow : oneLight}
