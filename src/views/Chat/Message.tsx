@@ -30,7 +30,7 @@ const Message = ({ text, isSent, files, isError, isLoading }: MessageProps) => {
   const renderer = {
     code(code: string, language: string) {
       const lines = code.split('\n')
-      const isLongCode = true
+      const isLongCode = lines.length > 10
 
       if (isLongCode) {
         const cleanText = text.replace(/\s+(?=```)/gm, '')
