@@ -3,8 +3,7 @@ $dark-bg: #15202b;
 $light-text: #000000;
 $dark-text: #ffffff;
 $primary-blue: #1da1f2;
-$max-width: 768px;
-$chat-width: $max-width;
+$chat-width: 768px;
 $page-h-padding: 20px;
 $header-height: 60px;
 
@@ -416,7 +415,7 @@ body {
 }
 
 .chat-window {
-  max-width: $max-width;
+  max-width: $chat-width;
   width: 100%;
   display: flex;
   flex-direction: column;
@@ -452,7 +451,6 @@ body {
 }
 
 .chat-input {
-  background: inherit;
   padding: 15px 20px;
   margin-top: 10px;
   display: flex;
@@ -463,8 +461,13 @@ body {
   position: relative;
   z-index: 1;
 
+  @media (prefers-color-scheme: light) {
+    @include theme-colors($light-bg, $light-text);
+  }
+
   @media (prefers-color-scheme: dark) {
     border-color: rgba(255, 255, 255, 0.1);
+    @include theme-colors($dark-bg, $dark-text);
   }
 
   textarea {
@@ -795,9 +798,9 @@ body {
 
 .code-modal {
   flex: 1;
-  height: 90vh;
+  height: calc(100vh - $header-height);
   margin: auto 0;
-  max-width: 1024px;
+  max-width: calc(100vw - $chat-width - $page-h-padding * 2 - 20px);
   
   .code-modal-content {
     height: 100%;
