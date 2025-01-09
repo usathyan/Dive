@@ -1,6 +1,9 @@
 import React, { useState, useCallback, useEffect } from "react"
 import { useNavigate } from "react-router-dom"
 import Toast from "./Toast"
+import { useAtom } from 'jotai'
+import { sidebarVisibleAtom } from '../atoms/sidebarState'
+import Header from "./Header"
 
 export interface ChatHistory {
   id: string
@@ -14,7 +17,7 @@ interface Props {
 
 const HistorySidebar = ({ onNewChat }: Props) => {
   const navigate = useNavigate()
-  const [isVisible, setIsVisible] = useState(false)
+  const [isVisible, setIsVisible] = useAtom(sidebarVisibleAtom)
   const [histories, setHistories] = useState<ChatHistory[]>([])
   const [currentChatId, setCurrentChatId] = useState<string | null>(null)
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null)
@@ -69,7 +72,7 @@ const HistorySidebar = ({ onNewChat }: Props) => {
     setCurrentChatId(chatId)
     setIsVisible(false)
     navigate(`/chat/${chatId}`)
-  }, [navigate])
+  }, [navigate, setIsVisible])
 
   const handleNewChat = () => {
     setCurrentChatId(null)
@@ -80,14 +83,6 @@ const HistorySidebar = ({ onNewChat }: Props) => {
     }
   }
 
-  const showHistory = () => {
-    setIsVisible(true)
-  }
-
-  const hideHistory = () => {
-    setIsVisible(false)
-  }
-
   useEffect(() => {
     if (isVisible) {
       loadChatHistory()
@@ -95,20 +90,14 @@ const HistorySidebar = ({ onNewChat }: Props) => {
   }, [isVisible, loadChatHistory])
 
   return (
-    <>
-      <div 
-        className="history-trigger"
-        onMouseEnter={showHistory}
-      />
-      <div 
-        className={`history-sidebar ${isVisible ? "visible" : ""}`}
-        onMouseLeave={hideHistory}
-      >
-        <div className="history-header">
-          <button onClick={handleNewChat} className="new-chat-btn">
-            + New Chat
-          </button>
-        </div>
+    <div className={`history-sidebar ${isVisible ? "visible" : ""}`}>
+      <Header />
+      <div className="history-header">
+        <button onClick={handleNewChat} className="new-chat-btn">
+          + New Chat
+        </button>
+      </div>
+      <div className="history-list">
         {histories.map(chat => (
           <div 
             key={chat.id}
@@ -140,7 +129,7 @@ const HistorySidebar = ({ onNewChat }: Props) => {
           onClose={() => setToast(null)}
         />
       )}
-    </>
+    </div>
   )
 }
 
