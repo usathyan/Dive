@@ -118,6 +118,9 @@ const ChatInput: React.FC<Props> = ({ onSendMessage, disabled }) => {
   }
 
   const handlePaste = (e: ClipboardEvent) => {
+    if (document.activeElement !== textareaRef.current)
+      return
+
     const items = e.clipboardData?.items
     if (!items)
       return
@@ -173,6 +176,7 @@ const ChatInput: React.FC<Props> = ({ onSendMessage, disabled }) => {
     setMessage("")
     resetTextareaHeight()
     
+    uploadedFiles.current = []
     if (fileInputRef.current) {
       fileInputRef.current.value = ""
     }
