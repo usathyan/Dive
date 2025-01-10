@@ -446,6 +446,13 @@ body {
       background-color: rgba(255, 255, 255, 0.2);
     }
   }
+
+  img {
+    max-width: 200px;
+    max-height: 200px;
+    border-radius: 8px;
+    object-fit: contain;
+  }
 }
 
 .message-container {
