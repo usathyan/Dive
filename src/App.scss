@@ -463,7 +463,7 @@ body {
   position: relative;
   z-index: 1;
   position: absolute;
-  bottom: 50px;
+  bottom: 20px;
   left: 0;
   right: 0;
 
@@ -562,47 +562,68 @@ body {
     }
   }
 
-  .image-previews {
-    position: absolute;
-    bottom: 100%;
-    left: 0;
-    right: 0;
-    padding: 10px 20px;
+  .file-previews {
     display: flex;
     gap: 8px;
     flex-wrap: wrap;
-    border-top: 1px solid rgba(0, 0, 0, 0.1);
-    
-    @media (prefers-color-scheme: light) {
-      @include theme-colors($light-bg, $light-text);
-    }
-    
-    @media (prefers-color-scheme: dark) {
-      border-color: rgba(255, 255, 255, 0.1);
-      @include theme-colors($dark-bg, $dark-text);
-    }
+    margin-bottom: 8px;
     
     .preview-item {
       position: relative;
-      height: 50px;
-      padding: 2px;
-      border-radius: 4px;
-      
-      @media (prefers-color-scheme: light) {
-        background: rgba(0, 0, 0, 0.05);
-      }
-      
-      @media (prefers-color-scheme: dark) {
-        background: rgba(255, 255, 255, 0.05);
-      }
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
       
       img {
-        height: 100%;
+        max-height: 50px;
         width: auto;
-        object-fit: contain;
-        border-radius: 4px;
+        object-fit: cover;
+        border-radius: 8px;
       }
       
+      .file-info {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px;
+        border-radius: 8px;
+        
+        @media (prefers-color-scheme: light) {
+          background: rgba(0, 0, 0, 0.05);
+        }
+        
+        @media (prefers-color-scheme: dark) {
+          background: rgba(255, 255, 255, 0.05);
+        }
+        
+        .file-icon {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          
+          svg {
+            fill: currentColor;
+            opacity: 0.7;
+          }
+        }
+        
+        .file-details {
+          .file-name {
+            font-size: 14px;
+            margin-bottom: 2px;
+            max-width: 200px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+          }
+          
+          .file-size {
+            font-size: 12px;
+            opacity: 0.7;
+          }
+        }
+      }
+
       .remove-preview {
         position: absolute;
         top: -6px;

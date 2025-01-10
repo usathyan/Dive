@@ -5,12 +5,117 @@ interface Props {
   disabled?: boolean
 }
 
+interface FilePreview {
+  type: 'image' | 'file'
+  url?: string
+  name: string
+  size: string
+}
+
+const ACCEPTED_FILE_TYPES = [
+  'image/*',
+  'application/pdf',
+  'application/msword',
+  'application/vnd.openxmlformats-officedocument.wordprocessingml.document', // .docx
+  'application/vnd.oasis.opendocument.text', // .odt
+  'text/html',
+  'text/csv',
+  'text/plain',
+  'application/rtf',
+  'application/epub+zip'
+].join(',')
+
 const ChatInput: React.FC<Props> = ({ onSendMessage, disabled }) => {
   const [message, setMessage] = useState("")
-  const [previewImages, setPreviewImages] = useState<string[]>([])
+  const [previews, setPreviews] = useState<FilePreview[]>([])
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const prevDisabled = useRef(disabled)
+  const uploadedFiles = useRef<File[]>([])
+
+  const formatFileSize = (bytes: number): string => {
+    if (bytes < 1024) return bytes + ' B'
+    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB'
+    return (bytes / (1024 * 1024)).toFixed(1) + ' MB'
+  }
+
+  const handleFiles = (files: File[]) => {
+    const existingFiles = uploadedFiles.current
+    
+    const newFiles = files.filter(newFile => {
+      const isDuplicate = existingFiles.some(existingFile => {
+        if (existingFile.name !== newFile.name)
+          return false
+        
+        if (existingFile.size !== newFile.size)
+          return false
+        
+        if (existingFile.lastModified !== newFile.lastModified)
+          return false
+        
+        return true
+      })
+      
+      return !isDuplicate
+    })
+
+    if (newFiles.length === 0)
+      return
+
+    const newPreviews = newFiles.map(file => {
+      const preview: FilePreview = {
+        type: file.type.startsWith('image/') ? 'image' : 'file',
+        name: file.name,
+        size: formatFileSize(file.size)
+      }
+      
+      if (preview.type === 'image') {
+        preview.url = URL.createObjectURL(file)
+      }
+      
+      return preview
+    })
+    
+    setPreviews(prev => [...prev, ...newPreviews])
+    uploadedFiles.current = [...existingFiles, ...newFiles]
+    
+    if (fileInputRef.current) {
+      const dataTransfer = new DataTransfer()
+      uploadedFiles.current.forEach(file => {
+        dataTransfer.items.add(file)
+      })
+      fileInputRef.current.files = dataTransfer.files
+    }
+  }
+
+  const removeFile = (index: number, e?: React.MouseEvent) => {
+    e?.preventDefault()
+    e?.stopPropagation()
+
+    uploadedFiles.current = uploadedFiles.current.filter((_, i) => i !== index)
+    
+    if (fileInputRef.current) {
+      const dataTransfer = new DataTransfer()
+      uploadedFiles.current.forEach(file => {
+        dataTransfer.items.add(file)
+      })
+      
+      if (uploadedFiles.current.length === 0) {
+        fileInputRef.current.value = ''
+      } else {
+        fileInputRef.current.files = dataTransfer.files
+      }
+    }
+
+    setPreviews(prev => {
+      const newPreviews = [...prev]
+      if (newPreviews[index].type === 'image' && newPreviews[index].url) {
+        URL.revokeObjectURL(newPreviews[index].url)
+      }
+      newPreviews.splice(index, 1)
+      return newPreviews
+    })
+  }
 
   const handlePaste = (e: ClipboardEvent) => {
     const items = e.clipboardData?.items
@@ -25,44 +130,15 @@ const ChatInput: React.FC<Props> = ({ onSendMessage, disabled }) => {
     }
   }
 
-  const handleFiles = (files: File[]) => {
-    const newPreviews = files.map(file => URL.createObjectURL(file))
-    setPreviewImages(prev => [...prev, ...newPreviews])
-    
-    if (fileInputRef.current) {
-      const dataTransfer = new DataTransfer()
-      const existingFiles = Array.from(fileInputRef.current.files || [])
-      
-      ;[...existingFiles, ...files].forEach(file => {
-        dataTransfer.items.add(file)
-      })
-      
-      fileInputRef.current.files = dataTransfer.files
-    }
-  }
-
-  const removeImage = (index: number) => {
-    if (fileInputRef.current) {
-      const dataTransfer = new DataTransfer()
-      const files = Array.from(fileInputRef.current.files || [])
-      files.splice(index, 1)
-      files.forEach(file => dataTransfer.items.add(file))
-      fileInputRef.current.files = dataTransfer.files
-    }
-
-    setPreviewImages(prev => {
-      const newPreviews = [...prev]
-      URL.revokeObjectURL(newPreviews[index])
-      newPreviews.splice(index, 1)
-      return newPreviews
-    })
-  }
-
   useEffect(() => {
     document.addEventListener("paste", handlePaste)
     return () => {
       document.removeEventListener("paste", handlePaste)
-      previewImages.forEach(URL.revokeObjectURL)
+      previews.forEach(preview => {
+        if (preview.type === 'image' && preview.url) {
+          URL.revokeObjectURL(preview.url)
+        }
+      })
     }
   }, [])
 
@@ -96,8 +172,19 @@ const ChatInput: React.FC<Props> = ({ onSendMessage, disabled }) => {
     onSendMessage(message, fileInputRef.current?.files || undefined)
     setMessage("")
     resetTextareaHeight()
-    if (fileInputRef.current)
+    
+    if (fileInputRef.current) {
       fileInputRef.current.value = ""
+    }
+    
+    setPreviews(prev => {
+      prev.forEach(preview => {
+        if (preview.type === 'image' && preview.url) {
+          URL.revokeObjectURL(preview.url)
+        }
+      })
+      return []
+    })
   }
 
   const onKeydown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -120,22 +207,6 @@ const ChatInput: React.FC<Props> = ({ onSendMessage, disabled }) => {
 
   return (
     <footer className="chat-input">
-      {previewImages.length > 0 && (
-        <div className="image-previews">
-          {previewImages.map((preview, index) => (
-            <div key={index} className="preview-item">
-              <img src={preview} alt={`Preview ${index + 1}`} />
-              <button 
-                className="remove-preview" 
-                onClick={() => removeImage(index)}
-                type="button"
-              >
-                ✕
-              </button>
-            </div>
-          ))}
-        </div>
-      )}
       <div className="input-wrapper">
         <textarea
           ref={textareaRef}
@@ -152,7 +223,7 @@ const ChatInput: React.FC<Props> = ({ onSendMessage, disabled }) => {
           type="file"
           ref={fileInputRef}
           multiple
-          accept="image/*"
+          accept={ACCEPTED_FILE_TYPES}
           style={{ display: "none" }}
           onChange={handleFileChange}
         />
@@ -171,6 +242,36 @@ const ChatInput: React.FC<Props> = ({ onSendMessage, disabled }) => {
           </svg>
         </button>
       </div>
+      {previews.length > 0 && (
+        <div className="file-previews">
+          {previews.map((preview, index) => (
+            <div key={index} className="preview-item">
+              {preview.type === 'image' ? (
+                <img src={preview.url} alt={preview.name} />
+              ) : (
+                <div className="file-info">
+                  <div className="file-icon">
+                    <svg width="24" height="24" viewBox="0 0 24 24">
+                      <path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/>
+                    </svg>
+                  </div>
+                  <div className="file-details">
+                    <div className="file-name">{preview.name}</div>
+                    <div className="file-size">{preview.size}</div>
+                  </div>
+                </div>
+              )}
+              <button 
+                className="remove-preview" 
+                onClick={(e) => removeFile(index, e)}
+                type="button"
+              >
+                ✕
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
     </footer>
   )
 }

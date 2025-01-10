@@ -72,7 +72,7 @@ const ChatWindow = () => {
     
     if (files) {
       Array.from(files).forEach(file => {
-        formData.append("images", file)
+        formData.append("files", file)
       })
     }
 
