@@ -33,7 +33,7 @@ body {
   display: flex;
   justify-content: center;
   align-items: center;
-  min-height: 100vh;
+  min-height: calc(100vh - $header-height);
   padding: 20px;
   
   @media (prefers-color-scheme: light) {
