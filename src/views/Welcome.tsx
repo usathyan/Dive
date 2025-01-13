@@ -173,7 +173,7 @@ const Welcome = () => {
 
         <div className="suggestions">
           <div className="suggestion-item" onClick={() => handleSuggestionClick("哪些筆記型電腦，可以支援高效能的訓練，不想買不卡？")}>
-            <strong>哪些筆記型電腦，可以支援高效能的訓練，不想買不卡？</strong>
+            <strong>哪些筆記型電腦，可以支援高效能的訓練，不想買顯卡？</strong>
             <p>詢問產品建議</p>
             <span className="arrow">→</span>
           </div>
