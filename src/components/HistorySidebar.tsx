@@ -4,6 +4,7 @@ import Toast from "./Toast"
 import { useAtom } from 'jotai'
 import { sidebarVisibleAtom } from '../atoms/sidebarState'
 import Header from "./Header"
+import { useTranslation } from 'react-i18next'
 
 export interface ChatHistory {
   id: string
@@ -16,6 +17,7 @@ interface Props {
 }
 
 const HistorySidebar = ({ onNewChat }: Props) => {
+  const { t } = useTranslation()
   const navigate = useNavigate()
   const [isVisible, setIsVisible] = useAtom(sidebarVisibleAtom)
   const [histories, setHistories] = useState<ChatHistory[]>([])
@@ -94,7 +96,7 @@ const HistorySidebar = ({ onNewChat }: Props) => {
       <Header />
       <div className="history-header">
         <button onClick={handleNewChat} className="new-chat-btn">
-          + New Chat
+          + {t('chat.newChat')}
         </button>
       </div>
       <div className="history-list">
@@ -105,7 +107,7 @@ const HistorySidebar = ({ onNewChat }: Props) => {
             onClick={() => loadChat(chat.id)}
           >
             <div className="history-content">
-              <div className="history-title">{chat.title || "未命名對話"}</div>
+              <div className="history-title">{chat.title || t('chat.untitledChat')}</div>
               <div className="history-date">
                 {new Date(chat.createdAt).toLocaleString()}
               </div>
@@ -113,7 +115,7 @@ const HistorySidebar = ({ onNewChat }: Props) => {
             <button 
               className="delete-btn"
               onClick={(e) => deleteChat(e, chat.id)}
-              title="刪除對話"
+              title={t('chat.deleteChat')}
             >
               <svg width="16" height="16" viewBox="0 0 24 24">
                 <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>

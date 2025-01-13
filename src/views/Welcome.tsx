@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom"
 import Toast from "../components/Toast"
 import { useSetAtom } from 'jotai'
 import { updateStreamingCodeAtom } from '../atoms/codeStreaming'
+import { useTranslation } from 'react-i18next'
 
 const formatFileSize = (bytes: number) => {
   if (bytes === 0)
@@ -15,6 +16,7 @@ const formatFileSize = (bytes: number) => {
 }
 
 const Welcome = () => {
+  const { t } = useTranslation()
   const navigate = useNavigate()
   const [message, setMessage] = useState("")
   const [uploadedFiles, setUploadedFiles] = useState<File[]>([])
@@ -88,8 +90,8 @@ const Welcome = () => {
   return (
     <div className="main-container">
       <div className="welcome-content">
-        <h1>歡迎使用 Dive AI</h1>
-        <p className="subtitle">您的桌面 AI 智慧合作夥伴，快速、專注，專為深度搜尋而設計。</p>
+        <h1>{t('welcome.title')}</h1>
+        <p className="subtitle">{t('welcome.subtitle')}</p>
         
         <form className="welcome-input" onSubmit={handleSubmit}>
           <div className="input-container">
@@ -97,7 +99,7 @@ const Welcome = () => {
               value={message}
               onChange={(e) => setMessage(e.target.value)}
               onKeyDown={handleKeyDown}
-              placeholder="傳送任何問題... (Enter 送出，Shift + Enter 換行)"
+              placeholder={t('chat.placeholder')}
               rows={1}
             />
             <div className="input-actions">
@@ -113,6 +115,7 @@ const Welcome = () => {
                 type="button" 
                 className="upload-btn" 
                 onClick={() => fileInputRef.current?.click()}
+                title={t('chat.uploadFile')}
               >
                 <svg width="24" height="24" viewBox="0 0 24 24">
                   <path d="M16.5 6v11.5c0 2.21-1.79 4-4 4s-4-1.79-4-4V5c0-1.38 1.12-2.5 2.5-2.5s2.5 1.12 2.5 2.5v10.5c0 .55-.45 1-1 1s-1-.45-1-1V6H10v9.5c0 1.38 1.12 2.5 2.5 2.5s2.5-1.12 2.5-2.5V5c0-2.21-1.79-4-4-4S7 2.79 7 5v12.5c0 3.04 2.46 5.5 5.5 5.5s5.5-2.46 5.5-5.5V6h-1.5z"/>
@@ -172,7 +175,7 @@ const Welcome = () => {
         )}
 
         <div className="suggestions">
-          <div className="suggestion-item" onClick={() => handleSuggestionClick("哪些筆記型電腦，可以支援高效能的訓練，不想買不卡？")}>
+          <div className="suggestion-item" onClick={() => handleSuggestionClick("哪些筆記型電腦，可以支援高效能的訓練，不想買顯卡？")}>
             <strong>哪些筆記型電腦，可以支援高效能的訓練，不想買顯卡？</strong>
             <p>詢問產品建議</p>
             <span className="arrow">→</span>

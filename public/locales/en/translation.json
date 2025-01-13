@@ -1,0 +1,21 @@
+{
+  "header": {
+    "title": "Dive AI"
+  },
+  "chat": {
+    "placeholder": "Type a message...",
+    "newChat": "New Chat",
+    "history": "History",
+    "copyCode": "Copy",
+    "previewCode": "Click to preview",
+    "uploadFile": "Upload file",
+    "send": "Send",
+    "untitledChat": "Untitled Chat",
+    "deleteChat": "Delete Chat"
+  },
+  "welcome": {
+    "title": "Welcome to Dive AI",
+    "subtitle": "Start your AI conversation",
+    "startChat": "Start Chat"
+  }
+} 
