@@ -4,6 +4,8 @@ import Toast from "../components/Toast"
 import { useSetAtom } from 'jotai'
 import { updateStreamingCodeAtom } from '../atoms/codeStreaming'
 import { useTranslation } from 'react-i18next'
+import { useAtom } from 'jotai'
+import { historiesAtom, loadHistoriesAtom } from '../atoms/historyState'
 
 const formatFileSize = (bytes: number) => {
   if (bytes === 0)
@@ -23,10 +25,16 @@ const Welcome = () => {
   const [toast, setToast] = useState<{ message: string; type: 'info' | 'warning' | 'error' } | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const updateStreamingCode = useSetAtom(updateStreamingCodeAtom)
+  const [histories] = useAtom(historiesAtom)
+  const [, loadHistories] = useAtom(loadHistoriesAtom)
 
   useEffect(() => {
     updateStreamingCode({ code: "", language: "" })
   }, [updateStreamingCode])
+
+  useEffect(() => {
+    loadHistories()
+  }, [loadHistories])
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -175,21 +183,53 @@ const Welcome = () => {
         )}
 
         <div className="suggestions">
-          <div className="suggestion-item" onClick={() => handleSuggestionClick("哪些筆記型電腦，可以支援高效能的訓練，不想買顯卡？")}>
-            <strong>哪些筆記型電腦，可以支援高效能的訓練，不想買顯卡？</strong>
-            <p>詢問產品建議</p>
-            <span className="arrow">→</span>
-          </div>
-          <div className="suggestion-item" onClick={() => handleSuggestionClick("500元以下的好用廚房非電器類的小工具有哪些？")}>
-            <strong>500元以下的好用廚房非電器類的小工具有哪些?</strong>
-            <p>尋找特定價格範圍的商品</p>
-            <span className="arrow">→</span>
-          </div>
-          <div className="suggestion-item" onClick={() => handleSuggestionClick("推薦最近很夯的聖誕節限家家飾！")}>
-            <strong>推薦最近很夯的聖誕節限家家飾！</strong>
-            <p>探索熱門商品</p>
-            <span className="arrow">→</span>
-          </div>
+          {histories.length > 0 ? (
+            histories.slice(0, 3).map(history => (
+              <div 
+                key={history.id} 
+                className="suggestion-item" 
+                onClick={() => navigate(`/chat/${history.id}`)}
+              >
+                <div className="content-wrapper">
+                  <strong>{history.title || t('chat.untitledChat')}</strong>
+                </div>
+                <div className="bottom-row">
+                  <p>{new Date(history.createdAt).toLocaleString()}</p>
+                  <span className="arrow">→</span>
+                </div>
+              </div>
+            ))
+          ) : (
+            <>
+              <div className="suggestion-item" onClick={() => handleSuggestionClick("哪些筆記型電腦，可以支援高效能的訓練，不想買顯卡？")}>
+                <div className="content-wrapper">
+                  <strong>哪些筆記型電腦，可以支援高效能的訓練，不想買顯卡？</strong>
+                </div>
+                <div className="bottom-row">
+                  <p>詢問產品建議</p>
+                  <span className="arrow">→</span>
+                </div>
+              </div>
+              <div className="suggestion-item" onClick={() => handleSuggestionClick("500元以下的好用廚房非電器類的小工具有哪些？")}>
+                <div className="content-wrapper">
+                  <strong>500元以下的好用廚房非電器類的小工具有哪些?</strong>
+                </div>
+                <div className="bottom-row">
+                  <p>尋找特定價格範圍的商品</p>
+                  <span className="arrow">→</span>
+                </div>
+              </div>
+              <div className="suggestion-item" onClick={() => handleSuggestionClick("推薦最近很夯的聖誕節限家家飾！")}>
+                <div className="content-wrapper">
+                  <strong>推薦最近很夯的聖誕節限家家飾！</strong>
+                </div>
+                <div className="bottom-row">
+                  <p>探索熱門商品</p>
+                  <span className="arrow">→</span>
+                </div>
+              </div>
+            </>
+          )}
         </div>
       </div>
       {toast && (

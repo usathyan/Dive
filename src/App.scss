@@ -247,6 +247,7 @@ body {
     min-height: 100px;
     position: relative;
     overflow: hidden;
+    justify-content: space-between;
     
     @media (prefers-color-scheme: light) {
       background: #fff;
@@ -267,13 +268,31 @@ body {
       }
     }
     
-    .arrow {
-      position: absolute;
-      right: 10px;
-      bottom: 10px;
-      font-size: 16px;
-      color: $primary-blue;
-      opacity: 0.5;
+    .content-wrapper {
+      flex: 1;
+    }
+    
+    .bottom-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      margin-top: auto;
+      
+      p {
+        margin: 0;
+        font-size: 13px;
+        color: #666;
+        
+        @media (prefers-color-scheme: dark) {
+          color: #999;
+        }
+      }
+
+      .arrow {
+        font-size: 16px;
+        color: $primary-blue;
+        opacity: 0.5;
+      }
     }
     
     strong {
@@ -286,16 +305,6 @@ body {
       line-clamp: 2;
       -webkit-box-orient: vertical;
       overflow: hidden;
-    }
-    
-    p {
-      margin: 0;
-      font-size: 13px;
-      color: #666;
-      
-      @media (prefers-color-scheme: dark) {
-        color: #999;
-      }
     }
   }
 

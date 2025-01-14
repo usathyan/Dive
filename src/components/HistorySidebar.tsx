@@ -1,16 +1,11 @@
-import React, { useState, useCallback, useEffect } from "react"
+import React, { useState, useCallback } from "react"
 import { useNavigate } from "react-router-dom"
 import Toast from "./Toast"
 import { useAtom } from 'jotai'
 import { sidebarVisibleAtom } from '../atoms/sidebarState'
+import { historiesAtom, loadHistoriesAtom } from '../atoms/historyState'
 import Header from "./Header"
 import { useTranslation } from 'react-i18next'
-
-export interface ChatHistory {
-  id: string
-  title: string
-  createdAt: string
-}
 
 interface Props {
   onNewChat?: () => void
@@ -20,25 +15,13 @@ const HistorySidebar = ({ onNewChat }: Props) => {
   const { t } = useTranslation()
   const navigate = useNavigate()
   const [isVisible, setIsVisible] = useAtom(sidebarVisibleAtom)
-  const [histories, setHistories] = useState<ChatHistory[]>([])
+  const [histories] = useAtom(historiesAtom)
+  const [, loadHistories] = useAtom(loadHistoriesAtom)
   const [currentChatId, setCurrentChatId] = useState<string | null>(null)
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null)
 
-  const loadChatHistory = useCallback(async () => {
-    try {
-      const response = await fetch("/api/chat/list")
-      const data = await response.json()
-
-      if (data.success) {
-        setHistories(data.data)
-      }
-    } catch (error) {
-      console.warn("Failed to load chat history:", error)
-    }
-  }, [])
-
   const deleteChat = async (e: React.MouseEvent, chatId: string) => {
-    e.stopPropagation() // 防止觸發 loadChat
+    e.stopPropagation()
     try {
       const response = await fetch(`/api/chat/${chatId}`, {
         method: 'DELETE'
@@ -50,12 +33,10 @@ const HistorySidebar = ({ onNewChat }: Props) => {
           message: '對話已刪除',
           type: 'success'
         })
-        // 如果刪除的是當前對話，導航到首頁
         if (chatId === currentChatId) {
           navigate('/')
         }
-        // 重新載入歷史記錄
-        loadChatHistory()
+        loadHistories()
       } else {
         setToast({
           message: '刪除失敗',
@@ -84,12 +65,6 @@ const HistorySidebar = ({ onNewChat }: Props) => {
       navigate('/')
     }
   }
-
-  useEffect(() => {
-    if (isVisible) {
-      loadChatHistory()
-    }
-  }, [isVisible, loadChatHistory])
 
   return (
     <div className={`history-sidebar ${isVisible ? "visible" : ""}`}>
