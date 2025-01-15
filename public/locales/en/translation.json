@@ -11,7 +11,9 @@
     "uploadFile": "Upload file",
     "send": "Send",
     "untitledChat": "Untitled Chat",
-    "deleteChat": "Delete Chat"
+    "deleteChat": "Delete Chat",
+    "deleteSuccess": "Chat deleted",
+    "deleteFailed": "Failed to delete"
   },
   "welcome": {
     "title": "Welcome to Dive AI",

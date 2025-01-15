@@ -11,7 +11,9 @@
     "uploadFile": "上傳檔案",
     "send": "送出",
     "untitledChat": "未命名對話",
-    "deleteChat": "刪除對話"
+    "deleteChat": "刪除對話",
+    "deleteSuccess": "對話已刪除",
+    "deleteFailed": "刪除失敗"
   },
   "welcome": {
     "title": "歡迎使用 Dive AI",

@@ -36,7 +36,7 @@ const HistorySidebar = ({ onNewChat }: Props) => {
 
       if (data.success) {
         setToast({
-          message: '對話已刪除',
+          message: t('chat.deleteSuccess'),
           type: 'success'
         })
         if (chatId === currentChatId) {
@@ -45,13 +45,13 @@ const HistorySidebar = ({ onNewChat }: Props) => {
         loadHistories()
       } else {
         setToast({
-          message: '刪除失敗',
+          message: t('chat.deleteFailed'),
           type: 'error'
         })
       }
     } catch (error) {
       setToast({
-        message: '刪除失敗',
+        message: t('chat.deleteFailed'),
         type: 'error'
       })
     }

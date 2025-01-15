@@ -6,6 +6,7 @@ import { useColorScheme } from "../../hooks/useColorScheme";
 import { useSetAtom } from 'jotai'
 import { updateStreamingCodeAtom } from '../../atoms/codeStreaming'
 import ToolPanel, { ToolCall, ToolResult } from './ToolPanel'
+import { useTranslation } from 'react-i18next'
 
 interface MessageProps {
   text: string
@@ -19,6 +20,7 @@ interface MessageProps {
 }
 
 const Message = ({ text, isSent, files, isError, isLoading, toolCalls, toolResults }: MessageProps) => {
+  const { t } = useTranslation()
   const colorScheme = useColorScheme()
   const updateStreamingCode = useSetAtom(updateStreamingCodeAtom)
   
@@ -54,7 +56,7 @@ const Message = ({ text, isSent, files, isError, isLoading, toolCalls, toolResul
             <svg width="16" height="16" viewBox="0 0 24 24">
               <path d="M9.4 16.6L4.8 12l4.6-4.6L8 6l-6 6 6 6 1.4-1.4zm5.2 0l4.6-4.6-4.6-4.6L16 6l6 6-6 6-1.4-1.4z"/>
             </svg>
-            <span>點擊預覽</span>
+            <span>{t('chat.previewCode')}</span>
           </button>
         )
       }
@@ -67,7 +69,7 @@ const Message = ({ text, isSent, files, isError, isLoading, toolCalls, toolResul
               className="copy-btn"
               onClick={() => copyToClipboard(code)}
             >
-              複製
+              {t('chat.copyCode')}
             </button>
           </div>
           <SyntaxHighlighter
