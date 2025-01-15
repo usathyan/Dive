@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from "react"
+import React, { useState, useCallback, useEffect } from "react"
 import { useNavigate } from "react-router-dom"
 import Toast from "./Toast"
 import { useAtom } from 'jotai'
@@ -14,11 +14,17 @@ interface Props {
 const HistorySidebar = ({ onNewChat }: Props) => {
   const { t } = useTranslation()
   const navigate = useNavigate()
-  const [isVisible, setIsVisible] = useAtom(sidebarVisibleAtom)
+  const [isVisible] = useAtom(sidebarVisibleAtom)
   const [histories] = useAtom(historiesAtom)
   const [, loadHistories] = useAtom(loadHistoriesAtom)
   const [currentChatId, setCurrentChatId] = useState<string | null>(null)
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null)
+
+  useEffect(() => {
+    if (isVisible) {
+      loadHistories()
+    }
+  }, [isVisible, loadHistories])
 
   const deleteChat = async (e: React.MouseEvent, chatId: string) => {
     e.stopPropagation()
@@ -53,9 +59,8 @@ const HistorySidebar = ({ onNewChat }: Props) => {
 
   const loadChat = useCallback((chatId: string) => {
     setCurrentChatId(chatId)
-    setIsVisible(false)
     navigate(`/chat/${chatId}`)
-  }, [navigate, setIsVisible])
+  }, [navigate])
 
   const handleNewChat = () => {
     setCurrentChatId(null)
