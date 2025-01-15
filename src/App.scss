@@ -701,6 +701,7 @@ body {
   }
   
   &.received {
+    width: 100%;
     animation: slideFromLeft 0.3s ease;
     
     .message-images img {
@@ -1316,6 +1317,131 @@ body {
     
     svg {
       fill: currentColor;
+    }
+  }
+}
+
+.tool-details {
+  margin: 10px 0;
+  border-radius: 8px;
+  overflow: hidden;
+  
+  @media (prefers-color-scheme: light) {
+    background: rgba(0, 0, 0, 0.05);
+  }
+  
+  @media (prefers-color-scheme: dark) {
+    background: rgba(255, 255, 255, 0.05);
+  }
+
+  .tool-summary {
+    padding: 10px 15px;
+    cursor: pointer;
+    user-select: none;
+    font-weight: 500;
+    
+    &:hover {
+      @media (prefers-color-scheme: light) {
+        background: rgba(0, 0, 0, 0.03);
+      }
+      
+      @media (prefers-color-scheme: dark) {
+        background: rgba(255, 255, 255, 0.03);
+      }
+    }
+  }
+
+  .tool-content {
+    padding: 15px;
+    border-top: 1px solid;
+    
+    @media (prefers-color-scheme: light) {
+      border-color: rgba(0, 0, 0, 0.1);
+    }
+    
+    @media (prefers-color-scheme: dark) {
+      border-color: rgba(255, 255, 255, 0.1);
+    }
+  }
+}
+
+.message.received {
+  blockquote {
+    margin: 10px 0;
+    padding: 10px 15px;
+    border-radius: 8px;
+    border-left: 4px solid $primary-blue;
+    
+    @media (prefers-color-scheme: light) {
+      background: rgba(0, 0, 0, 0.05);
+    }
+    
+    @media (prefers-color-scheme: dark) {
+      background: rgba(255, 255, 255, 0.05);
+    }
+    
+    h3 {
+      margin: 0 0 10px 0;
+      font-size: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    pre {
+      margin: 10px 0 0 0;
+    }
+  }
+}
+
+.tool-panel {
+  margin: 10px 0;
+  border-radius: 8px;
+  overflow: hidden;
+  
+  @media (prefers-color-scheme: light) {
+    background: rgba(0, 0, 0, 0.05);
+  }
+  
+  @media (prefers-color-scheme: dark) {
+    background: rgba(255, 255, 255, 0.05);
+  }
+
+  summary {
+    padding: 10px 15px;
+    cursor: pointer;
+    user-select: none;
+    font-weight: 500;
+    
+    &:hover {
+      @media (prefers-color-scheme: light) {
+        background: rgba(0, 0, 0, 0.03);
+      }
+      
+      @media (prefers-color-scheme: dark) {
+        background: rgba(255, 255, 255, 0.03);
+      }
+    }
+  }
+
+  .tool-content {
+    padding: 15px;
+    border-top: 1px solid;
+    max-height: 300px;
+    overflow: auto;
+    
+    @media (prefers-color-scheme: light) {
+      border-color: rgba(0, 0, 0, 0.1);
+    }
+    
+    @media (prefers-color-scheme: dark) {
+      border-color: rgba(255, 255, 255, 0.1);
+    }
+
+    pre {
+      margin: 0;
+      white-space: pre-wrap;
+      word-break: break-all;
     }
   }
 }

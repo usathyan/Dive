@@ -5,6 +5,7 @@ import { tomorrow, oneLight } from 'react-syntax-highlighter/dist/esm/styles/pri
 import { useColorScheme } from "../../hooks/useColorScheme";
 import { useSetAtom } from 'jotai'
 import { updateStreamingCodeAtom } from '../../atoms/codeStreaming'
+import ToolPanel, { ToolCall, ToolResult } from './ToolPanel'
 
 interface MessageProps {
   text: string
@@ -13,9 +14,11 @@ interface MessageProps {
   files?: (File | string)[]
   isError?: boolean
   isLoading?: boolean
+  toolCalls?: ToolCall[]
+  toolResults?: ToolResult[]
 }
 
-const Message = ({ text, isSent, files, isError, isLoading }: MessageProps) => {
+const Message = ({ text, isSent, files, isError, isLoading, toolCalls, toolResults }: MessageProps) => {
   const colorScheme = useColorScheme()
   const updateStreamingCode = useSetAtom(updateStreamingCodeAtom)
   
@@ -99,6 +102,19 @@ const Message = ({ text, isSent, files, isError, isLoading }: MessageProps) => {
 
   return (
     <div className={`message ${isSent ? "sent" : "received"} ${isError ? "error" : ""}`}>
+      {toolCalls && (
+        <ToolPanel 
+          type="calls"
+          content={toolCalls}
+        />
+      )}
+      {toolResults && (
+        <ToolPanel
+          type="result"
+          content={toolResults}
+          name={toolResults[0]?.name}
+        />
+      )}
       {formattedText}
       {files && files.length > 0 && (
         <div className="message-images">

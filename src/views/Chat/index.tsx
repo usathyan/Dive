@@ -5,6 +5,7 @@ import ChatInput from "./ChatInput"
 import CodeModal from './CodeModal'
 import { useSetAtom } from 'jotai'
 import { updateStreamingCodeAtom } from '../../atoms/codeStreaming'
+import { ToolCall, ToolResult } from "./ToolPanel"
 
 const ChatWindow = () => {
   const { chatId } = useParams()
@@ -60,16 +61,11 @@ const ChatWindow = () => {
   }, [])
 
   const onSendMsg = useCallback(async (msg: string, files?: FileList) => {
-    if (isAiStreaming)
-      return
+    if (isAiStreaming) return
 
     const formData = new FormData()
-    if (msg)
-      formData.append("message", msg)
-
-    if (currentChatId.current)
-      formData.append("chatId", currentChatId.current)
-    
+    if (msg) formData.append("message", msg)
+    if (currentChatId.current) formData.append("chatId", currentChatId.current)
     if (files) {
       Array.from(files).forEach(file => {
         formData.append("files", file)
@@ -107,20 +103,16 @@ const ChatWindow = () => {
 
       while (true) {
         const { value, done } = await reader.read()
-        if (done)
-          break
+        if (done) break
 
         const chunk = decoder.decode(value)
         const lines = chunk.split("\n")
 
         for (const line of lines) {
-          if (line.trim() === "" || !line.startsWith("data: "))
-            continue
-
+          if (line.trim() === "" || !line.startsWith("data: ")) continue
+          
           const dataStr = line.slice(5)
-          if (dataStr.trim() === "[DONE]") {
-            break
-          }
+          if (dataStr.trim() === "[DONE]") break
 
           try {
             const dataObj = JSON.parse(dataStr)
@@ -146,6 +138,31 @@ const ChatWindow = () => {
                 setMessages(prev => {
                   const newMessages = [...prev]
                   newMessages[newMessages.length - 1].text = currentText
+                  return newMessages
+                })
+                scrollToBottom()
+                break
+
+              case "tool_calls":
+                const toolCalls = data.content as ToolCall[]
+                setMessages(prev => {
+                  const newMessages = [...prev]
+                  const lastMessage = newMessages[newMessages.length - 1]
+                  lastMessage.toolCalls = toolCalls
+                  return newMessages
+                })
+                scrollToBottom()
+                break
+
+              case "tool_result":
+                const result = data.content as ToolResult
+                setMessages(prev => {
+                  const newMessages = [...prev]
+                  const lastMessage = newMessages[newMessages.length - 1]
+                  if (!lastMessage.toolResults) {
+                    lastMessage.toolResults = []
+                  }
+                  lastMessage.toolResults.push(result)
                   return newMessages
                 })
                 scrollToBottom()
