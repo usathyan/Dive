@@ -103,16 +103,19 @@ const ChatWindow = () => {
 
       while (true) {
         const { value, done } = await reader.read()
-        if (done) break
+        if (done)
+          break
 
         const chunk = decoder.decode(value)
         const lines = chunk.split("\n")
 
         for (const line of lines) {
-          if (line.trim() === "" || !line.startsWith("data: ")) continue
+          if (line.trim() === "" || !line.startsWith("data: "))
+            continue
           
           const dataStr = line.slice(5)
-          if (dataStr.trim() === "[DONE]") break
+          if (dataStr.trim() === "[DONE]")
+            break
 
           try {
             const dataObj = JSON.parse(dataStr)
