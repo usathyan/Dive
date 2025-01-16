@@ -10,16 +10,15 @@
     }
   },
   "scripts": {
-    "dev": "vite --config vite.config.web.ts",
-    "dev:electron": "vite",
-    "build:electron": "npm run build && electron-builder",
+    "dev": "vite --config vite.config.ts",
+    "dev:electron": "vite --config vite.config.electron.ts",
     "build": "tsc -b && vite build",
+    "build:electron": "tsc -b && vite build --config vite.config.electron.ts && electron-builder",
     "lint": "eslint .",
     "preview": "vite preview",
     "postinstall": "electron-builder install-app-deps"
   },
   "dependencies": {
-    "@types/better-sqlite3": "^7.6.12",
     "better-sqlite3": "^11.8.0",
     "drizzle-kit": "^0.30.1",
     "drizzle-orm": "^0.38.3",
@@ -41,6 +40,7 @@
   "devDependencies": {
     "@eslint/js": "^9.17.0",
     "@playwright/test": "^1.48.2",
+    "@types/better-sqlite3": "^7.6.12",
     "@types/react": "^18.3.18",
     "@types/react-dom": "^18.3.5",
     "@types/react-syntax-highlighter": "^15.5.13",
