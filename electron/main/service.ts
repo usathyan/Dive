@@ -7,20 +7,16 @@ import Database from "better-sqlite3"
 import { migrate } from "drizzle-orm/better-sqlite3/migrator"
 import * as schema from "../schema"
 
-function getConfigDir() {
-  const paths = envPaths(app.getName(), {suffix: ""})
-  return paths.config
-}
-
 export let client: Promise<MCPClient> | null = null
 async function initClient(): Promise<MCPClient> {
-  const configDir = getConfigDir()
+  const paths = envPaths(app.getName(), {suffix: ""})
+  const configDir = paths.config
 
   const db = initDb(configDir)
   setDatabase(db as any)
 
   const _client = new MCPClient({
-    modelConfigPath: configDir,
+    modelConfigPath: path.join(configDir, "model.json"),
     mcpServerConfigPath: configDir,
   })
 
@@ -30,7 +26,7 @@ async function initClient(): Promise<MCPClient> {
 function initDb(configDir: string) {
   const dbPath = path.join(configDir, "data.db")
   const sqlite = new Database(dbPath)
-  const db = drizzle(sqlite, { schema: schema })
+  const db = drizzle(sqlite, { schema })
   migrate(db, { migrationsFolder: "./drizzle" })
   return db
 }
