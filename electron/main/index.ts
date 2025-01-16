@@ -4,7 +4,7 @@ import { fileURLToPath } from "node:url"
 import path from "node:path"
 import os from "node:os"
 import { update } from "./update"
-import { initMCPClient } from "./mcp"
+import { initMCPClient, port } from "./service"
 
 const require = createRequire(import.meta.url)
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
@@ -47,7 +47,7 @@ const preload = path.join(__dirname, "../preload/index.mjs")
 const indexHtml = path.join(RENDERER_DIST, "index.html")
 
 async function onReady() {
-  // initMCPClient()
+  initMCPClient()
   createWindow()
 }
 
@@ -152,5 +152,5 @@ ipcMain.handle("open-win", (_, arg) => {
 })
 
 ipcMain.handle("api:port", async () => {
-  return 8000
+  return port
 })
