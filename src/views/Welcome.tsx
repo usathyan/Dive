@@ -6,6 +6,8 @@ import { updateStreamingCodeAtom } from '../atoms/codeStreaming'
 import { useTranslation } from 'react-i18next'
 import { useAtom } from 'jotai'
 import { historiesAtom, loadHistoriesAtom } from '../atoms/historyState'
+import { configAtom, loadConfigAtom } from '../atoms/configState'
+import Setup from './Setup'
 
 const formatFileSize = (bytes: number) => {
   if (bytes === 0)
@@ -21,12 +23,15 @@ const Welcome = () => {
   const { t } = useTranslation()
   const navigate = useNavigate()
   const [message, setMessage] = useState("")
+  const [firstLoading, setFirstLoading] = useState(false)
   const [uploadedFiles, setUploadedFiles] = useState<File[]>([])
   const [toast, setToast] = useState<{ message: string; type: 'info' | 'warning' | 'error' } | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const updateStreamingCode = useSetAtom(updateStreamingCodeAtom)
   const [histories] = useAtom(historiesAtom)
   const [, loadHistories] = useAtom(loadHistoriesAtom)
+  const [config] = useAtom(configAtom)
+  const [, loadConfig] = useAtom(loadConfigAtom)
 
   useEffect(() => {
     updateStreamingCode({ code: "", language: "" })
@@ -35,6 +40,10 @@ const Welcome = () => {
   useEffect(() => {
     loadHistories()
   }, [loadHistories])
+
+  useEffect(() => {
+    loadConfig().then(() => setFirstLoading(true))
+  }, [loadConfig])
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -51,10 +60,9 @@ const Welcome = () => {
   const handleKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === 'Enter') {
       if (e.shiftKey) {
-        // Shift + Enter: 換行
         return
       }
-      // Enter: 送出
+
       e.preventDefault()
       if (message.trim() || uploadedFiles.length > 0) {
         navigate("/chat", { 
@@ -71,7 +79,7 @@ const Welcome = () => {
     const files = Array.from(e.target.files || [])
     if (files.length + uploadedFiles.length > 5) {
       setToast({
-        message: '最多只能上傳 5 個檔案',
+        message: t('chat.uploadLimit'),
         type: 'warning'
       })
       return
@@ -93,6 +101,14 @@ const Welcome = () => {
 
   const isImageFile = (file: File) => {
     return file.type.startsWith('image/')
+  }
+  
+  if (!firstLoading) {
+    return <></>
+  }
+
+  if (!config?.model) {
+    return <Setup />
   }
 
   return (
@@ -201,30 +217,30 @@ const Welcome = () => {
             ))
           ) : (
             <>
-              <div className="suggestion-item" onClick={() => handleSuggestionClick("哪些筆記型電腦，可以支援高效能的訓練，不想買顯卡？")}>
+              <div className="suggestion-item" onClick={() => handleSuggestionClick(t('welcome.suggestions.laptopTitle'))}>
                 <div className="content-wrapper">
-                  <strong>哪些筆記型電腦，可以支援高效能的訓練，不想買顯卡？</strong>
+                  <strong>{t('welcome.suggestions.laptopTitle')}</strong>
                 </div>
                 <div className="bottom-row">
-                  <p>詢問產品建議</p>
+                  <p>{t('welcome.suggestions.laptopDesc')}</p>
                   <span className="arrow">→</span>
                 </div>
               </div>
-              <div className="suggestion-item" onClick={() => handleSuggestionClick("500元以下的好用廚房非電器類的小工具有哪些？")}>
+              <div className="suggestion-item" onClick={() => handleSuggestionClick(t('welcome.suggestions.kitchenTitle'))}>
                 <div className="content-wrapper">
-                  <strong>500元以下的好用廚房非電器類的小工具有哪些?</strong>
+                  <strong>{t('welcome.suggestions.kitchenTitle')}</strong>
                 </div>
                 <div className="bottom-row">
-                  <p>尋找特定價格範圍的商品</p>
+                  <p>{t('welcome.suggestions.kitchenDesc')}</p>
                   <span className="arrow">→</span>
                 </div>
               </div>
-              <div className="suggestion-item" onClick={() => handleSuggestionClick("推薦最近很夯的聖誕節限家家飾！")}>
+              <div className="suggestion-item" onClick={() => handleSuggestionClick(t('welcome.suggestions.christmasTitle'))}>
                 <div className="content-wrapper">
-                  <strong>推薦最近很夯的聖誕節限家家飾！</strong>
+                  <strong>{t('welcome.suggestions.christmasTitle')}</strong>
                 </div>
                 <div className="bottom-row">
-                  <p>探索熱門商品</p>
+                  <p>{t('welcome.suggestions.christmasDesc')}</p>
                   <span className="arrow">→</span>
                 </div>
               </div>

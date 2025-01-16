@@ -13,11 +13,27 @@
     "untitledChat": "未命名對話",
     "deleteChat": "刪除對話",
     "deleteSuccess": "對話已刪除",
-    "deleteFailed": "刪除失敗"
+    "deleteFailed": "刪除失敗",
+    "uploadLimit": "最多只能上傳 5 個檔案"
   },
   "welcome": {
     "title": "歡迎使用 Dive AI",
     "subtitle": "開始你的 AI 對話",
-    "startChat": "開始對話"
+    "startChat": "開始對話",
+    "suggestions": {
+      "laptopTitle": "哪些筆記型電腦，可以支援高效能的訓練，不想買顯卡？",
+      "laptopDesc": "詢問產品建議",
+      "kitchenTitle": "500元以下的好用廚房非電器類的小工具有哪些？",
+      "kitchenDesc": "尋找特定價格範圍的商品",
+      "christmasTitle": "推薦最近很夯的聖誕節限家家飾！",
+      "christmasDesc": "探索熱門商品"
+    }
+  },
+  "setup": {
+    "title": "初始設定",
+    "subtitle": "請設定模型相關參數",
+    "required": "此欄位為必填",
+    "submit": "儲存設定",
+    "provider": "模型提供者"
   }
 } 

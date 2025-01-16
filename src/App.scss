@@ -1447,3 +1447,147 @@ body {
     }
   }
 }
+
+.setup-page {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  padding: 20px;
+  
+  @media (prefers-color-scheme: light) {
+    background: #f8f9fa;
+  }
+  
+  @media (prefers-color-scheme: dark) {
+    background: #1a1a1a;
+  }
+}
+
+.setup-container {
+  width: 100%;
+  max-width: 600px;
+  padding: 30px;
+  border-radius: 12px;
+  
+  @media (prefers-color-scheme: light) {
+    background: white;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  }
+  
+  @media (prefers-color-scheme: dark) {
+    background: #2d2d2d;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+  }
+
+  h1 {
+    margin: 0 0 10px;
+    font-size: 24px;
+  }
+
+  .subtitle {
+    margin-bottom: 30px;
+    color: #666;
+    
+    @media (prefers-color-scheme: dark) {
+      color: #999;
+    }
+  }
+
+  .form-group {
+    margin-bottom: 20px;
+
+    label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 500;
+
+      .required {
+        color: #ff4d4f;
+        margin-left: 4px;
+      }
+    }
+
+    .field-description {
+      font-size: 14px;
+      color: #666;
+      margin-bottom: 8px;
+      
+      @media (prefers-color-scheme: dark) {
+        color: #999;
+      }
+    }
+
+    input {
+      width: 100%;
+      padding: 8px 12px;
+      border-radius: 6px;
+      border: 1px solid #d9d9d9;
+      transition: all 0.3s;
+      
+      @media (prefers-color-scheme: dark) {
+        background: #1a1a1a;
+        border-color: #404040;
+        color: white;
+      }
+      
+      &:focus {
+        outline: none;
+        border-color: #1890ff;
+        box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.2);
+      }
+      
+      &.error {
+        border-color: #ff4d4f;
+      }
+    }
+
+    .error-message {
+      color: #ff4d4f;
+      font-size: 14px;
+      margin-top: 4px;
+    }
+  }
+
+  .submit-btn {
+    width: 100%;
+    padding: 12px;
+    border: none;
+    border-radius: 6px;
+    background: #1890ff;
+    color: white;
+    font-size: 16px;
+    cursor: pointer;
+    transition: all 0.3s;
+    
+    &:hover {
+      background: #40a9ff;
+    }
+    
+    &:active {
+      background: #096dd9;
+    }
+  }
+
+  .provider-select {
+    width: 100%;
+    padding: 8px 12px;
+    border-radius: 6px;
+    border: 1px solid #d9d9d9;
+    background: white;
+    transition: all 0.3s;
+    cursor: pointer;
+    
+    @media (prefers-color-scheme: dark) {
+      background: #1a1a1a;
+      border-color: #404040;
+      color: white;
+    }
+    
+    &:focus {
+      outline: none;
+      border-color: #1890ff;
+      box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.2);
+    }
+  }
+}

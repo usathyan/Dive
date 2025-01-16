@@ -13,11 +13,27 @@
     "untitledChat": "Untitled Chat",
     "deleteChat": "Delete Chat",
     "deleteSuccess": "Chat deleted",
-    "deleteFailed": "Failed to delete"
+    "deleteFailed": "Failed to delete",
+    "uploadLimit": "Maximum 5 files allowed"
   },
   "welcome": {
     "title": "Welcome to Dive AI",
     "subtitle": "Start your AI conversation",
-    "startChat": "Start Chat"
+    "startChat": "Start Chat",
+    "suggestions": {
+      "laptopTitle": "Which laptops support high-performance training without a dedicated GPU?",
+      "laptopDesc": "Ask for product recommendations",
+      "kitchenTitle": "What are some useful kitchen tools under $15?",
+      "kitchenDesc": "Find items in specific price range",
+      "christmasTitle": "Recommend popular Christmas home decorations!",
+      "christmasDesc": "Explore trending products"
+    }
+  },
+  "setup": {
+    "title": "Initial Setup",
+    "subtitle": "Please configure model settings",
+    "required": "This field is required",
+    "submit": "Save Settings",
+    "provider": "Model Provider"
   }
 } 
