@@ -1,4 +1,4 @@
-# BigGO Diva AI Web
+# Local LLM Agent
 
 ## Build
 
