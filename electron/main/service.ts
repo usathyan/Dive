@@ -7,21 +7,21 @@ import Database from "better-sqlite3"
 import { migrate } from "drizzle-orm/better-sqlite3/migrator"
 import * as schema from "../schema"
 
-function initConfigDir() {
+function getConfigDir() {
   const paths = envPaths(app.getName(), {suffix: ""})
   return paths.config
 }
 
 export let client: Promise<MCPClient> | null = null
 async function initClient(): Promise<MCPClient> {
-  const configDir = initConfigDir()
+  const configDir = getConfigDir()
 
   const db = initDb(configDir)
   setDatabase(db as any)
 
   const _client = new MCPClient({
-    openaiApiKey: import.meta.env.VITE_OPENAI_API_KEY,
-    configPathPrefix: configDir,
+    modelConfigPath: configDir,
+    mcpServerConfigPath: configDir,
   })
 
   return _client
