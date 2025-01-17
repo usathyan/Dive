@@ -1,9 +1,9 @@
-import React, { useState } from 'react'
-import { useAtom } from 'jotai'
-import { interfaceAtom, updateProviderAtom, ModelProvider, PROVIDER_LABELS } from '../atoms/interfaceState'
-import { useTranslation } from 'react-i18next'
+import React, { useState } from "react"
+import { useAtom } from "jotai"
+import { interfaceAtom, updateProviderAtom, ModelProvider, PROVIDER_LABELS } from "../atoms/interfaceState"
+import { useTranslation } from "react-i18next"
 
-const PROVIDERS: ModelProvider[] = ['openai', 'openai_compatible', 'ollama', 'anthropic']
+const PROVIDERS: ModelProvider[] = ["openai", "openai_compatible", "ollama", "anthropic"]
 
 const Setup = () => {
   const { t } = useTranslation()
@@ -25,7 +25,7 @@ const Setup = () => {
     const newErrors: Record<string, string> = {}
     Object.entries(fields).forEach(([key, field]) => {
       if (field.required && !formData[key]) {
-        newErrors[key] = t('setup.required')
+        newErrors[key] = t("setup.required")
       }
     })
 
@@ -35,26 +35,26 @@ const Setup = () => {
     }
 
     try {
-      const response = await fetch('/api/config/model', {
-        method: 'POST',
+      const response = await fetch("/api/config/model", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
           model_settings: {
             ...formData,
-            modelProvider: provider.startsWith('openai') ? 'openai' : provider,
+            modelProvider: provider.startsWith("openai") ? "openai" : provider,
           }
         }),
       })
 
       const data = await response.json()
       if (data.success) {
-        alert('Config saved successfully')
+        alert("Config saved successfully")
         window.location.reload()
       }
     } catch (error) {
-      console.error('Failed to save config:', error)
+      console.error("Failed to save config:", error)
     }
   }
 
@@ -65,19 +65,19 @@ const Setup = () => {
     }))
     setErrors(prev => ({
       ...prev,
-      [key]: ''
+      [key]: ""
     }))
   }
 
   return (
     <div className="setup-page">
       <div className="setup-container">
-        <h1>{t('setup.title')}</h1>
-        <p className="subtitle">{t('setup.subtitle')}</p>
+        <h1>{t("setup.title")}</h1>
+        <p className="subtitle">{t("setup.subtitle")}</p>
 
         <form onSubmit={handleSubmit}>
           <div className="form-group">
-            <label>{t('setup.provider')}</label>
+            <label>{t("setup.provider")}</label>
             <select 
               value={provider} 
               onChange={handleProviderChange}
@@ -98,16 +98,16 @@ const Setup = () => {
               <div className="field-description">{field.description}</div>
               <input
                 type="text"
-                value={formData[key] || ''}
+                value={formData[key] || ""}
                 onChange={e => handleChange(key, e.target.value)}
                 placeholder={field.placeholder?.toString()}
-                className={errors[key] ? 'error' : ''}
+                className={errors[key] ? "error" : ""}
               />
               {errors[key] && <div className="error-message">{errors[key]}</div>}
             </div>
           ))}
           <button type="submit" className="submit-btn">
-            {t('setup.submit')}
+            {t("setup.submit")}
           </button>
         </form>
       </div>
