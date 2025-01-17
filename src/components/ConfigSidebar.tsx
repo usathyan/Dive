@@ -5,6 +5,7 @@ import { configSidebarVisibleAtom } from "../atoms/sidebarState"
 import ModelConfigForm from "./ModelConfigForm"
 import { interfaceAtom, updateProviderAtom } from "../atoms/interfaceState"
 import { configAtom } from "../atoms/configState"
+import CustomInstructions from "./CustomInstructions"
 
 const ConfigSidebar = () => {
   const { t } = useTranslation()
@@ -61,6 +62,8 @@ const ConfigSidebar = () => {
           onProviderChange={updateProvider}
           onSubmit={handleSubmit}
         />
+        <div className="divider" />
+        <CustomInstructions />
       </div>
     </div>
   )

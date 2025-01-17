@@ -50,7 +50,12 @@
     "saveFailed": "Failed to save settings"
   },
   "modelConfig": {
-    "title": "Language Model Settings"
+    "title": "Language Model Settings",
+    "customInstructions": "Custom Instructions",
+    "customInstructionsPlaceholder": "Enter custom model instructions...",
+    "saveInstructions": "Save Instructions",
+    "customRulesSaved": "Custom instructions saved",
+    "customRulesFailed": "Failed to save custom instructions"
   },
   "common": {
     "close": "Close"

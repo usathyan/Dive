@@ -50,7 +50,12 @@
     "saveFailed": "儲存失敗"
   },
   "modelConfig": {
-    "title": "語言模型設定"
+    "title": "語言模型設定",
+    "customInstructions": "自訂指令",
+    "customInstructionsPlaceholder": "輸入自訂的模型指令...",
+    "saveInstructions": "儲存指令",
+    "customRulesSaved": "自訂指令已儲存",
+    "customRulesFailed": "儲存自訂指令失敗"
   },
   "common": {
     "close": "關閉"
