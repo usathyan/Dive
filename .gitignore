@@ -28,3 +28,6 @@ dist-electron
 *.zip
 
 modelConfig.json
+.customrules
+uploads
+config.json
