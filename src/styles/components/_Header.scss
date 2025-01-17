@@ -1,0 +1,46 @@
+@use "../_variables" as *;
+
+.app-header {
+  background: inherit;
+  
+  @media (prefers-color-scheme: dark) {
+    border-color: rgba(255, 255, 255, 0.1);
+  }
+
+  .header-content {
+    margin: 0 auto;
+    padding: 0 $page-h-padding;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-top: 5px;
+  }
+
+  h1 {
+    margin: 0;
+    font-size: 20px;
+  }
+
+  .menu-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    
+    &:hover {
+      background: rgba(0, 0, 0, 0.05);
+      
+      @media (prefers-color-scheme: dark) {
+        background: rgba(255, 255, 255, 0.05);
+      }
+    }
+    
+    svg {
+      fill: currentColor;
+    }
+  }
+}

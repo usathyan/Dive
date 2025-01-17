@@ -1,0 +1,65 @@
+// Colors
+$light-bg: #ffffff;
+$dark-bg: #15202b;
+$light-text: #000000;
+$dark-text: #ffffff;
+$primary-blue: #1890ff;
+$success-green: #52c41a;
+$hover-blue: #40a9ff;
+$active-blue: #096dd9;
+$hover-green: #73d13d;
+$active-green: #389e0d;
+
+// Layout
+$chat-width: 768px;
+$page-h-padding: 20px;
+$header-height: 45px;
+$sidebar-width: 300px;
+$config-sidebar-width: 450px;
+
+// Transitions
+$transition-fast: 0.2s;
+$transition-normal: 0.3s;
+
+// Z-index
+$z-toast: 1000;
+$z-modal: 1000;
+$z-sidebar: 200;
+
+// Shadows
+$shadow-light: 0 2px 6px rgba(0, 0, 0, 0.1);
+$shadow-dark: 0 2px 6px rgba(0, 0, 0, 0.2);
+
+// Mixins
+@mixin theme-colors($bg, $text) {
+  background-color: $bg;
+  color: $text;
+}
+
+@mixin scrollbar {
+  &::-webkit-scrollbar {
+    width: 8px;
+  }
+  
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  
+  &::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 4px;
+    
+    @media (prefers-color-scheme: dark) {
+      background: rgba(255, 255, 255, 0.2);
+    }
+  }
+}
+
+@mixin loading-spinner($size: 16px, $border-width: 2px) {
+  width: $size;
+  height: $size;
+  border: $border-width solid rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  border-top-color: white;
+  animation: spin 0.8s linear infinite;
+} 

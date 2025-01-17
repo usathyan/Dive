@@ -1,0 +1,186 @@
+@use "../variables" as *;
+
+.history-sidebar {
+  position: fixed;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: $sidebar-width;
+  transform: translateX(-100%);
+  transition: transform $transition-normal ease;
+  z-index: $z-sidebar;
+  display: flex;
+  flex-direction: column;
+  
+  @media (prefers-color-scheme: light) {
+    background: $light-bg;
+    border-right: 1px solid rgba(0, 0, 0, 0.1);
+  }
+  
+  @media (prefers-color-scheme: dark) {
+    background: $dark-bg;
+    border-right: 1px solid rgba(255, 255, 255, 0.1);
+  }
+  
+  &.visible {
+    transform: translateX(0);
+  }
+
+  .history-list {
+    flex: 1;
+    overflow-y: auto;
+    padding: 0 $page-h-padding;
+    
+    @include scrollbar;
+  }
+
+  .history-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    margin-bottom: 8px;
+    
+    &:hover {
+      background: rgba(0, 0, 0, 0.05);
+      
+      @media (prefers-color-scheme: dark) {
+        background: rgba(255, 255, 255, 0.05);
+      }
+      
+      .delete-btn {
+        opacity: 1;
+      }
+    }
+    
+    &.active {
+      background: rgba($primary-blue, 0.1);
+    }
+    
+    .history-content {
+      flex: 1;
+      min-width: 0;
+      margin-right: 8px;
+      
+      .history-title {
+        font-weight: 500;
+        margin-bottom: 4px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      
+      .history-date {
+        font-size: 12px;
+        color: #666;
+        
+        @media (prefers-color-scheme: dark) {
+          color: #999;
+        }
+      }
+    }
+    
+    .delete-btn {
+      opacity: 0;
+      padding: 4px;
+      background: none;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: all $transition-fast;
+      
+      &:hover {
+        background: rgba(0, 0, 0, 0.1);
+        
+        @media (prefers-color-scheme: dark) {
+          background: rgba(255, 255, 255, 0.1);
+        }
+      }
+      
+      svg {
+        width: 16px;
+        height: 16px;
+        fill: currentColor;
+      }
+    }
+  }
+
+  .history-header {
+    padding: 16px $page-h-padding;
+    
+    .new-chat-btn {
+      width: 100%;
+      padding: 10px;
+      border: none;
+      border-radius: 8px;
+      background: $primary-blue;
+      color: white;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background $transition-fast;
+      
+      &:hover {
+        background: $hover-blue;
+      }
+      
+      &:active {
+        background: $active-blue;
+      }
+    }
+  }
+
+  .sidebar-footer {
+    margin-top: auto;
+    padding: 16px;
+    border-top: 1px solid;
+    
+    @media (prefers-color-scheme: light) {
+      border-color: rgba(0, 0, 0, 0.1);
+    }
+    
+    @media (prefers-color-scheme: dark) {
+      border-color: rgba(255, 255, 255, 0.1);
+    }
+
+    .tools-btn,
+    .setup-btn {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      width: 100%;
+      padding: 8px 12px;
+      border: none;
+      border-radius: 6px;
+      background: none;
+      color: inherit;
+      cursor: pointer;
+      transition: all $transition-fast;
+      
+      &:hover {
+        @media (prefers-color-scheme: light) {
+          background: rgba(0, 0, 0, 0.05);
+        }
+        
+        @media (prefers-color-scheme: dark) {
+          background: rgba(255, 255, 255, 0.05);
+        }
+      }
+
+      svg {
+        @media (prefers-color-scheme: light) {
+          fill: rgba(0, 0, 0, 0.7);
+        }
+        
+        @media (prefers-color-scheme: dark) {
+          fill: rgba(255, 255, 255, 0.7);
+        }
+      }
+    }
+
+    .setup-btn {
+      margin-top: 8px;
+    }
+  }
+} 

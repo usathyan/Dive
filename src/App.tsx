@@ -1,6 +1,5 @@
 import { RouterProvider } from "react-router-dom"
 import { router } from "./router"
-import "./App.scss"
 import { useAtom } from 'jotai'
 import { loadConfigAtom } from './atoms/configState'
 import { useEffect, useState } from "react"
