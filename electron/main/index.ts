@@ -69,15 +69,18 @@ async function createWindow() {
   // resolve cors
    win.webContents.session.webRequest.onBeforeSendHeaders(
     (details, callback) => {
-      callback({ requestHeaders: { Origin: '*', ...details.requestHeaders } });
+      callback({ requestHeaders: { ...details.requestHeaders, Origin: '*' } });
     },
   );
 
   win.webContents.session.webRequest.onHeadersReceived((details, callback) => {
     callback({
       responseHeaders: {
-        'Access-Control-Allow-Origin': ['*'],
         ...details.responseHeaders,
+        'Access-Control-Allow-Origin': ['*'],
+        'Access-Control-Allow-Credentials': ['true'],
+        'Access-Control-Allow-Methods': ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+        'Access-Control-Allow-Headers': ['Content-Type', 'Authorization'],
       },
     });
   });
