@@ -7,7 +7,8 @@ export default defineConfig(({ command }) => {
   return {
     resolve: {
       alias: {
-        '@': path.join(__dirname, 'src')
+        '@': path.join(__dirname, 'src'),
+        '@services': path.join(__dirname, 'services')
       },
     },
     plugins: [
