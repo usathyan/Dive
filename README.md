@@ -4,11 +4,11 @@
 
 ```bash
 npm install
-npm run build
+npm run build:electron
 ```
 
 ## Run
 
 ```bash
-npm run dev
+npm run dev:electron
 ```
