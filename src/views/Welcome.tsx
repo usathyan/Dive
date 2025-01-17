@@ -1,12 +1,11 @@
 import React, { useState, useRef, KeyboardEvent, useEffect } from "react"
 import { useNavigate } from "react-router-dom"
 import Toast from "../components/Toast"
-import { useSetAtom } from 'jotai'
+import { useSetAtom, useAtom } from 'jotai'
 import { updateStreamingCodeAtom } from '../atoms/codeStreaming'
 import { useTranslation } from 'react-i18next'
-import { useAtom } from 'jotai'
 import { historiesAtom, loadHistoriesAtom } from '../atoms/historyState'
-import { configAtom, loadConfigAtom } from '../atoms/configState'
+import { configAtom } from '../atoms/configState'
 import Setup from './Setup'
 
 const formatFileSize = (bytes: number) => {
@@ -23,7 +22,6 @@ const Welcome = () => {
   const { t } = useTranslation()
   const navigate = useNavigate()
   const [message, setMessage] = useState("")
-  const [firstLoading, setFirstLoading] = useState(false)
   const [uploadedFiles, setUploadedFiles] = useState<File[]>([])
   const [toast, setToast] = useState<{ message: string; type: 'info' | 'warning' | 'error' } | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
@@ -31,7 +29,6 @@ const Welcome = () => {
   const [histories] = useAtom(historiesAtom)
   const [, loadHistories] = useAtom(loadHistoriesAtom)
   const [config] = useAtom(configAtom)
-  const [, loadConfig] = useAtom(loadConfigAtom)
 
   useEffect(() => {
     updateStreamingCode({ code: "", language: "" })
@@ -40,10 +37,6 @@ const Welcome = () => {
   useEffect(() => {
     loadHistories()
   }, [loadHistories])
-
-  useEffect(() => {
-    loadConfig().then(() => setFirstLoading(true))
-  }, [loadConfig])
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -103,10 +96,6 @@ const Welcome = () => {
     return file.type.startsWith('image/')
   }
   
-  if (!firstLoading) {
-    return <></>
-  }
-
   if (!config?.model) {
     return <Setup />
   }

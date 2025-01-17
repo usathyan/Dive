@@ -35,5 +35,18 @@
     "required": "This field is required",
     "submit": "Save Settings",
     "provider": "Model Provider"
+  },
+  "sidebar": {
+    "tools": "MCP Server Management"
+  },
+  "tools": {
+    "title": "MCP Server Management",
+    "subtitle": "Tools and settings for MCP Server",
+    "editConfig": "Edit Config",
+    "configTitle": "MCP Server Configuration",
+    "save": "Save",
+    "cancel": "Cancel",
+    "saveSuccess": "Settings saved successfully",
+    "saveFailed": "Failed to save settings"
   }
 } 

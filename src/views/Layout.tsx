@@ -2,11 +2,12 @@ import React from "react"
 import { Outlet } from "react-router-dom"
 import HistorySidebar from "../components/HistorySidebar"
 import Header from "../components/Header"
-import { useAtomValue } from 'jotai'
+import { useAtom } from 'jotai'
 import { configAtom } from '../atoms/configState'
 
 const Layout = () => {
-  const config = useAtomValue(configAtom)
+  const [config] = useAtom(configAtom)
+
 
   return (
     <div className="app-container">

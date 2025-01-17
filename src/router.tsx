@@ -2,6 +2,7 @@ import { createBrowserRouter } from "react-router-dom"
 import Layout from "./views/Layout"
 import Chat from "./views/Chat"
 import Welcome from "./views/Welcome"
+import Tools from "./views/Tools"
 
 export const router = createBrowserRouter([
   {
@@ -19,6 +20,10 @@ export const router = createBrowserRouter([
       {
         path: "chat/:chatId",
         element: <Chat />
+      },
+      {
+        path: "tools",
+        element: <Tools />
       }
     ]
   }

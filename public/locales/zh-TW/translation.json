@@ -35,5 +35,18 @@
     "required": "此欄位為必填",
     "submit": "儲存設定",
     "provider": "模型提供者"
+  },
+  "sidebar": {
+    "tools": "MCP Server 管理"
+  },
+  "tools": {
+    "title": "MCP Server 管理",
+    "subtitle": "管理 MCP Server 的工具與設定",
+    "editConfig": "編輯設定",
+    "configTitle": "MCP Server 設定",
+    "save": "儲存",
+    "cancel": "取消",
+    "saveSuccess": "設定已儲存",
+    "saveFailed": "儲存失敗"
   }
 } 
