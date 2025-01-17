@@ -17,7 +17,7 @@ async function initClient(): Promise<MCPClient> {
 
   const _client = new MCPClient({
     modelConfigPath: path.join(configDir, "model.json"),
-    mcpServerConfigPath: configDir,
+    mcpServerConfigPath: path.join(configDir, "config.json"),
   })
 
   return _client
