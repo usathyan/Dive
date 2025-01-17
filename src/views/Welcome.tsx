@@ -188,53 +188,21 @@ const Welcome = () => {
         )}
 
         <div className="suggestions">
-          {histories.length > 0 ? (
-            histories.slice(0, 3).map(history => (
-              <div 
-                key={history.id} 
-                className="suggestion-item" 
-                onClick={() => navigate(`/chat/${history.id}`)}
-              >
-                <div className="content-wrapper">
-                  <strong>{history.title || t('chat.untitledChat')}</strong>
-                </div>
-                <div className="bottom-row">
-                  <p>{new Date(history.createdAt).toLocaleString()}</p>
-                  <span className="arrow">→</span>
-                </div>
+          {histories.length > 0 && histories.slice(0, 3).map(history => (
+            <div 
+              key={history.id} 
+              className="suggestion-item" 
+              onClick={() => navigate(`/chat/${history.id}`)}
+            >
+              <div className="content-wrapper">
+                <strong>{history.title || t('chat.untitledChat')}</strong>
               </div>
-            ))
-          ) : (
-            <>
-              <div className="suggestion-item" onClick={() => handleSuggestionClick(t('welcome.suggestions.laptopTitle'))}>
-                <div className="content-wrapper">
-                  <strong>{t('welcome.suggestions.laptopTitle')}</strong>
-                </div>
-                <div className="bottom-row">
-                  <p>{t('welcome.suggestions.laptopDesc')}</p>
-                  <span className="arrow">→</span>
-                </div>
+              <div className="bottom-row">
+                <p>{new Date(history.createdAt).toLocaleString()}</p>
+                <span className="arrow">→</span>
               </div>
-              <div className="suggestion-item" onClick={() => handleSuggestionClick(t('welcome.suggestions.kitchenTitle'))}>
-                <div className="content-wrapper">
-                  <strong>{t('welcome.suggestions.kitchenTitle')}</strong>
-                </div>
-                <div className="bottom-row">
-                  <p>{t('welcome.suggestions.kitchenDesc')}</p>
-                  <span className="arrow">→</span>
-                </div>
-              </div>
-              <div className="suggestion-item" onClick={() => handleSuggestionClick(t('welcome.suggestions.christmasTitle'))}>
-                <div className="content-wrapper">
-                  <strong>{t('welcome.suggestions.christmasTitle')}</strong>
-                </div>
-                <div className="bottom-row">
-                  <p>{t('welcome.suggestions.christmasDesc')}</p>
-                  <span className="arrow">→</span>
-                </div>
-              </div>
-            </>
-          )}
+            </div>
+          ))}
         </div>
       </div>
       {toast && (
