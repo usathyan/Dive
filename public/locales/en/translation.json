@@ -34,10 +34,18 @@
     "subtitle": "Please configure model settings",
     "required": "This field is required",
     "submit": "Save Settings",
-    "provider": "Model Provider"
+    "provider": "Model Provider",
+    "verify": "Verify Model",
+    "verifySuccess": "Model verification successful",
+    "verifyFailed": "Model verification failed",
+    "verifyError": "Error occurred during verification",
+    "saveSuccess": "Settings saved successfully",
+    "saveFailed": "Failed to save settings",
+    "back": "Back"
   },
   "sidebar": {
-    "tools": "MCP Server Management"
+    "tools": "MCP Server Management",
+    "settings": "Model Settings"
   },
   "tools": {
     "title": "MCP Server Management",

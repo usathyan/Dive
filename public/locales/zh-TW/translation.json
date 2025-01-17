@@ -34,10 +34,18 @@
     "subtitle": "請設定模型相關參數",
     "required": "此欄位為必填",
     "submit": "儲存設定",
-    "provider": "模型提供者"
+    "provider": "模型提供者",
+    "verify": "驗證模型",
+    "verifySuccess": "模型驗證成功",
+    "verifyFailed": "模型驗證失敗",
+    "verifyError": "驗證過程發生錯誤",
+    "saveSuccess": "設定已儲存",
+    "saveFailed": "儲存失敗",
+    "back": "返回"
   },
   "sidebar": {
-    "tools": "MCP Server 管理"
+    "tools": "MCP Server 管理",
+    "settings": "模型設定"
   },
   "tools": {
     "title": "MCP Server 管理",

@@ -26,7 +26,7 @@ const defaultInterface: Record<ModelProvider, InterfaceDefinition> = {
       type: 'string',
       label: 'API Key',
       description: 'OpenAI API Key',
-      required: true,
+      required: false,
       default: '',
       placeholder: 'YOUR_API_KEY'
     },
@@ -34,7 +34,7 @@ const defaultInterface: Record<ModelProvider, InterfaceDefinition> = {
       type: 'string',
       label: 'Model ID',
       description: 'Model name to use',
-      required: true,
+      required: false,
       default: '',
       placeholder: 'gpt-4o-mini'
     },
@@ -44,7 +44,7 @@ const defaultInterface: Record<ModelProvider, InterfaceDefinition> = {
       type: 'string',
       label: 'Base URL',
       description: 'Base URL for API calls',
-      required: true,
+      required: false,
       default: '',
       placeholder: ''
     },
@@ -60,7 +60,7 @@ const defaultInterface: Record<ModelProvider, InterfaceDefinition> = {
       type: 'string',
       label: 'Model ID',
       description: 'Model name to use',
-      required: true,
+      required: false,
       default: '',
       placeholder: ''
     },
@@ -70,7 +70,7 @@ const defaultInterface: Record<ModelProvider, InterfaceDefinition> = {
       type: 'string',
       label: 'Model ID',
       description: 'Model name to use',
-      required: true,
+      required: false,
       default: '',
       placeholder: 'llama2'
     },
@@ -78,7 +78,7 @@ const defaultInterface: Record<ModelProvider, InterfaceDefinition> = {
       type: 'string',
       label: 'Base URL',
       description: 'Base URL for API calls',
-      required: true,
+      required: false,
       default: 'http://localhost:11434',
       placeholder: 'http://localhost:11434'
     }
@@ -88,7 +88,7 @@ const defaultInterface: Record<ModelProvider, InterfaceDefinition> = {
       type: 'string',
       label: 'API Key',
       description: 'Anthropic API Key',
-      required: true,
+      required: false,
       default: '',
       placeholder: 'YOUR_API_KEY'
     },

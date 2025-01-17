@@ -1,22 +1,103 @@
-import React, { useState } from "react"
+import React, { useState, useEffect } from "react"
 import { useAtom } from "jotai"
 import { interfaceAtom, updateProviderAtom, ModelProvider, PROVIDER_LABELS } from "../atoms/interfaceState"
 import { useTranslation } from "react-i18next"
+import { useNavigate, useLocation } from "react-router-dom"
+import { configAtom } from "../atoms/configState"
 
 const PROVIDERS: ModelProvider[] = ["openai", "openai_compatible", "ollama", "anthropic"]
 
 const Setup = () => {
   const { t } = useTranslation()
+  const navigate = useNavigate()
+  const location = useLocation()
   const [{ provider, fields }, setInterface] = useAtom(interfaceAtom)
   const [, updateProvider] = useAtom(updateProviderAtom)
   const [formData, setFormData] = useState<Record<string, any>>({})
   const [errors, setErrors] = useState<Record<string, string>>({})
+  const [isVerifying, setIsVerifying] = useState(false)
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [config] = useAtom(configAtom)
+  const isInitialSetup = location.pathname === '/setup'
+  const [isVerified, setIsVerified] = useState(false)
+  const [initialConfig, setInitialConfig] = useState<Record<string, any> | null>(null)
+
+  useEffect(() => {
+    if (isInitialSetup && config) {
+      const configData = { ...config }
+      setFormData(configData)
+      setInitialConfig(configData)
+
+      const shouldUseCompatible = config.modelProvider === 'openai' && config.baseURL
+      const currentProvider = shouldUseCompatible 
+        ? 'openai_compatible'
+        : config.modelProvider === 'openai'
+          ? 'openai'
+          : config.modelProvider as ModelProvider
+      
+      updateProvider(currentProvider)
+    }
+  }, [config, isInitialSetup, updateProvider])
 
   const handleProviderChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const newProvider = e.target.value as ModelProvider
     updateProvider(newProvider)
-    setFormData({})
+
+    if (initialConfig && newProvider === initialConfig.modelProvider) {
+      setFormData(initialConfig)
+    } else {
+      setFormData({})
+    }
+
     setErrors({})
+    setIsVerified(false)
+  }
+
+  const verifyModel = async () => {
+    const newErrors: Record<string, string> = {}
+    Object.entries(fields).forEach(([key, field]) => {
+      if (field.required && !formData[key]) {
+        newErrors[key] = t("setup.required")
+      }
+    })
+
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors)
+      return
+    }
+
+    try {
+      setIsVerifying(true)
+      const response = await fetch("/api/modelVerify", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          config: {
+            model_settings: {
+              ...formData,
+              modelProvider: provider.startsWith("openai") ? "openai" : provider,
+            }
+          }
+        }),
+      })
+
+      const data = await response.json()
+      if (data.success) {
+        setIsVerified(true)
+        alert(t("setup.verifySuccess"))
+      } else {
+        setIsVerified(false)
+        alert(t("setup.verifyFailed"))
+      }
+    } catch (error) {
+      console.error("Failed to verify model:", error)
+      setIsVerified(false)
+      alert(t("setup.verifyError"))
+    } finally {
+      setIsVerifying(false)
+    }
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -35,6 +116,7 @@ const Setup = () => {
     }
 
     try {
+      setIsSubmitting(true)
       const response = await fetch("/api/config/model", {
         method: "POST",
         headers: {
@@ -50,11 +132,17 @@ const Setup = () => {
 
       const data = await response.json()
       if (data.success) {
-        alert("Config saved successfully")
-        window.location.reload()
+        alert(t("setup.saveSuccess"))
+        
+        if (!isInitialSetup) {
+          window.location.reload()
+        }
       }
     } catch (error) {
       console.error("Failed to save config:", error)
+      alert(t("setup.saveFailed"))
+    } finally {
+      setIsSubmitting(false)
     }
   }
 
@@ -67,13 +155,28 @@ const Setup = () => {
       ...prev,
       [key]: ""
     }))
+    setIsVerified(false)
   }
 
   return (
     <div className="setup-page">
       <div className="setup-container">
-        <h1>{t("setup.title")}</h1>
-        <p className="subtitle">{t("setup.subtitle")}</p>
+        {isInitialSetup && (
+          <button 
+            className="back-btn"
+            onClick={() => navigate(-1)}
+          >
+            <svg width="20" height="20" viewBox="0 0 24 24">
+              <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/>
+            </svg>
+            {t('setup.back')}
+          </button>
+        ) || (
+          <>
+            <h1>{t("setup.title")}</h1>
+            <p className="subtitle">{t("setup.subtitle")}</p>
+          </>
+        )}
 
         <form onSubmit={handleSubmit}>
           <div className="form-group">
@@ -106,9 +209,28 @@ const Setup = () => {
               {errors[key] && <div className="error-message">{errors[key]}</div>}
             </div>
           ))}
-          <button type="submit" className="submit-btn">
-            {t("setup.submit")}
-          </button>
+
+          <div className="form-actions">
+            <button 
+              type="button" 
+              className="verify-btn"
+              onClick={verifyModel}
+              disabled={isVerifying || isSubmitting}
+            >
+              {isVerifying ? (
+                <div className="loading-spinner"></div>
+              ) : t("setup.verify")}
+            </button>
+            <button 
+              type="submit" 
+              className="submit-btn"
+              disabled={isVerifying || isSubmitting || !isVerified}
+            >
+              {isSubmitting ? (
+                <div className="loading-spinner"></div>
+              ) : t("setup.submit")}
+            </button>
+          </div>
         </form>
       </div>
     </div>
