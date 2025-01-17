@@ -2118,3 +2118,185 @@ body {
     border-width: 4px;
   }
 }
+
+.config-sidebar {
+  position: fixed;
+  top: 0;
+  right: -450px;
+  width: 450px;
+  height: 100vh;
+  background: white;
+  box-shadow: -2px 0 20px rgba(0, 0, 0, 0.15);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  
+  @media (prefers-color-scheme: dark) {
+    background: #2d2d2d;
+    box-shadow: -2px 0 20px rgba(0, 0, 0, 0.3);
+  }
+  
+  &.visible {
+    right: 0;
+    
+    &::before {
+      opacity: 1;
+      pointer-events: auto;
+    }
+  }
+  
+  // 背景遮罩
+  &::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.4);
+    z-index: -1;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+  }
+
+  .config-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 24px;
+    border-bottom: 1px solid;
+    
+    @media (prefers-color-scheme: light) {
+      border-color: rgba(0, 0, 0, 0.1);
+      background: #fafafa;
+    }
+    
+    @media (prefers-color-scheme: dark) {
+      border-color: rgba(255, 255, 255, 0.1);
+      background: #252525;
+    }
+
+    h2 {
+      margin: 0;
+      font-size: 20px;
+      font-weight: 500;
+    }
+
+    .close-btn {
+      padding: 8px;
+      background: none;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      color: inherit;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      
+      &:hover {
+        @media (prefers-color-scheme: light) {
+          background: rgba(0, 0, 0, 0.05);
+        }
+        
+        @media (prefers-color-scheme: dark) {
+          background: rgba(255, 255, 255, 0.1);
+        }
+      }
+
+      svg {
+        width: 20px;
+        height: 20px;
+        fill: currentColor;
+      }
+    }
+  }
+
+  .config-content {
+    flex: 1;
+    padding: 24px;
+    overflow-y: auto;
+
+    // 美化滾動條
+    &::-webkit-scrollbar {
+      width: 8px;
+    }
+    
+    &::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    
+    &::-webkit-scrollbar-thumb {
+      background: rgba(0, 0, 0, 0.2);
+      border-radius: 4px;
+      
+      @media (prefers-color-scheme: dark) {
+        background: rgba(255, 255, 255, 0.2);
+      }
+    }
+
+    // 表單內容的間距
+    .form-group {
+      margin-bottom: 24px;
+
+      label {
+        font-weight: 500;
+        margin-bottom: 8px;
+      }
+
+      .field-description {
+        font-size: 13px;
+        margin-bottom: 8px;
+        color: #666;
+        
+        @media (prefers-color-scheme: dark) {
+          color: #999;
+        }
+      }
+
+      input, select {
+        width: 100%;
+        padding: 10px 12px;
+        border-radius: 6px;
+        border: 1px solid #d9d9d9;
+        transition: all 0.3s;
+        
+        @media (prefers-color-scheme: dark) {
+          background: #1a1a1a;
+          border-color: #404040;
+          color: white;
+        }
+        
+        &:focus {
+          outline: none;
+          border-color: #1890ff;
+          box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.2);
+        }
+      }
+    }
+
+    // 按鈕樣式優化
+    .form-actions {
+      position: sticky;
+      bottom: 0;
+      margin: 0 -24px -24px;
+      padding: 16px 24px;
+      background: inherit;
+      border-top: 1px solid;
+      
+      @media (prefers-color-scheme: light) {
+        border-color: rgba(0, 0, 0, 0.1);
+      }
+      
+      @media (prefers-color-scheme: dark) {
+        border-color: rgba(255, 255, 255, 0.1);
+      }
+
+      button {
+        min-height: 40px;
+        font-weight: 500;
+      }
+    }
+  }
+}

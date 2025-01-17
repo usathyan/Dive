@@ -56,5 +56,11 @@
     "cancel": "Cancel",
     "saveSuccess": "Settings saved successfully",
     "saveFailed": "Failed to save settings"
+  },
+  "modelConfig": {
+    "title": "Language Model Settings"
+  },
+  "common": {
+    "close": "Close"
   }
 } 

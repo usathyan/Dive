@@ -4,6 +4,7 @@ import "./App.scss"
 import { useAtom } from 'jotai'
 import { loadConfigAtom } from './atoms/configState'
 import { useEffect, useState } from "react"
+import ConfigSidebar from "./components/ConfigSidebar"
 
 function App() {
   const [, loadConfig] = useAtom(loadConfigAtom)
@@ -17,7 +18,12 @@ function App() {
     return <></>
   }
 
-  return <RouterProvider router={router} />
+  return (
+    <>
+      <RouterProvider router={router} />
+      <ConfigSidebar />
+    </>
+  )
 }
 
 export default App

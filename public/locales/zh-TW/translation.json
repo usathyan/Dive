@@ -56,5 +56,11 @@
     "cancel": "取消",
     "saveSuccess": "設定已儲存",
     "saveFailed": "儲存失敗"
+  },
+  "modelConfig": {
+    "title": "語言模型設定"
+  },
+  "common": {
+    "close": "關閉"
   }
 } 
