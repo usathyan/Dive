@@ -1,5 +1,8 @@
 # Local LLM Agent
 
+## Development Requirements
+- Node.js LTS+
+
 ## Build
 
 ```bash

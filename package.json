@@ -13,12 +13,19 @@
     "dev": "vite --config vite.config.ts",
     "dev:electron": "vite --config vite.config.electron.ts",
     "build": "tsc -b && vite build",
-    "build:electron": "tsc -b && vite build --config vite.config.electron.ts && electron-builder",
+    "build:electron": "tsc -b && vite build --config vite.config.electron.ts",
     "build:services": "vite build --config vite.config.service.ts",
     "lint": "eslint .",
     "preview": "vite preview",
     "postinstall": "electron-builder install-app-deps",
-    "start:services": "vite-node services/main.ts"
+    "start:services": "vite-node services/main.ts",
+    "package": "npm run build:electron && electron-builder",
+    "package:windows": "run-s package:windows-*",
+    "package:windows-installers": "npm run build:electron && electron-builder --win nsis --x64 --arm64 --publish=never",
+    "package:linux": "run-s package:linux-*",
+    "package:linux-tar": "npm run build:electron && electron-builder --linux tar.gz --x64 --publish=never",
+    "package:linux-pkg": "npm run build:electron && electron-builder --linux deb --x64 --publish=never",
+    "package:linux-appImage": "npm run build:electron && electron-builder --linux tar.gz appimage --x64 --publish=never"
   },
   "dependencies": {
     "better-sqlite3": "^11.8.0",

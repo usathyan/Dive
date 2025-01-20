@@ -26,8 +26,15 @@ dist-electron
 
 # build output
 *.zip
+release
 
+# env file
 modelConfig.json
 .customrules
-uploads
 config.json
+
+# runtime folder
+uploads
+
+# node folder
+node

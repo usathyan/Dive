@@ -1,6 +1,7 @@
 {
   "$schema": "https://raw.githubusercontent.com/electron-userland/electron-builder/master/packages/app-builder-lib/scheme.json",
   "appId": "com.funmula.local-llm-agent",
+  "productName": "Local LLM Agent",
   "asar": true,
   "directories": {
     "output": "release/${version}"
@@ -32,5 +33,17 @@
     "perMachine": false,
     "allowToChangeInstallationDirectory": true,
     "deleteAppDataOnUninstall": false
-  }
+  },
+  "extraResources": [
+    {
+      "from": "node/win-x64/",
+      "to": "node/",
+      "filter": [
+        "node.exe",
+        "npx.cmd",
+        "npm.cmd",
+        "node_modules/**/*"
+      ]
+    }
+  ]
 }
