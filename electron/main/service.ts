@@ -27,7 +27,7 @@ function initDb(configDir: string) {
   const dbPath = path.join(configDir, "data.db")
   const sqlite = new Database(dbPath)
   const db = drizzle(sqlite, { schema })
-  migrate(db, { migrationsFolder: "./drizzle" })
+  migrate(db, { migrationsFolder: app.isPackaged ? path.join(process.resourcesPath, "drizzle") : "./drizzle" })
   return db
 }
 

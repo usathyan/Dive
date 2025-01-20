@@ -25,7 +25,7 @@
     "package:linux": "run-s package:linux-*",
     "package:linux-tar": "npm run build:electron && electron-builder --linux tar.gz --x64 --publish=never",
     "package:linux-pkg": "npm run build:electron && electron-builder --linux deb --x64 --publish=never",
-    "package:linux-appImage": "npm run build:electron && electron-builder --linux tar.gz appimage --x64 --publish=never"
+    "package:linux-appImage": "npm run build:electron && electron-builder --linux appimage --x64 --publish=never"
   },
   "dependencies": {
     "@langchain/community": "^0.3.0",

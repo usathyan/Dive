@@ -1,11 +1,11 @@
-import { createBrowserRouter } from "react-router-dom"
+import { createHashRouter } from "react-router-dom"
 import Layout from "./views/Layout"
 import Chat from "./views/Chat"
 import Welcome from "./views/Welcome"
 import Tools from "./views/Tools"
 import Setup from "./views/Setup"
 
-export const router = createBrowserRouter([
+export const router = createHashRouter([
   {
     path: "/",
     element: <Layout />,

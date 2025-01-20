@@ -8,7 +8,13 @@
   },
   "files": [
     "dist-electron",
-    "dist"
+    "dist",
+    "drizzle/**/*",
+    {
+      "from": "node_modules/sharp/build/Release/",
+      "to": "node_modules/sharp/build/Release/",
+      "filter": ["*.node"]
+    }
   ],
   "mac": {
     "artifactName": "${productName}_${version}.${ext}",
@@ -44,6 +50,11 @@
         "npm.cmd",
         "node_modules/**/*"
       ]
+    },
+    {
+      "from": "drizzle",
+      "to": "drizzle",
+      "filter": ["**/*"]
     }
   ]
 }
