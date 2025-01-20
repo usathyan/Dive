@@ -22,5 +22,6 @@
     "noUnusedParameters": false,
     "noFallthroughCasesInSwitch": true
   },
-  "include": ["src", "electron"]
+  "include": ["src", "electron", "services"],
+  "exclude": ["node_modules", "dist", "services/__tests__"]
 }

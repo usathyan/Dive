@@ -20,6 +20,9 @@ export default defineConfig(({ command }) => {
         '@services': path.join(__dirname, 'services')
       },
     },
+    optimizeDeps: {
+      exclude: ['services/__tests__']
+    },
     plugins: [
       react(),
       electron({
