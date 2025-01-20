@@ -5,6 +5,9 @@ import react from '@vitejs/plugin-react'
 // https://vitejs.dev/config/
 export default defineConfig(({ command }) => {
   return {
+    build: {
+      target: 'esnext',
+    },
     resolve: {
       alias: {
         '@': path.join(__dirname, 'src'),

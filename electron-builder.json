@@ -9,12 +9,7 @@
   "files": [
     "dist-electron",
     "dist",
-    "drizzle/**/*",
-    {
-      "from": "node_modules/sharp/build/Release/",
-      "to": "node_modules/sharp/build/Release/",
-      "filter": ["*.node"]
-    }
+    "drizzle/**/*"
   ],
   "mac": {
     "artifactName": "${productName}_${version}.${ext}",
@@ -32,6 +27,19 @@
         ]
       }
     ],
+
+  "extraResources": [
+      {
+        "from": "node/win-x64/",
+        "to": "node/",
+        "filter": [
+          "node.exe",
+          "npx.cmd",
+          "npm.cmd",
+          "node_modules/**/*"
+        ]
+      }
+    ],
     "artifactName": "${productName}_${version}.${ext}"
   },
   "nsis": {
@@ -42,18 +50,13 @@
   },
   "extraResources": [
     {
-      "from": "node/win-x64/",
-      "to": "node/",
-      "filter": [
-        "node.exe",
-        "npx.cmd",
-        "npm.cmd",
-        "node_modules/**/*"
-      ]
-    },
-    {
       "from": "drizzle",
       "to": "drizzle",
+      "filter": ["**/*"]
+    },
+    {
+      "from": "public/locales",
+      "to": "locales",
       "filter": ["**/*"]
     }
   ]

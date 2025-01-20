@@ -158,3 +158,7 @@ ipcMain.handle("open-win", (_, arg) => {
 ipcMain.handle("api:port", async () => {
   return port
 })
+
+ipcMain.handle("api:getResources", async (_, p: string) => {
+  return app.isPackaged ? path.join(process.resourcesPath, p) : p
+})
