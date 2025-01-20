@@ -7,13 +7,16 @@ import ConfigSidebar from "./components/ConfigSidebar"
 
 function App() {
   const [, loadConfig] = useAtom(loadConfigAtom)
-  const [loading, setLoading] = useState(false)
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    loadConfig().finally(() => setLoading(true))
+    loadConfig().finally(() => {
+      setLoading(false)
+      window.postMessage({ payload: "removeLoading" }, "*")
+    })
   }, [loadConfig])
 
-  if (!loading) {
+  if (loading) {
     return <></>
   }
 
