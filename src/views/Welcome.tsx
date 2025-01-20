@@ -84,14 +84,6 @@ const Welcome = () => {
     setUploadedFiles(prev => prev.filter((_, i) => i !== index))
   }
 
-  const handleSuggestionClick = (text: string) => {
-    navigate("/chat", { 
-      state: { 
-        initialMessage: text,
-      } 
-    })
-  }
-
   const isImageFile = (file: File) => {
     return file.type.startsWith('image/')
   }
@@ -113,7 +105,7 @@ const Welcome = () => {
               onChange={(e) => setMessage(e.target.value)}
               onKeyDown={handleKeyDown}
               placeholder={t('chat.placeholder')}
-              rows={1}
+              rows={2}
             />
             <div className="input-actions">
               <input
