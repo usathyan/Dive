@@ -1,4 +1,4 @@
-# Local LLM Agent
+# Dive AI Agent
 
 ## Development Requirements
 - Node.js LTS+
