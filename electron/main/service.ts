@@ -18,6 +18,7 @@ async function initClient(): Promise<MCPClient> {
   const _client = new MCPClient({
     modelConfigPath: path.join(configDir, "model.json"),
     mcpServerConfigPath: path.join(configDir, "config.json"),
+    customRulesPath: path.join(configDir, ".customrules"),
   })
 
   return _client
