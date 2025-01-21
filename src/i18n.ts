@@ -9,7 +9,7 @@ i18n
   .use(initReactI18next)
   .init({
     backend: {
-      loadPath: await window.ipcRenderer.getResources('locales/{{lng}}/{{ns}}.json'),
+      loadPath: window.ipcRenderer && await window.ipcRenderer.getResources('locales/{{lng}}/{{ns}}.json'),
     },
     fallbackLng: 'en',
     supportedLngs: ['zh-TW', 'en'],
