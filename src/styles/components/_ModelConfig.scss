@@ -99,6 +99,10 @@
     overflow-y: auto;
 
     @include scrollbar;
+
+    @media (prefers-color-scheme: light) {
+      background: #fafafa;
+    }
     
     .form-group {
       margin-bottom: 24px;
