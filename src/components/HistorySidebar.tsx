@@ -2,7 +2,7 @@ import React, { useState, useCallback, useEffect } from "react"
 import { useNavigate } from "react-router-dom"
 import Toast from "./Toast"
 import { useAtom } from 'jotai'
-import { sidebarVisibleAtom, toggleConfigSidebarAtom } from '../atoms/sidebarState'
+import { sidebarVisibleAtom, toggleConfigSidebarAtom, toggleSidebarAtom } from '../atoms/sidebarState'
 import { historiesAtom, loadHistoriesAtom } from '../atoms/historyState'
 import Header from "./Header"
 import { useTranslation } from 'react-i18next'
@@ -20,6 +20,7 @@ const HistorySidebar = ({ onNewChat }: Props) => {
   const [currentChatId, setCurrentChatId] = useState<string | null>(null)
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null)
   const [, toggleConfigSidebar] = useAtom(toggleConfigSidebarAtom)
+  const [, toggleSidebar] = useAtom(toggleSidebarAtom)
 
   useEffect(() => {
     if (isVisible) {
@@ -60,11 +61,13 @@ const HistorySidebar = ({ onNewChat }: Props) => {
 
   const loadChat = useCallback((chatId: string) => {
     setCurrentChatId(chatId)
+    toggleSidebar()
     navigate(`/chat/${chatId}`)
-  }, [navigate])
+  }, [navigate, toggleSidebar])
 
   const handleNewChat = () => {
     setCurrentChatId(null)
+    toggleSidebar()
     if (onNewChat) {
       onNewChat()
     } else {
