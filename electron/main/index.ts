@@ -5,9 +5,13 @@ import path from "node:path"
 import os from "node:os"
 import { update } from "./update"
 import { initMCPClient, port } from "./service"
+import log from "electron-log/main"
 
 const require = createRequire(import.meta.url)
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
+
+log.initialize()
+Object.assign(console, log.functions)
 
 // The built directory structure
 //
