@@ -123,7 +123,7 @@ const Message = ({ text, isSent, files, isError, isLoading, toolCalls, toolResul
           {files.map((file, index) => (
             <img 
               key={index}
-              src={typeof file === "string" ? `/api/uploads/${file}` : URL.createObjectURL(file)}
+              src={typeof file === "string" ? file : URL.createObjectURL(file)}
               alt={`Uploaded ${index + 1}`}
               className="message-image"
             />
