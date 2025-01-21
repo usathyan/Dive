@@ -7,6 +7,7 @@ import { drizzle } from "drizzle-orm/better-sqlite3"
 import Database from "better-sqlite3"
 import { migrate } from "drizzle-orm/better-sqlite3/migrator"
 import * as schema from "../../services/database/schema.js"
+import { isPortInUse } from "./util.js"
 
 export let client: Promise<MCPClient> | null = null
 async function initClient(): Promise<MCPClient> {
@@ -34,12 +35,28 @@ function initDb(configDir: string) {
   return db
 }
 
+async function getFreePort(): Promise<number> {
+  const defaultPort = 61990
+  const isDefaultPortInUse = await isPortInUse(defaultPort)
+  if (!isDefaultPortInUse) {
+    return defaultPort
+  }
+
+  const secondPort = 6190
+  const isSecondPortInUse = await isPortInUse(secondPort)
+  if (!isSecondPortInUse) {
+    return secondPort
+  }
+
+  return 0
+}
+
 export let port = Promise.resolve(0)
 async function initService(): Promise<number> {
   const _client = await client!
   await _client.init().catch(console.error)
   const server = new WebServer(_client)
-  await server.start(0)
+  await server.start(await getFreePort())
   return server.port!
 }
 
