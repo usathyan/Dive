@@ -105,6 +105,7 @@ const Welcome = () => {
               onChange={(e) => setMessage(e.target.value)}
               onKeyDown={handleKeyDown}
               placeholder={t('chat.placeholder')}
+              autoFocus={true}
               rows={2}
             />
             <div className="input-actions">

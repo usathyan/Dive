@@ -214,17 +214,23 @@ const ChatWindow = () => {
     }
   }, [isAiStreaming, scrollToBottom])
 
-  const handleInitialMessage = useCallback((message: string) => {
-    onSendMsg(message)
+  const handleInitialMessage = useCallback(async (message: string, files?: File[]) => {
+    if (files && files.length > 0) {
+      const fileList = new DataTransfer()
+      files.forEach(file => fileList.items.add(file))
+      await onSendMsg(message, fileList.files)
+    } else {
+      await onSendMsg(message)
+    }
     navigate(location.pathname, { replace: true, state: {} })
   }, [onSendMsg, navigate, location.pathname])
 
   useEffect(() => {
-    const state = location.state as { initialMessage?: string } | null
+    const state = location.state as { initialMessage?: string, files?: File[] } | null
     
-    if (state?.initialMessage && !isInitialMessageHandled.current) {
+    if ((state?.initialMessage || state?.files) && !isInitialMessageHandled.current) {
       isInitialMessageHandled.current = true
-      handleInitialMessage(state.initialMessage)
+      handleInitialMessage(state?.initialMessage || '', state?.files)
     }
   }, [handleInitialMessage])
 
