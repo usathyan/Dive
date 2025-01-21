@@ -1,6 +1,6 @@
 {
   "$schema": "https://raw.githubusercontent.com/electron-userland/electron-builder/master/packages/app-builder-lib/scheme.json",
-  "appId": "com.oaphub.dive ",
+  "appId": "ai.oaphub.dive",
   "productName": "Dive",
   "asar": true,
   "asarUnpack": [
