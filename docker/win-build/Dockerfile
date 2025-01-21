@@ -11,6 +11,7 @@ WORKDIR /app
 COPY package*.json ./
 
 RUN npm ci
+RUN npm install --os=win32 --arch=x64 sharp
 
 COPY . .
 

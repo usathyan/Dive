@@ -3,6 +3,10 @@
   "appId": "com.funmula.dive",
   "productName": "Dive",
   "asar": true,
+  "asarUnpack": [
+    "**/node_modules/sharp/**/*",
+    "**/node_modules/@img/**/*"
+  ],
   "directories": {
     "output": "release/${version}"
   },
