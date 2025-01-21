@@ -1,6 +1,7 @@
 import { app } from "electron"
 import envPaths from "env-paths"
 import path from "node:path"
+import fs from "node:fs"
 import { MCPClient, WebServer, setDatabase } from "../../services/index.js"
 import { drizzle } from "drizzle-orm/better-sqlite3"
 import Database from "better-sqlite3"
@@ -11,6 +12,7 @@ export let client: Promise<MCPClient> | null = null
 async function initClient(): Promise<MCPClient> {
   const paths = envPaths(app.getName(), {suffix: ""})
   const configDir = paths.config
+  fs.mkdirSync(configDir, { recursive: true })
 
   const db = initDb(configDir)
   setDatabase(db as any)
