@@ -25,7 +25,7 @@
     "download-node:darwin-x64": "vite-node scripts/download-node.ts darwin-x64",
     "package": "npm run build:electron && electron-builder",
     "package:windows": "vite-node scripts/download-node.ts && run-s package:windows-*",
-    "package:windows-installers": "npm run build:electron && electron-builder --win nsis --x64 --arm64 --publish=never",
+    "package:windows-installers": "npm run build:electron && electron-builder --win nsis --x64 --publish=never",
     "package:linux": "run-s package:linux-*",
     "package:linux-tar": "npm run build:electron && electron-builder --linux tar.gz --x64 --publish=never",
     "package:linux-pkg": "npm run build:electron && electron-builder --linux deb --x64 --publish=never",
