@@ -18,12 +18,12 @@ const Setup = () => {
   const [isVerifying, setIsVerifying] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [config] = useAtom(configAtom)
-  const isInitialSetup = location.pathname === '/setup'
+  const isInitialSetup = location.pathname !== '/setup'
   const [isVerified, setIsVerified] = useState(false)
   const [initialConfig, setInitialConfig] = useState<Record<string, any> | null>(null)
 
   useEffect(() => {
-    if (isInitialSetup && config) {
+    if (!isInitialSetup && config) {
       const configData = { ...config }
       setFormData(configData)
       setInitialConfig(configData)
@@ -134,7 +134,7 @@ const Setup = () => {
       if (data.success) {
         alert(t("setup.saveSuccess"))
         
-        if (!isInitialSetup) {
+        if (isInitialSetup) {
           window.location.reload()
         }
       }
@@ -161,7 +161,7 @@ const Setup = () => {
   return (
     <div className="setup-page">
       <div className="setup-container">
-        {isInitialSetup && (
+        {!isInitialSetup && (
           <button 
             className="back-btn"
             onClick={() => navigate(-1)}
