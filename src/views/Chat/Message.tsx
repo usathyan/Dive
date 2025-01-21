@@ -6,6 +6,7 @@ import { useColorScheme } from "../../hooks/useColorScheme";
 import { useSetAtom } from 'jotai'
 import { updateStreamingCodeAtom } from '../../atoms/codeStreaming'
 import ToolPanel, { ToolCall, ToolResult } from './ToolPanel'
+import FilePreview from './FilePreview'
 import { useTranslation } from 'react-i18next'
 
 interface MessageProps {
@@ -118,18 +119,7 @@ const Message = ({ text, isSent, files, isError, isLoading, toolCalls, toolResul
         />
       )}
       {formattedText}
-      {files && files.length > 0 && (
-        <div className="message-images">
-          {files.map((file, index) => (
-            <img 
-              key={index}
-              src={typeof file === "string" ? file : URL.createObjectURL(file)}
-              alt={`Uploaded ${index + 1}`}
-              className="message-image"
-            />
-          ))}
-        </div>
-      )}
+      {files && files.length > 0 && <FilePreview files={files} />}
       {isLoading && (
         <div className="loading-dots">
           <span></span>
