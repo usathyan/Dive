@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react"
 import { useTranslation } from "react-i18next"
+import Toast from "../components/Toast"
 
 interface SubTool {
   name: string
@@ -22,6 +23,7 @@ const Tools = () => {
   const [showConfigModal, setShowConfigModal] = useState(false)
   const [mcpConfig, setMcpConfig] = useState<Record<string, any>>({})
   const [isLoading, setIsLoading] = useState(false)
+  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null)
 
   useEffect(() => {
     fetchTools()
@@ -70,9 +72,17 @@ const Tools = () => {
         setMcpConfig(newConfig)
         setShowConfigModal(false)
         fetchTools()
+        setToast({
+          message: t("tools.saveSuccess"),
+          type: 'success'
+        })
       }
     } catch (error) {
       console.error("Failed to update MCP config:", error)
+      setToast({
+        message: t("tools.saveFailed"),
+        type: 'error'
+      })
     }
   }
 
@@ -221,6 +231,14 @@ const Tools = () => {
           </div>
         </div>
       )}
+
+      {toast && (
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          onClose={() => setToast(null)}
+        />
+      )}
     </div>
   )
 }
@@ -240,6 +258,7 @@ const ConfigForm: React.FC<ConfigFormProps> = ({
   const [jsonString, setJsonString] = useState(JSON.stringify(config, null, 2))
   const [error, setError] = useState<string>("")
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -248,12 +267,18 @@ const ConfigForm: React.FC<ConfigFormProps> = ({
       const parsedConfig = JSON.parse(jsonString)
       setIsSubmitting(true)
       await onSubmit(parsedConfig)
-      alert(t("tools.saveSuccess"))
+      setToast({
+        message: t("tools.saveSuccess"),
+        type: 'success'
+      })
     } catch (err) {
       if (err instanceof SyntaxError) {
         setError("Invalid JSON format")
       } else {
-        setError(t("tools.saveFailed"))
+        setToast({
+          message: t("tools.saveFailed"),
+          type: 'error'
+        })
       }
     } finally {
       setIsSubmitting(false)
@@ -291,6 +316,13 @@ const ConfigForm: React.FC<ConfigFormProps> = ({
           ) : t("tools.save")}
         </button>
       </div>
+      {toast && (
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          onClose={() => setToast(null)}
+        />
+      )}
     </form>
   )
 }

@@ -2,6 +2,7 @@ import React, { useState } from "react"
 import { useTranslation } from "react-i18next"
 import { ModelProvider, PROVIDER_LABELS } from "../atoms/interfaceState"
 import { ModelConfig } from "../atoms/configState"
+import Toast from "./Toast"
 
 const PROVIDERS: ModelProvider[] = ["openai", "openai_compatible", "ollama", "anthropic"]
 
@@ -30,6 +31,7 @@ const ModelConfigForm: React.FC<ModelConfigFormProps> = ({
   const [isVerifying, setIsVerifying] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isVerified, setIsVerified] = useState(false)
+  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null)
 
   const handleProviderChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const newProvider = e.target.value as ModelProvider
@@ -58,15 +60,24 @@ const ModelConfigForm: React.FC<ModelConfigFormProps> = ({
       const data = await response.json()
       if (data.success) {
         setIsVerified(true)
-        alert(t("setup.verifySuccess"))
+        setToast({
+          message: t("setup.verifySuccess"),
+          type: 'success'
+        })
       } else {
         setIsVerified(false)
-        alert(t("setup.verifyFailed"))
+        setToast({
+          message: t("setup.verifyFailed"),
+          type: 'error'
+        })
       }
     } catch (error) {
       console.error("Failed to verify model:", error)
       setIsVerified(false)
-      alert(t("setup.verifyError"))
+      setToast({
+        message: t("setup.verifyError"),
+        type: 'error'
+      })
     } finally {
       setIsVerifying(false)
     }
@@ -163,6 +174,13 @@ const ModelConfigForm: React.FC<ModelConfigFormProps> = ({
           ) : t(submitLabel)}
         </button>
       </div>
+      {toast && (
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          onClose={() => setToast(null)}
+        />
+      )}
     </form>
   )
 }

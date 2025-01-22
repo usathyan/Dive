@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from "react"
 import { useTranslation } from "react-i18next"
+import Toast from "./Toast"
 
 const CustomInstructions = () => {
   const { t } = useTranslation()
   const [instructions, setInstructions] = useState("")
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null)
 
   useEffect(() => {
     fetchInstructions()
@@ -31,11 +33,17 @@ const CustomInstructions = () => {
       })
       const data = await response.json()
       if (data.success) {
-        alert(t("modelConfig.customRulesSaved"))
+        setToast({
+          message: t("modelConfig.customRulesSaved"),
+          type: 'success'
+        })
       }
     } catch (error) {
       console.error("Failed to save custom rules:", error)
-      alert(t("modelConfig.customRulesFailed"))
+      setToast({
+        message: t("modelConfig.customRulesFailed"),
+        type: 'error'
+      })
     } finally {
       setIsSubmitting(false)
     }
@@ -61,6 +69,13 @@ const CustomInstructions = () => {
           t("modelConfig.saveInstructions")
         )}
       </button>
+      {toast && (
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          onClose={() => setToast(null)}
+        />
+      )}
     </div>
   )
 }

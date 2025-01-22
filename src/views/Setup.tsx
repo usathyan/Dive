@@ -4,6 +4,7 @@ import { interfaceAtom, updateProviderAtom, ModelProvider, PROVIDER_LABELS } fro
 import { useTranslation } from "react-i18next"
 import { useNavigate, useLocation } from "react-router-dom"
 import { configAtom } from "../atoms/configState"
+import Toast from "../components/Toast"
 
 const PROVIDERS: ModelProvider[] = ["openai", "openai_compatible", "ollama", "anthropic"]
 
@@ -21,6 +22,7 @@ const Setup = () => {
   const isInitialSetup = location.pathname !== '/setup'
   const [isVerified, setIsVerified] = useState(false)
   const [initialConfig, setInitialConfig] = useState<Record<string, any> | null>(null)
+  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null)
 
   useEffect(() => {
     if (!isInitialSetup && config) {
@@ -86,15 +88,24 @@ const Setup = () => {
       const data = await response.json()
       if (data.success) {
         setIsVerified(true)
-        alert(t("setup.verifySuccess"))
+        setToast({
+          message: t("setup.verifySuccess"),
+          type: 'success'
+        })
       } else {
         setIsVerified(false)
-        alert(t("setup.verifyFailed"))
+        setToast({
+          message: t("setup.verifyFailed"),
+          type: 'error'
+        })
       }
     } catch (error) {
       console.error("Failed to verify model:", error)
       setIsVerified(false)
-      alert(t("setup.verifyError"))
+      setToast({
+        message: t("setup.verifyError"),
+        type: 'error'
+      })
     } finally {
       setIsVerifying(false)
     }
@@ -132,15 +143,21 @@ const Setup = () => {
 
       const data = await response.json()
       if (data.success) {
-        alert(t("setup.saveSuccess"))
+        setToast({
+          message: t("setup.saveSuccess"),
+          type: 'success'
+        })
         
         if (isInitialSetup) {
-          window.location.reload()
+          setTimeout(() => window.location.reload(), 1500)
         }
       }
     } catch (error) {
       console.error("Failed to save config:", error)
-      alert(t("setup.saveFailed"))
+      setToast({
+        message: t("setup.saveFailed"),
+        type: 'error'
+      })
     } finally {
       setIsSubmitting(false)
     }
@@ -233,6 +250,13 @@ const Setup = () => {
           </div>
         </form>
       </div>
+      {toast && (
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          onClose={() => setToast(null)}
+        />
+      )}
     </div>
   )
 }

@@ -1,4 +1,4 @@
-import React from "react"
+import React, { useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useAtom } from "jotai"
 import { configSidebarVisibleAtom } from "../atoms/sidebarState"
@@ -6,6 +6,7 @@ import ModelConfigForm from "./ModelConfigForm"
 import { interfaceAtom, updateProviderAtom } from "../atoms/interfaceState"
 import { configAtom } from "../atoms/configState"
 import CustomInstructions from "./CustomInstructions"
+import Toast from "./Toast"
 
 const ConfigSidebar = () => {
   const { t } = useTranslation()
@@ -13,6 +14,7 @@ const ConfigSidebar = () => {
   const [{ provider, fields }] = useAtom(interfaceAtom)
   const [, updateProvider] = useAtom(updateProviderAtom)
   const [config] = useAtom(configAtom)
+  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null)
 
   const handleSubmit = async (formData: Record<string, any>) => {
     try {
@@ -31,12 +33,19 @@ const ConfigSidebar = () => {
 
       const data = await response.json()
       if (data.success) {
-        alert(t("setup.saveSuccess"))
-        window.location.reload()
+        setToast({
+          message: t("setup.saveSuccess"),
+          type: 'success'
+        })
+        
+        setTimeout(() => window.location.reload(), 1500)
       }
     } catch (error) {
       console.error("Failed to save config:", error)
-      alert(t("setup.saveFailed"))
+      setToast({
+        message: t("setup.saveFailed"),
+        type: 'error'
+      })
     }
   }
 
@@ -65,6 +74,13 @@ const ConfigSidebar = () => {
         <div className="divider" />
         <CustomInstructions />
       </div>
+      {toast && (
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          onClose={() => setToast(null)}
+        />
+      )}
     </div>
   )
 }
