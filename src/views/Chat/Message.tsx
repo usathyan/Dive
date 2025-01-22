@@ -1,3 +1,5 @@
+import "katex/dist/katex.min.css"
+
 import React, { useMemo } from "react"
 import Markdown from "marked-react"
 import { PrismAsyncLight as SyntaxHighlighter } from "react-syntax-highlighter";
@@ -8,6 +10,7 @@ import { updateStreamingCodeAtom } from '../../atoms/codeStreaming'
 import ToolPanel, { ToolCall, ToolResult } from './ToolPanel'
 import FilePreview from './FilePreview'
 import { useTranslation } from 'react-i18next'
+import katex from 'katex'
 
 interface MessageProps {
   text: string
@@ -35,6 +38,24 @@ const Message = ({ text, isSent, files, isError, isLoading, toolCalls, toolResul
 
   const renderer = {
     code(code: string, language: string) {
+      if (language === 'katex') {
+        try {
+          return (
+            <div className="katex-block">
+              <div dangerouslySetInnerHTML={{
+                __html: katex.renderToString(code, {
+                  throwOnError: false,
+                  displayMode: true
+                })
+              }} />
+            </div>
+          )
+        } catch (error) {
+          console.error('Failed to render KaTeX:', error)
+          return <div className="katex-error">Failed to render math formula</div>
+        }
+      }
+
       const lines = code.split('\n')
       const isLongCode = lines.length > 10
 
