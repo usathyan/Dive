@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react'
-import { useTranslation } from 'react-i18next'
+import React, { useEffect, useState } from "react"
+import { useTranslation } from "react-i18next"
 
 interface SubTool {
   name: string
@@ -18,7 +18,7 @@ interface Tool {
 const Tools = () => {
   const { t } = useTranslation()
   const [tools, setTools] = useState<Tool[]>([])
-  const [error, setError] = useState<string>('')
+  const [error, setError] = useState<string>("")
   const [showConfigModal, setShowConfigModal] = useState(false)
   const [mcpConfig, setMcpConfig] = useState<Record<string, any>>({})
   const [isLoading, setIsLoading] = useState(false)
@@ -39,7 +39,7 @@ const Tools = () => {
         setError(data.message)
       }
     } catch (error) {
-      setError(error instanceof Error ? error.message : 'Failed to fetch tools')
+      setError(error instanceof Error ? error.message : "Failed to fetch tools")
     }
   }
 
@@ -51,18 +51,19 @@ const Tools = () => {
         setMcpConfig(data.config || {})
       }
     } catch (error) {
-      console.error('Failed to fetch MCP config:', error)
+      console.error("Failed to fetch MCP config:", error)
     }
   }
 
   const handleConfigSubmit = async (newConfig: Record<string, any>) => {
     try {
+      const filledConfig = await window.ipcRenderer.fillPathToConfig(JSON.stringify(newConfig))
       const response = await fetch("/api/config/mcpserver", {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
-        body: JSON.stringify(newConfig),
+        body: filledConfig,
       })
       const data = await response.json()
       if (data.success) {
@@ -71,7 +72,7 @@ const Tools = () => {
         fetchTools()
       }
     } catch (error) {
-      console.error('Failed to update MCP config:', error)
+      console.error("Failed to update MCP config:", error)
     }
   }
 
@@ -84,10 +85,10 @@ const Tools = () => {
       const newConfig = JSON.parse(JSON.stringify(mcpConfig))
       newConfig.mcpServers[tool.name].enabled = !currentEnabled
 
-      const response = await fetch('/api/config/mcpserver', {
-        method: 'POST',
+      const response = await fetch("/api/config/mcpserver", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify(newConfig),
       })
@@ -98,7 +99,7 @@ const Tools = () => {
         await fetchTools()
       }
     } catch (error) {
-      console.error('Failed to toggle tool:', error)
+      console.error("Failed to toggle tool:", error)
     } finally {
       setIsLoading(false)
     }
@@ -106,7 +107,7 @@ const Tools = () => {
 
   const toggleToolSection = (index: number) => {
     const toolElement = document.getElementById(`tool-${index}`)
-    toolElement?.classList.toggle('expanded')
+    toolElement?.classList.toggle("expanded")
   }
 
   const handleOpenConfigFolder = async () => {
@@ -118,15 +119,15 @@ const Tools = () => {
       <div className="tools-container">
         <div className="tools-header">
           <div>
-            <h1>{t('tools.title')}</h1>
-            <p className="subtitle">{t('tools.subtitle')}</p>
+            <h1>{t("tools.title")}</h1>
+            <p className="subtitle">{t("tools.subtitle")}</p>
           </div>
           <div className="header-actions">
             <button 
               className="edit-btn"
               onClick={() => setShowConfigModal(true)}
             >
-              {t('tools.editConfig')}
+              {t("tools.editConfig")}
             </button>
             <button 
               className="folder-btn"
@@ -135,7 +136,7 @@ const Tools = () => {
               <svg width="16" height="16" viewBox="0 0 24 24">
                 <path d="M20 6h-8l-2-2H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm0 12H4V8h16v10z"/>
               </svg>
-              {t('tools.openConfigFolder')}
+              {t("tools.openConfigFolder")}
             </button>
           </div>
         </div>
@@ -204,7 +205,7 @@ const Tools = () => {
         <div className="modal-overlay">
           <div className="modal-content">
             <div className="modal-header">
-              <h2>{t('tools.configTitle')}</h2>
+              <h2>{t("tools.configTitle")}</h2>
               <button 
                 className="close-btn"
                 onClick={() => setShowConfigModal(false)}
@@ -237,7 +238,7 @@ const ConfigForm: React.FC<ConfigFormProps> = ({
 }) => {
   const { t } = useTranslation()
   const [jsonString, setJsonString] = useState(JSON.stringify(config, null, 2))
-  const [error, setError] = useState<string>('')
+  const [error, setError] = useState<string>("")
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -247,12 +248,12 @@ const ConfigForm: React.FC<ConfigFormProps> = ({
       const parsedConfig = JSON.parse(jsonString)
       setIsSubmitting(true)
       await onSubmit(parsedConfig)
-      alert(t('tools.saveSuccess'))
+      alert(t("tools.saveSuccess"))
     } catch (err) {
       if (err instanceof SyntaxError) {
-        setError('Invalid JSON format')
+        setError("Invalid JSON format")
       } else {
-        setError(t('tools.saveFailed'))
+        setError(t("tools.saveFailed"))
       }
     } finally {
       setIsSubmitting(false)
@@ -266,7 +267,7 @@ const ConfigForm: React.FC<ConfigFormProps> = ({
         value={jsonString}
         onChange={e => {
           setJsonString(e.target.value)
-          setError('')
+          setError("")
         }}
         className="config-textarea"
         rows={20}
@@ -278,7 +279,7 @@ const ConfigForm: React.FC<ConfigFormProps> = ({
           className="cancel-btn"
           disabled={isSubmitting}
         >
-          {t('tools.cancel')}
+          {t("tools.cancel")}
         </button>
         <button 
           type="submit" 
@@ -287,7 +288,7 @@ const ConfigForm: React.FC<ConfigFormProps> = ({
         >
           {isSubmitting ? (
             <div className="loading-spinner"></div>
-          ) : t('tools.save')}
+          ) : t("tools.save")}
         </button>
       </div>
     </form>

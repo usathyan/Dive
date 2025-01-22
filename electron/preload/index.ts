@@ -20,6 +20,7 @@ contextBridge.exposeInMainWorld("ipcRenderer", {
   },
   port: () => ipcRenderer.invoke("api:port"),
   getResources: (p: string) => ipcRenderer.invoke("api:getResources", p),
+  fillPathToConfig: (config: string) => ipcRenderer.invoke("api:fillPathToConfig", config),
   openScriptsDir: () => ipcRenderer.invoke("fs:openScriptsDir"),
 })
 

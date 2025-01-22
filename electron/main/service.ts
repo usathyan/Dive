@@ -63,7 +63,8 @@ async function initClient(): Promise<MCPClient> {
   const systemCommandManager = SystemCommandManager.getInstance()
   systemCommandManager.initialize(process.platform === "win32" && app.isPackaged ? {
     "node": path.join(process.resourcesPath, "node", "node.exe"),
-    "npx": path.join(process.resourcesPath, "node", "npx.cmd")
+    "npx": path.join(process.resourcesPath, "node", "npx.cmd"),
+    "npm": path.join(process.resourcesPath, "node", "npm.cmd"),
   } : {})
 
   return _client

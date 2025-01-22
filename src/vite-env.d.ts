@@ -6,5 +6,6 @@ interface Window {
     port: () => Promise<number>
     getResources: (p: string) => Promise<string>
     openScriptsDir: () => Promise<void>
+    fillPathToConfig: (config: string) => Promise<string>
   }
 }
