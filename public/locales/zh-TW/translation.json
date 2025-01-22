@@ -47,7 +47,8 @@
     "save": "儲存",
     "cancel": "取消",
     "saveSuccess": "設定已儲存",
-    "saveFailed": "儲存失敗"
+    "saveFailed": "儲存失敗",
+    "openConfigFolder": "開啟設定資料夾"
   },
   "modelConfig": {
     "title": "語言模型設定",

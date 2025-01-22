@@ -47,7 +47,8 @@
     "save": "Save",
     "cancel": "Cancel",
     "saveSuccess": "Settings saved successfully",
-    "saveFailed": "Failed to save settings"
+    "saveFailed": "Failed to save settings",
+    "openConfigFolder": "Open Config Folder"
   },
   "modelConfig": {
     "title": "Language Model Settings",

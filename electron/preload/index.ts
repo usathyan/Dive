@@ -1,5 +1,4 @@
 import { ipcRenderer, contextBridge } from "electron"
-import path from "path"
 
 // --------- Expose some API to the Renderer process ---------
 contextBridge.exposeInMainWorld("ipcRenderer", {
@@ -21,6 +20,7 @@ contextBridge.exposeInMainWorld("ipcRenderer", {
   },
   port: () => ipcRenderer.invoke("api:port"),
   getResources: (p: string) => ipcRenderer.invoke("api:getResources", p),
+  openScriptsDir: () => ipcRenderer.invoke("fs:openScriptsDir"),
 })
 
 // --------- Preload scripts loading ---------

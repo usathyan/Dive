@@ -394,6 +394,54 @@
   align-items: flex-start;
   min-height: calc(100vh - 45px);
   padding: 40px 20px;
+
+  .header-actions {
+    display: flex;
+    gap: 12px;
+    margin-top: 16px;
+
+    .edit-btn,
+    .folder-btn {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 16px;
+      border: none;
+      border-radius: 6px;
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.2s;
+
+      svg {
+        fill: currentColor;
+      }
+    }
+
+    .edit-btn {
+      background: #1890ff;
+      color: white;
+
+      &:hover {
+        background: #40a9ff;
+      }
+    }
+
+    .folder-btn {
+      background: rgba(0, 0, 0, 0.05);
+      
+      @media (prefers-color-scheme: dark) {
+        background: rgba(255, 255, 255, 0.1);
+      }
+
+      &:hover {
+        background: rgba(0, 0, 0, 0.1);
+        
+        @media (prefers-color-scheme: dark) {
+          background: rgba(255, 255, 255, 0.15);
+        }
+      }
+    }
+  }
 }
 
 .tools-container {

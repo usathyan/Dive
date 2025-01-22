@@ -4,7 +4,7 @@ import { fileURLToPath } from "node:url"
 import path from "node:path"
 import os from "node:os"
 import { update } from "./update"
-import { initMCPClient, port } from "./service"
+import { initMCPClient, port, scriptsDir } from "./service"
 import log from "electron-log/main"
 
 const require = createRequire(import.meta.url)
@@ -165,4 +165,8 @@ ipcMain.handle("api:port", async () => {
 
 ipcMain.handle("api:getResources", async (_, p: string) => {
   return app.isPackaged ? path.join(process.resourcesPath, p) : p
+})
+
+ipcMain.handle("fs:openScriptsDir", async () => {
+  shell.openPath(scriptsDir)
 })

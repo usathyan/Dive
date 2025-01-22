@@ -5,5 +5,6 @@ interface Window {
   ipcRenderer: import('electron').IpcRenderer & {
     port: () => Promise<number>
     getResources: (p: string) => Promise<string>
+    openScriptsDir: () => Promise<void>
   }
 }
