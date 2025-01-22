@@ -13,7 +13,8 @@
   "files": [
     "dist-electron",
     "dist",
-    "drizzle/**/*"
+    "drizzle/**/*",
+    "prebuilt/**/*"
   ],
   "mac": {
     "artifactName": "${productName}_${version}.${ext}",
@@ -31,8 +32,7 @@
         ]
       }
     ],
-
-  "extraResources": [
+    "extraResources": [
       {
         "from": "node/win-x64/",
         "to": "node/",
@@ -46,6 +46,11 @@
     ],
     "artifactName": "${productName}_${version}.${ext}"
   },
+  "linux": {
+    "target": ["AppImage"],
+    "asarUnpack": ["**/*.node"],
+    "executableName": "dive"
+  },
   "nsis": {
     "oneClick": false,
     "perMachine": false,
@@ -53,6 +58,11 @@
     "deleteAppDataOnUninstall": false
   },
   "extraResources": [
+    {
+      "from": "prebuilt",
+      "to": "prebuilt",
+      "filter": ["**/*"]
+    },
     {
       "from": "drizzle",
       "to": "drizzle",

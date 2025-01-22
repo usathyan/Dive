@@ -2,11 +2,17 @@ import dotenv from "dotenv";
 import { MCPCliClient } from "./client.js";
 import logger from "./utils/logger.js";
 import { initDatabase } from "./database/index.js";
+import { SystemCommandManager } from "./syscmd/index.js";
 
 dotenv.config();
 
 // Main execution logic
 async function main() {
+  const systemCommandManager = SystemCommandManager.getInstance();
+  systemCommandManager.initialize({
+    node: process.execPath,
+  });
+
   const client = new MCPCliClient();
   await client.init();
 

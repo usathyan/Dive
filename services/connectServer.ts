@@ -1,5 +1,6 @@
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { StdioClientTransport } from "@modelcontextprotocol/sdk/client/stdio.js";
+import { SystemCommandManager } from "./syscmd/index.js";
 import logger from "./utils/logger.js";
 import { iServerConfig } from "./utils/types.js";
 
@@ -12,9 +13,7 @@ export async function handleConnectToServer(
   logger.debug(`Attempting to connect to server: ${serverName}`);
 
   // Check specific command 'node'
-  if (serverConfig.command === "node") {
-    serverConfig.command = process.execPath; // This will use the full path of the current Node.js process
-  }
+  serverConfig.command = SystemCommandManager.getInstance().getValue(serverConfig.command) || serverConfig.command;
 
   // Establish transport
   const transport = new StdioClientTransport({
