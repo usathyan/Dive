@@ -11,11 +11,11 @@ import * as schema from "../../services/database/schema.js"
 import { isPortInUse, npmInstall } from "./util.js"
 import { SystemCommandManager } from "../../services/syscmd/index.js"
 
-const envPath = envPaths(app.getName(), {suffix: ""})
-const configDir = envPath.config
-const homeDir = os.homedir()
-const appDir = path.join(homeDir, ".dive")
-const scriptsDir = path.join(appDir, "scripts")
+export const envPath = envPaths(app.getName(), {suffix: ""})
+export const configDir = envPath.config
+export const homeDir = os.homedir()
+export const appDir = path.join(homeDir, ".dive")
+export const scriptsDir = path.join(appDir, "scripts")
 
 const DEF_MCP_SERVER_CONFIG = {
   "mcpServers": {
@@ -60,8 +60,11 @@ async function initClient(): Promise<MCPClient> {
     customRulesPath: customRulesPath,
   })
   
-  const systemCommandManager = SystemCommandManager.getInstance();
-  systemCommandManager.initialize({})
+  const systemCommandManager = SystemCommandManager.getInstance()
+  systemCommandManager.initialize(process.platform === "win32" && app.isPackaged ? {
+    "node": path.join(process.resourcesPath, "node", "node.exe"),
+    "npx": path.join(process.resourcesPath, "node", "npx.cmd")
+  } : {})
 
   return _client
 }

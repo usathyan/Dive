@@ -1,5 +1,7 @@
-import net from "net"
-import { spawn } from "child_process"
+import net from "node:net"
+import path from "node:path"
+import { spawn } from "cross-spawn"
+import { app } from "electron"
 
 export function isPortInUse(port: number): Promise<boolean> {
   return new Promise((resolve) => {
@@ -19,14 +21,15 @@ export function isPortInUse(port: number): Promise<boolean> {
 
 export function npmInstall(targetPath: string): Promise<void> {
   return new Promise((resolve, reject) => {
-    const npm = process.platform === 'win32' ? 'npm.cmd' : 'npm'
-    
-    const installation = spawn(npm, ['install'], {
+    const npm = process.platform !== "win32" ? "npm" :
+      app.isPackaged ? path.join(process.resourcesPath, "node", "npm.cmd") : "npm.cmd"
+
+    const installation = spawn(npm, ["install"], {
       cwd: targetPath,
-      stdio: 'inherit'
+      stdio: "inherit"
     })
 
-    installation.on('close', (code) => {
+    installation.on("close", (code) => {
       if (code === 0) {
         resolve()
       } else {
@@ -34,7 +37,7 @@ export function npmInstall(targetPath: string): Promise<void> {
       }
     })
 
-    installation.on('error', (err) => {
+    installation.on("error", (err) => {
       reject(err)
     })
   })
