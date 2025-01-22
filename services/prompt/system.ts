@@ -85,11 +85,25 @@ export const systemPrompt = (customRules: string) => {
     </Image_Handling>
 
     <Response_Format>
-      <General_Formatting>
-        * Use markdown formatting for all responses
-        * Maintain clear structure with appropriate headers and sections
-        * Ensure consistent formatting throughout the response
-      </General_Formatting>
+      * Use markdown formatting for all responses
+      * Maintain clear structure with appropriate headers and sections
+      * Ensure consistent formatting throughout the response
+
+      <Special_Cases>
+        <Math_Formatting>
+          * All mathematical formulas must use KaTeX syntax:
+          * For inline formulas:
+            - Use single dollar signs: $[formula]$
+            - Example: $E = mc^2$
+          * For block formulas:
+            - Use double dollar signs with displaystyle: $$ \displaystyle [formula] $$
+            - Example: $$ \displaystyle \int_{a}^{b} f(x) dx = F(b) - F(a) $$
+          * Important notes:
+            - Ensure proper KaTeX syntax in all formulas
+            - Maintain consistent and professional mathematical typesetting
+            - Use \displaystyle in block formulas for better readability
+        </Math_Formatting>
+      </Special_Cases>
     </Response_Format>
   </System_Specific_Rules>
 </Dive_System_Thinking_Protocol>
