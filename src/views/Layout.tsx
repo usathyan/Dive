@@ -2,8 +2,8 @@ import React from "react"
 import { Outlet } from "react-router-dom"
 import HistorySidebar from "../components/HistorySidebar"
 import Header from "../components/Header"
-import { useAtom } from 'jotai'
-import { configAtom } from '../atoms/configState'
+import { useAtom } from "jotai"
+import { configAtom } from "../atoms/configState"
 
 const Layout = () => {
   const [config] = useAtom(configAtom)

@@ -23,7 +23,7 @@ const Tools = () => {
   const [showConfigModal, setShowConfigModal] = useState(false)
   const [mcpConfig, setMcpConfig] = useState<Record<string, any>>({})
   const [isLoading, setIsLoading] = useState(false)
-  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null)
+  const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null)
 
   useEffect(() => {
     fetchTools()
@@ -74,14 +74,14 @@ const Tools = () => {
         fetchTools()
         setToast({
           message: t("tools.saveSuccess"),
-          type: 'success'
+          type: "success"
         })
       }
     } catch (error) {
       console.error("Failed to update MCP config:", error)
       setToast({
         message: t("tools.saveFailed"),
-        type: 'error'
+        type: "error"
       })
     }
   }
@@ -258,7 +258,7 @@ const ConfigForm: React.FC<ConfigFormProps> = ({
   const [jsonString, setJsonString] = useState(JSON.stringify(config, null, 2))
   const [error, setError] = useState<string>("")
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null)
+  const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -269,7 +269,7 @@ const ConfigForm: React.FC<ConfigFormProps> = ({
       await onSubmit(parsedConfig)
       setToast({
         message: t("tools.saveSuccess"),
-        type: 'success'
+        type: "success"
       })
     } catch (err) {
       if (err instanceof SyntaxError) {
@@ -277,7 +277,7 @@ const ConfigForm: React.FC<ConfigFormProps> = ({
       } else {
         setToast({
           message: t("tools.saveFailed"),
-          type: 'error'
+          type: "error"
         })
       }
     } finally {

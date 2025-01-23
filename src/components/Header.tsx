@@ -1,7 +1,7 @@
-import React from 'react'
-import { useSetAtom } from 'jotai'
-import { toggleSidebarAtom } from '../atoms/sidebarState'
-import { useTranslation } from 'react-i18next'
+import React from "react"
+import { useSetAtom } from "jotai"
+import { toggleSidebarAtom } from "../atoms/sidebarState"
+import { useTranslation } from "react-i18next"
 
 const Header = () => {
   const toggleSidebar = useSetAtom(toggleSidebarAtom)
@@ -18,7 +18,7 @@ const Header = () => {
             <path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/>
           </svg>
         </button>
-        <h1>{t('header.title')}</h1>
+        <h1>{t("header.title")}</h1>
       </div>
     </div>
   )
