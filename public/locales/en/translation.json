@@ -14,7 +14,8 @@
     "deleteChat": "Delete Chat",
     "deleteSuccess": "Chat deleted",
     "deleteFailed": "Failed to delete",
-    "uploadLimit": "Maximum 5 files allowed"
+    "uploadLimit": "Maximum 5 files allowed",
+    "confirmDelete": "Confirm Delete"
   },
   "welcome": {
     "title": "Welcome to Dive AI",
@@ -59,6 +60,8 @@
     "customRulesFailed": "Failed to save custom instructions"
   },
   "common": {
-    "close": "Close"
+    "close": "Close",
+    "confirm": "Confirm",
+    "cancel": "Cancel"
   }
 } 
