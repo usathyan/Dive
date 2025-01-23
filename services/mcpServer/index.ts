@@ -62,16 +62,13 @@ export class MCPServerManager implements IMCPServerManager {
 
     logger.info("All available tools:");
     for (const [serverName, client] of this.servers) {
-      if (!config?.mcpServers?.[serverName]?.enabled) {
-        continue;
-      }
       const response = await client.listTools();
       logger.info(`${serverName}:`);
       const capabilities = await client.getServerCapabilities();
       const tools_ = [] as { name: string; description: string | undefined }[];
 
       response.tools.forEach((tool) => {
-        logger.info(`  - ${tool.name}`);
+        config?.mcpServers?.[serverName]?.enabled && logger.info(`  - ${tool.name}`);
         tools_.push({ name: tool.name, description: tool.description });
       });
 
