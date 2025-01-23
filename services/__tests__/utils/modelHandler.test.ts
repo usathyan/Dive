@@ -23,7 +23,7 @@ describe("ModelHandler", () => {
   });
 
   describe("loadModelConfig", () => {
-    it("應該成功載入有效的模型配置", async () => {
+    it("should successfully load valid model configuration", async () => {
       (fs.readFile as jest.Mock).mockResolvedValue(JSON.stringify(mockConfig));
 
       const config = await loadModelConfig();
@@ -32,7 +32,7 @@ describe("ModelHandler", () => {
       expect(fs.readFile).toHaveBeenCalled();
     });
 
-    it("當配置文件不存在時應該返回 null", async () => {
+    it("should return null when config file does not exist", async () => {
       (fs.readFile as jest.Mock).mockRejectedValue(new Error("File not found"));
 
       const config = await loadModelConfig();
@@ -40,10 +40,10 @@ describe("ModelHandler", () => {
       expect(config).toBeNull();
     });
 
-    it("當配置格式無效時應該返回 null", async () => {
+    it("should return null when configuration format is invalid", async () => {
       const invalidConfig = {
         model_settings: {
-          temperature: "invalid", // 應該是數字
+          temperature: "invalid", // should be a number
         },
       };
       (fs.readFile as jest.Mock).mockResolvedValue(JSON.stringify(invalidConfig));
@@ -53,7 +53,7 @@ describe("ModelHandler", () => {
       expect(config).toBeNull();
     });
 
-    it("應該使用提供的路徑", async () => {
+    it("should use the provided path", async () => {
       const customPath = "/custom/path/modelConfig.json";
       (fs.readFile as jest.Mock).mockResolvedValue(JSON.stringify(mockConfig));
 

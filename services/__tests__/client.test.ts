@@ -9,8 +9,8 @@ jest.mock("../utils/modelHandler", () => ({
 }));
 
 import { MCPClient } from "../client.js";
-import { loadModelConfig } from "../utils/modelHandler.js";
 import { ModelManager } from "../models/index.js";
+import { loadModelConfig } from "../utils/modelHandler.js";
 
 describe("Client", () => {
   let client: MCPClient;
@@ -27,18 +27,17 @@ describe("Client", () => {
     client = new MCPClient();
   });
 
-  describe("初始化", () => {
-    it("應該正確初始化客戶端", async () => {
+  describe("Initialization", () => {
+    it("should correctly initialize client", async () => {
       await client.init();
       expect(loadModelConfig).toHaveBeenCalled();
       expect(ModelManager.getInstance().getModel()).not.toBeNull();
     });
 
-    it("模型初始化失敗不應該拋出錯誤", async () => {
+    it("model initialization failure should not throw error", async () => {
       (loadModelConfig as jest.Mock).mockResolvedValue(null);
       await expect(client.init()).resolves.toBeUndefined();
       expect(ModelManager.getInstance().getModel()).toBeNull();
     });
   });
 });
-

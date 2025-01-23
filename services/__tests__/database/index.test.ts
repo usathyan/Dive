@@ -65,10 +65,10 @@ describe("Database Operations", () => {
   let mockDb: MockDB;
 
   beforeEach(() => {
-    // 清除所有 mock
+    // Clear all mocks
     jest.clearAllMocks();
 
-    // 初始化 mock 資料庫
+    // Initialize mock database
     mockDb = {
       query: {
         chats: {
@@ -88,12 +88,12 @@ describe("Database Operations", () => {
   });
 
   describe("initDatabase", () => {
-    test("應該成功初始化資料庫", () => {
+    test("should successfully initialize database", () => {
       const result = initDatabase(":memory:");
       expect(result).toBeDefined();
     });
 
-    test("初始化失敗時應拋出錯誤", () => {
+    test("should throw error when initialization fails", () => {
       const mockError = new Error("Database initialization failed");
       jest.spyOn(console, "error").mockImplementation(() => {});
       (require("better-sqlite3") as jest.Mock).mockImplementation(() => {
@@ -105,7 +105,7 @@ describe("Database Operations", () => {
   });
 
   describe("getAllChats", () => {
-    test("應該返回反序的聊天列表", async () => {
+    test("should return chats in reverse order", async () => {
       const mockChats = [
         { id: "1", title: "Chat 1", createdAt: "2024-01-01T00:00:00.000Z" },
         { id: "2", title: "Chat 2", createdAt: "2024-01-02T00:00:00.000Z" },
@@ -122,7 +122,7 @@ describe("Database Operations", () => {
   });
 
   describe("getChatWithMessages", () => {
-    test("應該返回聊天及其訊息", async () => {
+    test("should return chat and its messages", async () => {
       const mockChat = {
         id: "1",
         title: "Test Chat",
@@ -157,7 +157,7 @@ describe("Database Operations", () => {
       expect(result).toEqual({ chat: mockChat, messages: mockMessages });
     });
 
-    test("當聊天不存在時應返回 null", async () => {
+    test("should return null when chat does not exist", async () => {
       mockDb.query.chats.findFirst.mockResolvedValue(undefined as never);
 
       const result = await getChatWithMessages("nonexistent");
@@ -166,7 +166,7 @@ describe("Database Operations", () => {
   });
 
   describe("createChat", () => {
-    test("應該成功創建新聊天", async () => {
+    test("should successfully create new chat", async () => {
       const mockChat = {
         id: "1",
         title: "New Chat",
@@ -188,7 +188,7 @@ describe("Database Operations", () => {
   });
 
   describe("createMessage", () => {
-    test("應該成功創建新訊息", async () => {
+    test("should successfully create new message", async () => {
       const mockMessage = {
         id: 1,
         chatId: "1",
@@ -230,7 +230,7 @@ describe("Database Operations", () => {
       expect(result).toEqual(mockMessage);
     });
 
-    test("當聊天不存在時應拋出錯誤", async () => {
+    test("should throw error when chat does not exist", async () => {
       const mockTx: MockTransaction = {
         query: {
           chats: {
@@ -257,7 +257,7 @@ describe("Database Operations", () => {
   });
 
   describe("checkChatExists", () => {
-    test("當聊天存在時應返回 true", async () => {
+    test("should return true when chat exists", async () => {
       const mockChat = {
         id: "1",
         title: "Test Chat",
@@ -270,7 +270,7 @@ describe("Database Operations", () => {
       expect(result).toBe(true);
     });
 
-    test("當聊天不存在時應返回 false", async () => {
+    test("should return false when chat does not exist", async () => {
       mockDb.query.chats.findFirst.mockResolvedValue(undefined as never);
 
       const result = await checkChatExists("nonexistent");
@@ -279,7 +279,7 @@ describe("Database Operations", () => {
   });
 
   describe("deleteChat", () => {
-    test("應該成功刪除聊天及其訊息", async () => {
+    test("should successfully delete chat and its messages", async () => {
       mockDb.delete.mockReturnValue({
         where: jest.fn().mockReturnValue(Promise.resolve()),
       });

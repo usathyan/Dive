@@ -3,10 +3,10 @@ import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { StdioClientTransport } from "@modelcontextprotocol/sdk/client/stdio.js";
 import path from "path";
 import { handleConnectToServer } from "../connectServer.js";
-import { IMCPServerManager } from "./interface.js";
 import logger from "../utils/logger.js";
 import { convertToOpenAITools, loadConfigAndServers } from "../utils/toolHandler.js";
 import { iServerConfig, iTool } from "../utils/types.js";
+import { IMCPServerManager } from "./interface.js";
 
 export class MCPServerManager implements IMCPServerManager {
   private static instance: MCPServerManager;
@@ -25,7 +25,7 @@ export class MCPServerManager implements IMCPServerManager {
     if (!MCPServerManager.instance) {
       MCPServerManager.instance = new MCPServerManager(configPath);
     } else if (configPath && configPath !== MCPServerManager.instance.configPath) {
-      // 如果提供了新的配置路徑且與當前不同，更新配置並重新初始化
+      // If a new config path is provided and different from current, update config and reinitialize
       MCPServerManager.instance.configPath = configPath;
       MCPServerManager.instance.initialize().catch((error) => {
         logger.error("Failed to reinitialize MCPServerManager:", error);
@@ -35,14 +35,14 @@ export class MCPServerManager implements IMCPServerManager {
   }
 
   async initialize(): Promise<void> {
-    // 清空所有狀態
+    // Clear all states
     this.servers.clear();
     this.transports.clear();
     this.toolToServerMap.clear();
     this.availableTools = [];
     this.toolInfos = [];
 
-    // 載入並連接所有伺服器
+    // Load and connect all servers
     await this.connectAllServers();
   }
 
@@ -88,13 +88,13 @@ export class MCPServerManager implements IMCPServerManager {
       this.servers.set(serverName, client);
       this.transports.set(serverName, transport);
 
-      // 載入伺服器工具
+      // load server tools
       const response = await client.listTools();
       if (config.enabled) {
         const langChainTools = convertToOpenAITools(response.tools);
         this.availableTools.push(...langChainTools);
 
-        // 記錄工具與伺服器的對應關係
+        // record tool to server mapping
         response.tools.forEach((tool) => {
           this.toolToServerMap.set(tool.name, client);
         });

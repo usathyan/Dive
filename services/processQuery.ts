@@ -1,14 +1,5 @@
-import {
-  BaseChatModel,
-  BindToolsInput,
-} from "@langchain/core/language_models/chat_models";
-import {
-  AIMessage,
-  BaseMessage,
-  HumanMessage,
-  MessageContentComplex,
-  ToolMessage,
-} from "@langchain/core/messages";
+import { BaseChatModel, BindToolsInput } from "@langchain/core/language_models/chat_models";
+import { AIMessage, BaseMessage, HumanMessage, MessageContentComplex, ToolMessage } from "@langchain/core/messages";
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { imageToBase64 } from "./utils/image.js";
 import logger from "./utils/logger.js";
@@ -95,18 +86,18 @@ export async function handleProcessQuery(
         );
       }
 
-      // 處理工具調用的串流
-      /** 踩坑: 使用 stream 時，要讀 tool_call_chunks 來取得工具調用結果 
-        *  tool_calls 的 arguments 是空的。
-        */
+      // Handle tool call stream
+      /** Note: When using stream, read tool_call_chunks to get tool call results
+       *  tool_calls arguments are empty.
+       */
       if (chunk.tool_calls || chunk.tool_call_chunks) {
         const toolCallChunks = chunk.tool_call_chunks || [];
 
         for (const chunks of toolCallChunks) {
-          // 使用 index 來查找或創建工具調用記錄
+          // Use index to find or create tool call record
           let index = chunks.index;
           if (index !== undefined && index >= 0 && !toolCalls[index]) {
-            // 沒有找到對應的工具調用記錄，創建新的記錄
+            // No corresponding tool call record found, create new record
             index = toolCalls.length;
             toolCalls.push({
               id: chunks.id,
@@ -127,20 +118,17 @@ export async function handleProcessQuery(
               toolCalls[index].function.arguments += chunks.args;
             }
 
-            // 嘗試解析完整的參數
+            // Try to parse complete arguments
             try {
               if (
                 toolCalls[index].function.arguments.startsWith("{") &&
                 toolCalls[index].function.arguments.endsWith("}")
               ) {
-                const parsedArgs = JSON.parse(
-                  toolCalls[index].function.arguments
-                );
-                toolCalls[index].function.arguments =
-                  JSON.stringify(parsedArgs);
+                const parsedArgs = JSON.parse(toolCalls[index].function.arguments);
+                toolCalls[index].function.arguments = JSON.stringify(parsedArgs);
               }
             } catch (e) {
-              // 如果解析失敗，表示參數還未完整，繼續累積
+              // If parsing fails, arguments are not complete, continue accumulating
             }
           }
         }
@@ -199,10 +187,7 @@ export async function handleProcessQuery(
           arguments: toolArgs,
         });
 
-        if (result?.isError)
-          logger.error(
-            `[MCP Tool][${toolName}] ${JSON.stringify(result, null, 2)}`
-          );
+        if (result?.isError) logger.error(`[MCP Tool][${toolName}] ${JSON.stringify(result, null, 2)}`);
 
         // Send tool execution results
         onStream?.(

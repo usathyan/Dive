@@ -10,16 +10,16 @@ describe("PromptManager", () => {
   let promptManager: PromptManager;
 
   beforeEach(() => {
-    // 重置 PromptManager 的單例實例
-    // @ts-ignore - 存取私有屬性進行測試
+    // Reset PromptManager singleton instance
+    // @ts-ignore - Access private property for testing
     PromptManager.instance = undefined;
-    // 重置所有 mock
+    // Reset all mocks
     jest.clearAllMocks();
     promptManager = PromptManager.getInstance();
   });
 
   describe("getInstance", () => {
-    it("應該返回 PromptManager 的單例實例", () => {
+    it("should return PromptManager singleton instance", () => {
       const instance1 = PromptManager.getInstance();
       const instance2 = PromptManager.getInstance();
 
@@ -30,7 +30,7 @@ describe("PromptManager", () => {
   });
 
   describe("setPrompt & getPrompt", () => {
-    it("應該能夠設置和獲取提示", () => {
+    it("should be able to set and get prompts", () => {
       const key = "test";
       const prompt = "This is a test prompt";
 
@@ -40,7 +40,7 @@ describe("PromptManager", () => {
       expect(retrievedPrompt).toBe(prompt);
     });
 
-    it("應該能夠更新現有的提示", () => {
+    it("should be able to update existing prompts", () => {
       const key = "test";
       const originalPrompt = "Original prompt";
       const updatedPrompt = "Updated prompt";
@@ -52,14 +52,14 @@ describe("PromptManager", () => {
       expect(retrievedPrompt).toBe(updatedPrompt);
     });
 
-    it("當提示不存在時應該返回 undefined", () => {
+    it("should return undefined when prompt doesn't exist", () => {
       const nonExistentKey = "nonexistent";
       const retrievedPrompt = promptManager.getPrompt(nonExistentKey);
 
       expect(retrievedPrompt).toBeUndefined();
     });
 
-    it("應該在初始化時包含系統提示", () => {
+    it("should include system prompts during initialization", () => {
       const systemPrompt = promptManager.getPrompt("system");
 
       expect(systemPrompt).toBeDefined();
@@ -67,8 +67,8 @@ describe("PromptManager", () => {
     });
   });
 
-  describe("邊界條件測試", () => {
-    it("應該能處理空字串作為 key", () => {
+  describe("Edge case tests", () => {
+    it("should handle empty string as key", () => {
       const key = "";
       const prompt = "Empty key prompt";
 
@@ -78,7 +78,7 @@ describe("PromptManager", () => {
       expect(retrievedPrompt).toBe(prompt);
     });
 
-    it("應該能處理空字串作為 prompt", () => {
+    it("should handle empty string as prompt", () => {
       const key = "emptyPrompt";
       const prompt = "";
 
@@ -90,7 +90,7 @@ describe("PromptManager", () => {
   });
 
   describe("loadCustomRules", () => {
-    it("應該能夠讀取自定義規則檔案", () => {
+    it("should be able to read custom rule file", () => {
       const mockRules = "custom rule content";
       (fs.readFileSync as jest.Mock).mockReturnValue(mockRules);
 
@@ -109,7 +109,7 @@ describe("PromptManager", () => {
   });
 
   describe("updateSystemPrompt", () => {
-    it("應該使用新的自定義規則更新系統提示", () => {
+    it("should use new custom rules to update system prompt", () => {
       const mockRules = "new custom rules";
       (fs.readFileSync as jest.Mock).mockReturnValue(mockRules);
 
@@ -120,7 +120,7 @@ describe("PromptManager", () => {
       expect(updatedSystemPrompt).not.toBe(originalSystemPrompt);
     });
 
-    it("當無法讀取自定義規則時應該保持原有的系統提示", () => {
+    it("should keep original system prompt when custom rules cannot be read", () => {
       (fs.readFileSync as jest.Mock).mockImplementation(() => {
         throw new Error("File not found");
       });

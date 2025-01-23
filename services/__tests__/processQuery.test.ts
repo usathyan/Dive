@@ -20,7 +20,7 @@ describe("ProcessQuery", () => {
   beforeEach(() => {
     jest.clearAllMocks();
 
-    // 模擬 model
+    // Mock model
     mockModel = {
       stream: jest.fn(),
       invoke: jest.fn(),
@@ -28,7 +28,7 @@ describe("ProcessQuery", () => {
       bindTools: jest.fn().mockImplementation(() => mockModel),
     } as any;
 
-    // 模擬 client
+    // Mock client
     mockClient = {
       connect: jest.fn(),
       disconnect: jest.fn(),
@@ -41,7 +41,7 @@ describe("ProcessQuery", () => {
   });
 
   describe("handleProcessQuery", () => {
-    it("應該正確處理純文字查詢", async () => {
+    it("should correctly handle plain text query", async () => {
       const input = "Hello, how are you?";
       const history: any[] = [];
       const mockStream = {
@@ -58,7 +58,7 @@ describe("ProcessQuery", () => {
       expect(mockModel.stream).toHaveBeenCalledWith([new HumanMessage(input)]);
     });
 
-    it("應該正確處理帶有系統提示的查詢", async () => {
+    it("should correctly handle query with system prompt", async () => {
       const input = "Hello";
       const systemPrompt = "You are a helpful assistant";
       const history = [new SystemMessage(systemPrompt)];
@@ -76,7 +76,7 @@ describe("ProcessQuery", () => {
       expect(mockModel.stream).toHaveBeenCalledWith([new SystemMessage(systemPrompt), new HumanMessage(input)]);
     });
 
-    it("應該正確處理包含圖片的查詢", async () => {
+    it("should correctly handle query with images", async () => {
       const input: iQueryInput = {
         text: "What's in this image?",
         images: ["test.jpg"],
@@ -96,7 +96,7 @@ describe("ProcessQuery", () => {
       expect(imageToBase64).toHaveBeenCalledWith("test.jpg");
     });
 
-    it("應該正確處理工具調用", async () => {
+    it("should correctly handle tool calls", async () => {
       const input = "Use the test tool";
       const mockStream = {
         async *[Symbol.asyncIterator]() {
@@ -136,7 +136,7 @@ describe("ProcessQuery", () => {
       expect(result).toBe("Tool called successfully");
     });
 
-    it("應該正確處理串流輸出", async () => {
+    it("should correctly handle stream output", async () => {
       const input = "Stream test";
       const mockStream = {
         async *[Symbol.asyncIterator]() {
@@ -167,7 +167,7 @@ describe("ProcessQuery", () => {
       );
     });
 
-    it("當模型未初始化時應拋出錯誤", async () => {
+    it("should throw error when model is not initialized", async () => {
       const input = "Test";
 
       await expect(handleProcessQuery(mockToolToClientMap, [], null, input, [])).rejects.toThrow(
@@ -175,7 +175,7 @@ describe("ProcessQuery", () => {
       );
     });
 
-    it("應該正確處理工具調用錯誤", async () => {
+    it("should correctly handle tool call errors", async () => {
       const input = "Use the test tool";
       const mockStream = {
         async *[Symbol.asyncIterator]() {
