@@ -62,7 +62,7 @@ export const defaultInterface: Record<ModelProvider, InterfaceDefinition> = {
     apiKey: {
       type: "string",
       label: "API Key",
-      description: "OpenAI API Key",
+      description: "API Key",
       required: false,
       default: "",
       placeholder: "YOUR_API_KEY"

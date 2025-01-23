@@ -98,6 +98,7 @@ const ModelConfigForm: React.FC<ModelConfigFormProps> = ({
             model_settings: {
               ...formData,
               modelProvider: provider.startsWith("openai") ? "openai" : provider,
+              configuration: formData,
             }
           }
         }),

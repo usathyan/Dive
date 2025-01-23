@@ -28,6 +28,7 @@ const Setup = () => {
           model_settings: {
             ...formData,
             modelProvider: provider.startsWith("openai") ? "openai" : provider,
+            configuration: formData,
           }
         }),
       })

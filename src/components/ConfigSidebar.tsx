@@ -33,7 +33,8 @@ const ConfigSidebar = () => {
         body: JSON.stringify({
           model_settings: {
             ...formData,
-            modelProvider: provider.startsWith("openai") ? "openai" : provider,
+            modelProvider: localProvider.startsWith("openai") ? "openai" : localProvider,
+            configuration: formData,
           }
         }),
       })
