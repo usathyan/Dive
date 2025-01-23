@@ -38,9 +38,10 @@ async function initClient(): Promise<MCPClient> {
     fse.mkdirSync(scriptsDir, { recursive: true })
     const source = path.join(app.isPackaged ? process.resourcesPath : process.cwd(), "prebuilt/scripts")
     fse.copySync(source, scriptsDir)
-    await npmInstall(scriptsDir)
   }
   
+  await npmInstall(scriptsDir)
+
   const mcpServerConfigPath = path.join(configDir, "config.json")
   if (!fse.existsSync(mcpServerConfigPath)) { 
     fse.writeFileSync(mcpServerConfigPath, JSON.stringify(DEF_MCP_SERVER_CONFIG, null, 2));
