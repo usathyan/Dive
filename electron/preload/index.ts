@@ -22,6 +22,7 @@ contextBridge.exposeInMainWorld("ipcRenderer", {
   getResources: (p: string) => ipcRenderer.invoke("api:getResources", p),
   fillPathToConfig: (config: string) => ipcRenderer.invoke("api:fillPathToConfig", config),
   openScriptsDir: () => ipcRenderer.invoke("fs:openScriptsDir"),
+  openaiModelList: (apiKey: string) => ipcRenderer.invoke("api:openaiModelList", apiKey),
 })
 
 // --------- Preload scripts loading ---------

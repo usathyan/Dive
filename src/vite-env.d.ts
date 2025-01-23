@@ -7,5 +7,6 @@ interface Window {
     getResources: (p: string) => Promise<string>
     openScriptsDir: () => Promise<void>
     fillPathToConfig: (config: string) => Promise<string>
+    openaiModelList: (apiKey: string) => Promise<string[]>
   }
 }

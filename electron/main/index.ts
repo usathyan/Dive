@@ -7,7 +7,7 @@ import { update } from "./update"
 import { initMCPClient, port, scriptsDir } from "./service"
 import log from "electron-log/main"
 import fse from "fs-extra"
-
+import OpenAI from "openai"
 const require = createRequire(import.meta.url)
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
@@ -206,5 +206,15 @@ ipcMain.handle("api:fillPathToConfig", async (_, _config: string) => {
     return JSON.stringify({ mcpServers })
   } catch (error) {
     return _config
+  }
+})
+
+ipcMain.handle("api:openaiModelList", async (_, apiKey: string) => {
+  try {
+    const client = new OpenAI({ apiKey })
+    const models = await client.models.list()
+    return models.data.map((model) => model.id)
+  } catch (error) {
+    return []
   }
 })
