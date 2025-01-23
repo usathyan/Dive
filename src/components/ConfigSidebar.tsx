@@ -46,8 +46,7 @@ const ConfigSidebar = () => {
           message: t("setup.saveSuccess"),
           type: 'success'
         })
-        
-        setTimeout(() => window.location.reload(), 1500)
+        setIsVisible(false)
       }
     } catch (error) {
       console.error("Failed to save config:", error)
