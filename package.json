@@ -32,6 +32,7 @@
     "package:linux-appImage": "npm run build:electron && electron-builder --linux appimage --x64 --publish=never"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.35.0",
     "@langchain/community": "^0.3.0",
     "@langchain/core": "^0.3.0",
     "@langchain/ollama": "^0.1.4",
@@ -57,6 +58,7 @@
     "marked": "^15.0.4",
     "marked-react": "^3.0.0",
     "multer": "^1.4.5-lts.1",
+    "ollama": "^0.5.12",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-i18next": "^15.4.0",

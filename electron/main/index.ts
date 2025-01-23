@@ -5,9 +5,12 @@ import path from "node:path"
 import os from "node:os"
 import { update } from "./update"
 import { initMCPClient, port, scriptsDir } from "./service"
+import Anthropic from "@anthropic-ai/sdk"
 import log from "electron-log/main"
 import fse from "fs-extra"
 import OpenAI from "openai"
+import { Ollama } from "ollama"
+
 const require = createRequire(import.meta.url)
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
@@ -214,6 +217,36 @@ ipcMain.handle("api:openaiModelList", async (_, apiKey: string) => {
     const client = new OpenAI({ apiKey })
     const models = await client.models.list()
     return models.data.map((model) => model.id)
+  } catch (error) {
+    return []
+  }
+})
+
+ipcMain.handle("api:anthropicModelList", async (_, apiKey: string, baseURL: string) => {
+  try {
+    const client = new Anthropic({ apiKey, baseURL })
+    const models = await client.models.list()
+    return models.data.map((model) => model.id)
+  } catch (error) {
+    return []
+  }
+})
+
+ipcMain.handle("api:ollamaModelList", async (_, baseURL: string) => {
+  try {
+    const ollama = new Ollama({ host: baseURL })
+    const list = await ollama.list()
+    return list.models.map((model) => model.name)
+  } catch (error) {
+    return []
+  }
+})
+
+ipcMain.handle("api:openaiCompatibleModelList", async (_, apiKey: string, baseURL: string) => {
+  try {
+    const client = new OpenAI({ apiKey, baseURL })
+    const list = await client.models.list()
+    return list.data.map((model) => model.id)
   } catch (error) {
     return []
   }

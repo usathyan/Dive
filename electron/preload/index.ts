@@ -23,6 +23,9 @@ contextBridge.exposeInMainWorld("ipcRenderer", {
   fillPathToConfig: (config: string) => ipcRenderer.invoke("api:fillPathToConfig", config),
   openScriptsDir: () => ipcRenderer.invoke("fs:openScriptsDir"),
   openaiModelList: (apiKey: string) => ipcRenderer.invoke("api:openaiModelList", apiKey),
+  openaiCompatibleModelList: (apiKey: string, baseURL: string) => ipcRenderer.invoke("api:openaiCompatibleModelList", apiKey, baseURL),
+  anthropicModelList: (apiKey: string, baseURL: string) => ipcRenderer.invoke("api:anthropicModelList", apiKey, baseURL),
+  ollamaModelList: (baseURL: string) => ipcRenderer.invoke("api:ollamaModelList", baseURL),
 })
 
 // --------- Preload scripts loading ---------

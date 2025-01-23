@@ -8,5 +8,8 @@ interface Window {
     openScriptsDir: () => Promise<void>
     fillPathToConfig: (config: string) => Promise<string>
     openaiModelList: (apiKey: string) => Promise<string[]>
+    openaiCompatibleModelList: (apiKey: string, baseURL: string) => Promise<string[]>
+    anthropicModelList: (apiKey: string, baseURL: string) => Promise<string[]>
+    ollamaModelList: (baseURL: string) => Promise<string[]>
   }
 }

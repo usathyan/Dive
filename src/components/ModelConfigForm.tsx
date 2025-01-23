@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react"
+import React, { useState, useEffect, useRef } from "react"
 import { useTranslation } from "react-i18next"
 import { FieldDefinition, ModelProvider, PROVIDER_LABELS } from "../atoms/interfaceState"
 import { ModelConfig } from "../atoms/configState"
@@ -33,6 +33,16 @@ const ModelConfigForm: React.FC<ModelConfigFormProps> = ({
   const [isVerified, setIsVerified] = useState(false)
   const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null)
   const [listOptions, setListOptions] = useState<Record<string, string[]>>({})
+  const initProvider = useRef(provider)
+  
+  useEffect(() => {
+    setListOptions({})
+    if (initProvider.current !== provider) {
+      setFormData(getFieldDefaultValue() || {})
+    } else {
+      setFormData(initialData || {})
+    }
+  }, [provider])
 
   useEffect(() => {
     Object.entries(fields).forEach(([key, field]) => {
@@ -59,6 +69,15 @@ const ModelConfigForm: React.FC<ModelConfigFormProps> = ({
       }
     })
   }, [fields, formData])
+  
+  const getFieldDefaultValue = () => {
+    return Object.keys(fields).reduce((acc, key) => {
+      return {
+        ...acc,
+        [key]: fields[key].default
+      }
+    }, {} as Record<string, any>)
+  }
 
   const handleProviderChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const newProvider = e.target.value as ModelProvider

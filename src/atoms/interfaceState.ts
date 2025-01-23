@@ -22,7 +22,7 @@ export interface FieldDefinition {
 
 export type InterfaceDefinition = Record<string, FieldDefinition>
 
-const defaultInterface: Record<ModelProvider, InterfaceDefinition> = {
+export const defaultInterface: Record<ModelProvider, InterfaceDefinition> = {
   openai: {
     apiKey: {
       type: "string",
@@ -40,7 +40,12 @@ const defaultInterface: Record<ModelProvider, InterfaceDefinition> = {
       default: "",
       placeholder: "Select a model",
       listCallback: async (deps) => {
-        return !deps.apiKey ? [] : await window.ipcRenderer.openaiModelList(deps.apiKey)
+        try {
+          return !deps.apiKey ? [] : await window.ipcRenderer.openaiModelList(deps.apiKey)
+        } catch (error) {
+          console.error(error)
+          return []
+        }
       },
       listDependencies: ["apiKey"]
     },
@@ -63,31 +68,49 @@ const defaultInterface: Record<ModelProvider, InterfaceDefinition> = {
       placeholder: "YOUR_API_KEY"
     },
     model: {
-      type: "string",
+      type: "list",
       label: "Model ID",
-      description: "Model name to use",
-      required: false,
+      description: "Model name to use (Please enter API Key first to see available models)",
+      required: true,
       default: "",
-      placeholder: ""
-    },
+      placeholder: "Select a model",
+      listCallback: async (deps) => {
+        try {
+          return await window.ipcRenderer.openaiCompatibleModelList(deps.apiKey, deps.baseURL)
+        } catch (error) {
+          console.error(error)
+          return []
+        }
+      },
+      listDependencies: ["apiKey", "baseURL"]
+    }
   },
   ollama: {
-    model: {
-      type: "string",
-      label: "Model ID",
-      description: "Model name to use",
-      required: false,
-      default: "",
-      placeholder: "llama2"
-    },
     baseURL: {
       type: "string",
       label: "Base URL",
       description: "Base URL for API calls",
-      required: false,
+      required: true,
       default: "http://localhost:11434",
       placeholder: "http://localhost:11434"
-    }
+    },
+    model: {
+      type: "list",
+      label: "Model ID",
+      description: "Model name to use",
+      required: true,
+      default: "",
+      placeholder: "Select a model",
+      listCallback: async (deps) => {
+        try {
+          return await window.ipcRenderer.ollamaModelList(deps.baseURL)
+        } catch (error) {
+          console.error(error)
+          return []
+        }
+      },
+      listDependencies: ["baseURL"]
+    },
   },
   anthropic: {
     apiKey: {
@@ -103,9 +126,26 @@ const defaultInterface: Record<ModelProvider, InterfaceDefinition> = {
       label: "Base URL",
       description: "Base URL for API calls",
       required: false,
-      default: "",
+      default: "https://api.anthropic.com",
       placeholder: "https://api.anthropic.com"
-    }
+    },
+    model: {
+      type: "list",
+      label: "Model ID",
+      description: "Model name to use (Please enter API Key first to see available models)",
+      required: false,
+      default: "",
+      placeholder: "Select a model",
+      listCallback: async (deps) => {
+        try {
+          return await window.ipcRenderer.anthropicModelList(deps.apiKey, deps.baseURL)
+        } catch (error) {
+          console.error(error)
+          return []
+        }
+      },
+      listDependencies: ["apiKey", "baseURL"]
+    },
   }
 }
 
