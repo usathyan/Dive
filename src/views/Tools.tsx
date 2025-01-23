@@ -156,9 +156,9 @@ const Tools = () => {
             <div className="error-message">{error}</div>
           ) : (
             tools.map((tool, index) => (
-              <div key={index} id={`tool-${index}`} className="tool-section">
+              <div key={index} id={`tool-${index}`} onClick={() => toggleToolSection(index)} className="tool-section">
                 <div className="tool-header">
-                  <div className="tool-header-content" onClick={() => toggleToolSection(index)}>
+                  <div className="tool-header-content">
                     {tool.icon ? (
                       <img src={tool.icon} alt="" />
                     ) : (
@@ -173,6 +173,7 @@ const Tools = () => {
                       type="checkbox"
                       checked={tool.enabled}
                       onChange={() => toggleTool(index)}
+                      onClick={(e) => e.stopPropagation()}
                     />
                     <span className="slider round"></span>
                   </label>
