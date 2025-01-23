@@ -195,8 +195,13 @@ export class WebServer {
           return;
         }
         const modelName = (config as unknown as iModelConfig).model_settings.model;
+        const baseUrl =
+          (config as unknown as iModelConfig).model_settings?.configuration?.baseURL ||
+          (config as unknown as iModelConfig).model_settings.baseURL ||
+          "";
         const model = await initChatModel(modelName, {
           ...(config as unknown as iModelConfig).model_settings,
+          baseUrl,
           max_tokens: 5,
         });
         const result = await model.invoke("Only return 'Hi' strictly");

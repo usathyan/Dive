@@ -77,11 +77,20 @@ export async function handleProcessQuery(
     // Handle streaming response
     for await (const chunk of stream) {
       if (chunk.content) {
-        currentContent += chunk.content;
+        let chunkMessage = "";
+        if (Array.isArray(chunk.content)) {
+          // compatible Anthropic response format
+          const textContent = chunk.content.find((item) => item.type === "text" || item.type === "text_delta");
+          // @ts-ignore
+          chunkMessage = textContent?.text || "";
+        } else {
+          chunkMessage = chunk.content;
+        }
+        currentContent += chunkMessage;
         onStream?.(
           JSON.stringify({
             type: "text",
-            content: chunk.content,
+            content: chunkMessage,
           } as iStreamMessage)
         );
       }
@@ -90,23 +99,26 @@ export async function handleProcessQuery(
       /** Note: When using stream, read tool_call_chunks to get tool call results
        *  tool_calls arguments are empty.
        */
-      if (chunk.tool_calls || chunk.tool_call_chunks) {
-        const toolCallChunks = chunk.tool_call_chunks || [];
+      if (
+        chunk.tool_calls ||
+        chunk.tool_call_chunks ||
+        (Array.isArray(chunk.content) && chunk.content.some((item) => item.type === "tool_use"))
+      ) {
+        let toolCallChunks: any[] = [];
+        toolCallChunks = chunk.tool_call_chunks || [];
 
         for (const chunks of toolCallChunks) {
-          // Use index to find or create tool call record
           let index = chunks.index;
+          // Use index to find or create tool call record
           if (index !== undefined && index >= 0 && !toolCalls[index]) {
-            // No corresponding tool call record found, create new record
-            index = toolCalls.length;
-            toolCalls.push({
+            toolCalls[index] = {
               id: chunks.id,
               type: "function",
               function: {
                 name: chunks.name,
                 arguments: "",
               },
-            });
+            };
           }
 
           if (index !== undefined && index >= 0) {
@@ -114,17 +126,16 @@ export async function handleProcessQuery(
               toolCalls[index].function.name = chunks.name;
             }
 
-            if (chunks.args) {
-              toolCalls[index].function.arguments += chunks.args;
+            if (chunks.args || chunks.input) {
+              const newArgs = chunks.args || chunks.input || "";
+              toolCalls[index].function.arguments += newArgs;
             }
 
             // Try to parse complete arguments
             try {
-              if (
-                toolCalls[index].function.arguments.startsWith("{") &&
-                toolCalls[index].function.arguments.endsWith("}")
-              ) {
-                const parsedArgs = JSON.parse(toolCalls[index].function.arguments);
+              const args = toolCalls[index].function.arguments;
+              if (args.startsWith("{") && args.endsWith("}")) {
+                const parsedArgs = JSON.parse(args);
                 toolCalls[index].function.arguments = JSON.stringify(parsedArgs);
               }
             } catch (e) {
@@ -135,13 +146,16 @@ export async function handleProcessQuery(
       }
     }
 
+    // filter empty tool calls
+    toolCalls = toolCalls.filter((call) => call);
+
     // Update final response
     finalResponse += currentContent;
 
     // If no tool calls, end loop
     if (toolCalls.length === 0) {
       hasToolCalls = false;
-      continue;
+      break;
     }
 
     // Add AI tool call record to conversation
