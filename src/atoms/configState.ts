@@ -10,9 +10,12 @@ export const loadConfigAtom = atom(
     try {
       const response = await fetch("/api/config/model")
       const data = await response.json()
-      set(configAtom, data.config ? data.config.model_settings : null)
+      const config = data.config
+      set(configAtom, config ? config.model_settings : null)
+      return config
     } catch (error) {
       console.warn("Failed to load config:", error)
+      return null
     }
   }
 ) 
