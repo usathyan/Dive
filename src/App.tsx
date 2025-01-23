@@ -3,7 +3,6 @@ import { router } from "./router"
 import { useAtom } from 'jotai'
 import { loadConfigAtom } from './atoms/configState'
 import { useEffect, useState } from "react"
-import ConfigSidebar from "./components/ConfigSidebar"
 import { updateProviderAtom } from "./atoms/interfaceState"
 
 function App() {
@@ -34,7 +33,6 @@ function App() {
   return (
     <>
       <RouterProvider router={router} />
-      <ConfigSidebar />
     </>
   )
 }

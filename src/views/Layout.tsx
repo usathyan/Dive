@@ -4,10 +4,10 @@ import HistorySidebar from "../components/HistorySidebar"
 import Header from "../components/Header"
 import { useAtom } from "jotai"
 import { configAtom } from "../atoms/configState"
+import ConfigSidebar from "../components/ConfigSidebar"
 
 const Layout = () => {
   const [config] = useAtom(configAtom)
-
 
   return (
     <div className="app-container">
@@ -15,6 +15,7 @@ const Layout = () => {
         <>
           <Header />
           <HistorySidebar />
+          <ConfigSidebar />
         </>
       }
       <Outlet />
