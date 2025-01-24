@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef } from "react"
 import { useTranslation } from "react-i18next"
+import { useAtom } from "jotai"
 import { FieldDefinition, ModelProvider, PROVIDER_LABELS } from "../atoms/interfaceState"
-import { ModelConfig } from "../atoms/configState"
+import { ModelConfig, configAtom } from "../atoms/configState"
 import Toast from "./Toast"
 
 const PROVIDERS: ModelProvider[] = ["openai", "openai_compatible", "ollama", "anthropic"]
@@ -34,6 +35,7 @@ const ModelConfigForm: React.FC<ModelConfigFormProps> = ({
   const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null)
   const [listOptions, setListOptions] = useState<Record<string, string[]>>({})
   const initProvider = useRef(provider)
+  const [, setConfig] = useAtom(configAtom)
   
   useEffect(() => {
     setListOptions({})
@@ -133,21 +135,13 @@ const ModelConfigForm: React.FC<ModelConfigFormProps> = ({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     
-    const newErrors: Record<string, string> = {}
-    Object.entries(fields).forEach(([key, field]) => {
-      if (field.required && !formData[key]) {
-        newErrors[key] = t("setup.required")
-      }
-    })
-
-    if (Object.keys(newErrors).length > 0) {
-      setErrors(newErrors)
+    if (!validateForm())
       return
-    }
-
+    
     try {
       setIsSubmitting(true)
       await onSubmit(formData)
+      setConfig(formData)
     } finally {
       setIsSubmitting(false)
     }
@@ -163,6 +157,21 @@ const ModelConfigForm: React.FC<ModelConfigFormProps> = ({
       [key]: ""
     }))
     setIsVerified(false)
+  }
+
+  const validateForm = () => {
+    const newErrors: Record<string, string> = {}
+    Object.entries(fields).forEach(([key, field]) => {
+      if (field.required && !formData[key]) {
+        newErrors[key] = t("setup.required")
+      }
+    })
+
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors)
+      return false
+    }
+    return true
   }
 
   return (
