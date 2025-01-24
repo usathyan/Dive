@@ -61,7 +61,8 @@ const HistorySidebar = ({ onNewChat }: Props) => {
   }
 
   const handleDelete = async () => {
-    if (!deletingChatId) return
+    if (!deletingChatId)
+      return
 
     try {
       const response = await fetch(`/api/chat/${deletingChatId}`, {
@@ -76,7 +77,6 @@ const HistorySidebar = ({ onNewChat }: Props) => {
         })
 
         if (location.pathname.includes(`/chat/${deletingChatId}`)) {
-          toggleSidebar()
           navigate("/")
         }
 
