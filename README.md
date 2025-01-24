@@ -2,6 +2,23 @@
 
 A desktop AI chat application built with Electron and React.
 
+## Table of Contents
+
+- [Development Requirements](#development-requirements)
+- [Development](#development)
+  - [Install dependencies](#install-dependencies)
+  - [Start development server](#start-development-server)
+- [Build for production](#build-for-production)
+  - [Cross-platform Build for Windows](#cross-platform-build-for-windows)
+- [Scripts](#scripts)
+- [Package Scripts](#package-scripts)
+- [MCP Server Setup](#mcp-server-setup)
+  - [1. Add New MCP Server via GUI](#1-add-new-mcp-server-via-gui)
+  - [2. Edit config.json directly](#2-edit-configjson-directly)
+  - [3. Using Config Editor](#3-using-config-editor)
+  - [4. Custom Scripts](#4-custom-scripts)
+- [Project Architecture](#project-architecture)
+
 ## Development Requirements
 
 - Node.js LTS+
