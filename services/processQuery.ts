@@ -69,6 +69,13 @@ export async function handleProcessQuery(
 
   const runModel = model.bindTools?.(availableTools) || model;
 
+
+  const isOllama = model.lc_kwargs["defaultConfig"]?.modelProvider === "ollama";
+  const isDeepseek =
+    model.lc_kwargs["defaultConfig"]?.baseURL?.includes("deepseek") ||
+    model.lc_kwargs["defaultConfig"]?.model?.includes("deepseek-chat");
+
+
   while (hasToolCalls) {
     const stream = await runModel.stream(messages);
     let currentContent = "";
@@ -105,11 +112,20 @@ export async function handleProcessQuery(
         (Array.isArray(chunk.content) && chunk.content.some((item) => item.type === "tool_use"))
       ) {
         let toolCallChunks: any[] = [];
+
         toolCallChunks = chunk.tool_call_chunks || [];
 
         for (const chunks of toolCallChunks) {
           let index = chunks.index;
           // Use index to find or create tool call record
+          // Ollama have multiple tool_call with same index and diff id
+          if (isOllama && index !== undefined && index >= 0 && toolCalls[index]) {
+            index = toolCalls.findIndex((toolCall) => toolCall.id === chunks.id);
+            if (index === undefined || index < 0) {
+              index = toolCalls.length;
+            }
+          }
+
           if (index !== undefined && index >= 0 && !toolCalls[index]) {
             toolCalls[index] = {
               id: chunks.id,
@@ -158,11 +174,24 @@ export async function handleProcessQuery(
       break;
     }
 
-    // Add AI tool call record to conversation
-    // This is necessary to correspond with tool results (toolCall.id)
+    // support anthropic multiple tool calls version but other not sure
     messages.push(
       new AIMessage({
-        content: currentContent,
+        content: [
+          {
+            type: "text",
+            text: currentContent,
+          },
+          // Deepseek will recursive when tool_use exist in content
+          ...(isDeepseek
+            ? []
+            : toolCalls.map((toolCall) => ({
+                type: "tool_use",
+                id: toolCall.id,
+                name: toolCall.function.name,
+                input: toolCall.function.arguments === "" ? {} : JSON.parse(toolCall.function.arguments),
+              }))),
+        ],
         additional_kwargs: {
           tool_calls: toolCalls.map((toolCall) => ({
             id: toolCall.id,
@@ -183,7 +212,7 @@ export async function handleProcessQuery(
           type: "tool_calls",
           content: toolCalls.map((call) => ({
             name: call.function.name,
-            arguments: JSON.parse(call.function.arguments),
+            arguments: JSON.parse(call.function.arguments || "{}"),
           })),
         } as iStreamMessage)
       );
@@ -193,7 +222,7 @@ export async function handleProcessQuery(
     const toolResults = await Promise.all(
       toolCalls.map(async (toolCall) => {
         const toolName = toolCall.function.name;
-        const toolArgs = JSON.parse(toolCall.function.arguments);
+        const toolArgs = JSON.parse(toolCall.function.arguments || "{}");
         const client = toolToClientMap.get(toolName);
 
         const result = await client?.callTool({
