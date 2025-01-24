@@ -16,6 +16,91 @@ interface Tool {
   enabled: boolean
 }
 
+interface ConfigModalProps {
+  title: string
+  subtitle?: string
+  config: Record<string, any>
+  onSubmit: (config: Record<string, any>) => void
+  onCancel: () => void
+}
+
+const ConfigModal: React.FC<ConfigModalProps> = ({
+  title,
+  subtitle,
+  config,
+  onSubmit,
+  onCancel
+}) => {
+  const { t } = useTranslation()
+  const [jsonString, setJsonString] = useState(JSON.stringify(config, null, 2))
+  const [error, setError] = useState<string>("")
+  const [isSubmitting, setIsSubmitting] = useState(false)
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    
+    try {
+      const parsedConfig = JSON.parse(jsonString)
+      setIsSubmitting(true)
+      await onSubmit(parsedConfig)
+    } catch (err) {
+      if (err instanceof SyntaxError) {
+        setError("Invalid JSON format")
+      }
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
+
+  return (
+    <div className="modal-overlay">
+      <div className="modal-content">
+        <div className="modal-header">
+          <h2>{title}</h2>
+          <button 
+            className="close-btn"
+            onClick={onCancel}
+          >
+            ×
+          </button>
+        </div>
+        <form onSubmit={handleSubmit} className="config-form">
+          {subtitle && <p className="subtitle">{subtitle}</p>}
+          {error && <div className="error-message">{error}</div>}
+          <textarea
+            value={jsonString}
+            onChange={e => {
+              setJsonString(e.target.value)
+              setError("")
+            }}
+            className="config-textarea"
+            rows={20}
+          />
+          <div className="form-actions">
+            <button 
+              type="button" 
+              onClick={onCancel} 
+              className="cancel-btn"
+              disabled={isSubmitting}
+            >
+              {t("tools.cancel")}
+            </button>
+            <button 
+              type="submit" 
+              className="submit-btn"
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? (
+                <div className="loading-spinner"></div>
+              ) : t("tools.save")}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  )
+}
+
 const Tools = () => {
   const { t } = useTranslation()
   const [tools, setTools] = useState<Tool[]>([])
@@ -24,6 +109,7 @@ const Tools = () => {
   const [mcpConfig, setMcpConfig] = useState<Record<string, any>>({})
   const [isLoading, setIsLoading] = useState(false)
   const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null)
+  const [showAddModal, setShowAddModal] = useState(false)
 
   useEffect(() => {
     fetchTools()
@@ -124,6 +210,31 @@ const Tools = () => {
     window.ipcRenderer.openScriptsDir()
   }
 
+  const handleAddSubmit = async (newConfig: Record<string, any>) => {
+    let mergedConfig = mcpConfig
+    const configKeys = Object.keys(newConfig)
+    if (configKeys.includes("mcpServers")) {
+      mergedConfig.mcpServers = { ...mergedConfig.mcpServers, ...newConfig.mcpServers }
+    }
+    
+    mergedConfig.mcpServers = configKeys.reduce((acc, key) => {
+      if ("command" in newConfig[key] && "args" in newConfig[key]) {
+        acc[key] = { ...(mergedConfig.mcpServers[key] || {}), ...newConfig[key] }
+      }
+      return acc
+    }, mergedConfig.mcpServers)
+    
+    mergedConfig.mcpServers = Object.keys(mergedConfig.mcpServers).reduce((acc, key) => {
+      if (!("enabled" in acc[key])) {
+        acc[key].enabled = true
+      }
+      return acc
+    }, mergedConfig.mcpServers)
+
+    await handleConfigSubmit(mergedConfig)
+    setShowAddModal(false)
+  }
+
   return (
     <div className="tools-page">
       <div className="tools-container">
@@ -133,6 +244,15 @@ const Tools = () => {
             <p className="subtitle">{t("tools.subtitle")}</p>
           </div>
           <div className="header-actions">
+            <button 
+              className="add-btn"
+              onClick={() => setShowAddModal(true)}
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24">
+                <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
+              </svg>
+              {t("tools.addServer")}
+            </button>
             <button 
               className="edit-btn"
               onClick={() => setShowConfigModal(true)}
@@ -168,12 +288,11 @@ const Tools = () => {
                     )}
                     <span className="tool-name">{tool.name}</span>
                   </div>
-                  <label className="switch">
+                  <label onClick={(e) => e.stopPropagation()} className="switch">
                     <input
                       type="checkbox"
                       checked={tool.enabled}
                       onChange={() => toggleTool(index)}
-                      onClick={(e) => e.stopPropagation()}
                     />
                     <span className="slider round"></span>
                   </label>
@@ -213,24 +332,22 @@ const Tools = () => {
       )}
 
       {showConfigModal && (
-        <div className="modal-overlay">
-          <div className="modal-content">
-            <div className="modal-header">
-              <h2>{t("tools.configTitle")}</h2>
-              <button 
-                className="close-btn"
-                onClick={() => setShowConfigModal(false)}
-              >
-                ×
-              </button>
-            </div>
-            <ConfigForm
-              config={mcpConfig}
-              onSubmit={handleConfigSubmit}
-              onCancel={() => setShowConfigModal(false)}
-            />
-          </div>
-        </div>
+        <ConfigModal
+          title={t("tools.configTitle")}
+          config={mcpConfig}
+          onSubmit={handleConfigSubmit}
+          onCancel={() => setShowConfigModal(false)}
+        />
+      )}
+
+      {showAddModal && (
+        <ConfigModal
+          title={t("tools.addServerTitle")}
+          subtitle={t("tools.addServerSubtitle")}
+          config={{}}
+          onSubmit={handleAddSubmit}
+          onCancel={() => setShowAddModal(false)}
+        />
       )}
 
       {toast && (
@@ -241,90 +358,6 @@ const Tools = () => {
         />
       )}
     </div>
-  )
-}
-
-interface ConfigFormProps {
-  config: Record<string, any>
-  onSubmit: (config: Record<string, any>) => void
-  onCancel: () => void
-}
-
-const ConfigForm: React.FC<ConfigFormProps> = ({
-  config,
-  onSubmit,
-  onCancel
-}) => {
-  const { t } = useTranslation()
-  const [jsonString, setJsonString] = useState(JSON.stringify(config, null, 2))
-  const [error, setError] = useState<string>("")
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null)
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    
-    try {
-      const parsedConfig = JSON.parse(jsonString)
-      setIsSubmitting(true)
-      await onSubmit(parsedConfig)
-      setToast({
-        message: t("tools.saveSuccess"),
-        type: "success"
-      })
-    } catch (err) {
-      if (err instanceof SyntaxError) {
-        setError("Invalid JSON format")
-      } else {
-        setToast({
-          message: t("tools.saveFailed"),
-          type: "error"
-        })
-      }
-    } finally {
-      setIsSubmitting(false)
-    }
-  }
-
-  return (
-    <form onSubmit={handleSubmit} className="config-form">
-      {error && <div className="error-message">{error}</div>}
-      <textarea
-        value={jsonString}
-        onChange={e => {
-          setJsonString(e.target.value)
-          setError("")
-        }}
-        className="config-textarea"
-        rows={20}
-      />
-      <div className="form-actions">
-        <button 
-          type="button" 
-          onClick={onCancel} 
-          className="cancel-btn"
-          disabled={isSubmitting}
-        >
-          {t("tools.cancel")}
-        </button>
-        <button 
-          type="submit" 
-          className="submit-btn"
-          disabled={isSubmitting}
-        >
-          {isSubmitting ? (
-            <div className="loading-spinner"></div>
-          ) : t("tools.save")}
-        </button>
-      </div>
-      {toast && (
-        <Toast
-          message={toast.message}
-          type={toast.type}
-          onClose={() => setToast(null)}
-        />
-      )}
-    </form>
   )
 }
 

@@ -49,7 +49,10 @@
     "cancel": "Cancel",
     "saveSuccess": "Settings saved successfully",
     "saveFailed": "Failed to save settings",
-    "openConfigFolder": "Open Config Folder"
+    "openConfigFolder": "Open Config Folder",
+    "addServer": "Add MCP Server",
+    "addServerTitle": "Add MCP Server",
+    "addServerSubtitle": "Please paste MCP Server Json directly"
   },
   "modelConfig": {
     "title": "Language Model Settings",

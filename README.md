@@ -63,19 +63,40 @@ After first launch, you can find the `config.json` file in these locations:
 - Windows: `C:\Users\USERNAME\AppData\Local\Dive\Data`
 - Linux: `~/.config/dive`
 
-There are three ways to configure MCP servers:
+There are four ways to configure MCP servers:
 
-### 1. Edit config.json directly
+### 1. Add New MCP Server via GUI
+
+1. Click the menu button in the top-left corner to open the sidebar
+2. Click "MCP Server Management" at the bottom
+3. Click the "Add MCP Server" button
+4. Paste your MCP server configuration in JSON format
+5. Click "Save" to add the new server
+
+Example configuration:
+```json
+{
+  "myServer": {
+    "command": "node",
+    "args": [
+      "-y",
+      "@modelcontextprotocol/server-memory"
+    ]
+  }
+}
+```
+
+### 2. Edit config.json directly
 
 You can edit the `config.json` file directly in the above locations following each MCP server's documentation.
 
-### 2. Using GUI Interface
+### 3. Using Config Editor
 
 1. Click the menu button in the top-left corner to open the sidebar
 2. Click "MCP Server Management" at the bottom
 3. Click the "Edit Config" button on the page
 
-### 3. Custom Scripts
+### 4. Custom Scripts
 
 You can add your own MCP server scripts in the `.dive/scripts` directory in your home folder, then update the `config.json` accordingly.
 

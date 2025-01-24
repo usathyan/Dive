@@ -49,7 +49,10 @@
     "cancel": "取消",
     "saveSuccess": "設定已儲存",
     "saveFailed": "儲存失敗",
-    "openConfigFolder": "開啟設定資料夾"
+    "openConfigFolder": "開啟設定資料夾",
+    "addServer": "新增 MCP Server",
+    "addServerTitle": "新增 MCP Server",
+    "addServerSubtitle": "請直接貼上 MCP Server Json"
   },
   "modelConfig": {
     "title": "語言模型設定",
