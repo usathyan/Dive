@@ -34,7 +34,7 @@
     ],
     "extraResources": [
       {
-        "from": "node/win-x64/",
+        "from": "bin/node/win-x64/",
         "to": "node/",
         "filter": [
           "node.exe",
@@ -42,6 +42,19 @@
           "npm.cmd",
           "node_modules/**/*"
         ]
+      },
+      {
+        "from": "bin/uv/win-x64/",
+        "to": "uv/",
+        "filter": [
+          "uv.exe",
+          "uvx.exe"
+        ]
+      },
+      {
+        "from": "bin/python/win-x64/",
+        "to": "python/",
+        "filter": ["**/*"]
       }
     ],
     "artifactName": "${productName}_${version}.${ext}"

@@ -19,6 +19,8 @@
     "build:services": "vite build --config vite.config.service.ts",
     "start:services": "vite-node services/main.ts",
     "postinstall": "electron-builder install-app-deps",
+    "download-uv": "vite-node scripts/download-uv.ts",
+    "download-python": "vite-node scripts/download-python.ts",
     "download-node:win-x64": "vite-node scripts/download-node.ts win-x64",
     "download-node:linux-x64": "vite-node scripts/download-node.ts linux-x64",
     "download-node:darwin-arm64": "vite-node scripts/download-node.ts darwin-arm64",
