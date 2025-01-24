@@ -4,12 +4,13 @@ import { fileURLToPath } from "node:url"
 import path from "node:path"
 import os from "node:os"
 import { update } from "./update"
-import { initMCPClient, port, scriptsDir } from "./service"
+import { binDirList, initMCPClient, port, scriptsDir } from "./service"
 import Anthropic from "@anthropic-ai/sdk"
 import log from "electron-log/main"
 import fse from "fs-extra"
 import OpenAI from "openai"
 import { Ollama } from "ollama"
+import { modifyPath, setNodePath } from "./util"
 
 const require = createRequire(import.meta.url)
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
@@ -55,6 +56,8 @@ const preload = path.join(__dirname, "../preload/index.mjs")
 const indexHtml = path.join(RENDERER_DIST, "index.html")
 
 async function onReady() {
+  binDirList.forEach(modifyPath)
+  setNodePath()
   initMCPClient()
   createWindow()
 }

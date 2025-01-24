@@ -16,6 +16,11 @@ export const configDir = envPath.config
 export const homeDir = os.homedir()
 export const appDir = path.join(homeDir, ".dive")
 export const scriptsDir = path.join(appDir, "scripts")
+export const binDirList = [
+  path.join(process.resourcesPath, "node"),
+  path.join(process.resourcesPath, "uv"),
+  path.join(process.resourcesPath, "python"),
+]
 
 const DEF_MCP_SERVER_CONFIG = {
   "mcpServers": {
@@ -63,8 +68,8 @@ async function initClient(): Promise<MCPClient> {
   
   const systemCommandManager = SystemCommandManager.getInstance()
   systemCommandManager.initialize(process.platform === "win32" && app.isPackaged ? {
-    "node": path.join(process.resourcesPath, "node", "node.exe"),
-    "npx": path.join(process.resourcesPath, "node", "npx.cmd"),
+    // "node": path.join(process.resourcesPath, "node", "node.exe"),
+    "npx": path.join(process.resourcesPath, "node", "npx.cmd"), 
     "npm": path.join(process.resourcesPath, "node", "npm.cmd"),
   } : {})
 
