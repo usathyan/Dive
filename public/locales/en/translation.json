@@ -52,7 +52,10 @@
     "openConfigFolder": "Open Config Folder",
     "addServer": "Add MCP Server",
     "addServerTitle": "Add MCP Server",
-    "addServerSubtitle": "Please paste MCP Server Json directly"
+    "addServerSubtitle": "Please paste MCP Server Json directly",
+    "fetchFailed": "Failed to load tools",
+    "configFetchFailed": "Failed to load configuration",
+    "invalidJson": "Invalid JSON format"
   },
   "modelConfig": {
     "title": "Language Model Settings",

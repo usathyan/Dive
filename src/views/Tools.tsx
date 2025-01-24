@@ -33,19 +33,27 @@ const ConfigModal: React.FC<ConfigModalProps> = ({
 }) => {
   const { t } = useTranslation()
   const [jsonString, setJsonString] = useState(JSON.stringify(config, null, 2))
-  const [error, setError] = useState<string>("")
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     
     try {
-      const parsedConfig = JSON.parse(jsonString)
+      let processedJsonString = jsonString.trim()
+      if (!processedJsonString.startsWith('{')) {
+        processedJsonString = `{${processedJsonString}}`
+      }
+      
+      const parsedConfig = JSON.parse(processedJsonString)
       setIsSubmitting(true)
       await onSubmit(parsedConfig)
     } catch (err) {
       if (err instanceof SyntaxError) {
-        setError("Invalid JSON format")
+        setToast({
+          message: t("tools.invalidJson"),
+          type: "error"
+        })
       }
     } finally {
       setIsSubmitting(false)
@@ -66,13 +74,9 @@ const ConfigModal: React.FC<ConfigModalProps> = ({
         </div>
         <form onSubmit={handleSubmit} className="config-form">
           {subtitle && <p className="subtitle">{subtitle}</p>}
-          {error && <div className="error-message">{error}</div>}
           <textarea
             value={jsonString}
-            onChange={e => {
-              setJsonString(e.target.value)
-              setError("")
-            }}
+            onChange={e => setJsonString(e.target.value)}
             className="config-textarea"
             rows={20}
           />
@@ -96,6 +100,13 @@ const ConfigModal: React.FC<ConfigModalProps> = ({
             </button>
           </div>
         </form>
+        {toast && (
+          <Toast
+            message={toast.message}
+            type={toast.type}
+            onClose={() => setToast(null)}
+          />
+        )}
       </div>
     </div>
   )
@@ -104,7 +115,6 @@ const ConfigModal: React.FC<ConfigModalProps> = ({
 const Tools = () => {
   const { t } = useTranslation()
   const [tools, setTools] = useState<Tool[]>([])
-  const [error, setError] = useState<string>("")
   const [showConfigModal, setShowConfigModal] = useState(false)
   const [mcpConfig, setMcpConfig] = useState<Record<string, any>>({})
   const [isLoading, setIsLoading] = useState(false)
@@ -124,10 +134,16 @@ const Tools = () => {
       if (data.success) {
         setTools(data.tools)
       } else {
-        setError(data.message)
+        setToast({
+          message: data.message || t("tools.fetchFailed"),
+          type: "error"
+        })
       }
     } catch (error) {
-      setError(error instanceof Error ? error.message : "Failed to fetch tools")
+      setToast({
+        message: error instanceof Error ? error.message : t("tools.fetchFailed"),
+        type: "error"
+      })
     }
   }
 
@@ -137,9 +153,17 @@ const Tools = () => {
       const data = await response.json()
       if (data.success) {
         setMcpConfig(data.config || {})
+      } else {
+        setToast({
+          message: data.message || t("tools.configFetchFailed"),
+          type: "error"
+        })
       }
     } catch (error) {
-      console.error("Failed to fetch MCP config:", error)
+      setToast({
+        message: error instanceof Error ? error.message : t("tools.configFetchFailed"),
+        type: "error"
+      })
     }
   }
 
@@ -272,56 +296,52 @@ const Tools = () => {
         </div>
 
         <div className="tools-list">
-          {error ? (
-            <div className="error-message">{error}</div>
-          ) : (
-            tools.map((tool, index) => (
-              <div key={index} id={`tool-${index}`} onClick={() => toggleToolSection(index)} className="tool-section">
-                <div className="tool-header">
-                  <div className="tool-header-content">
-                    {tool.icon ? (
-                      <img src={tool.icon} alt="" />
-                    ) : (
-                      <svg width="20" height="20" viewBox="0 0 24 24">
-                        <path d="M22.7 19l-9.1-9.1c.9-2.3.4-5-1.5-6.9-2-2-5-2.4-7.4-1.3L9 6 6 9 1.6 4.7C.4 7.1.9 10.1 2.9 12.1c1.9 1.9 4.6 2.4 6.9 1.5l9.1 9.1c.4.4 1 .4 1.4 0l2.3-2.3c.5-.4.5-1.1.1-1.4z"/>
-                      </svg>
-                    )}
-                    <span className="tool-name">{tool.name}</span>
-                  </div>
-                  <label onClick={(e) => e.stopPropagation()} className="switch">
-                    <input
-                      type="checkbox"
-                      checked={tool.enabled}
-                      onChange={() => toggleTool(index)}
-                    />
-                    <span className="slider round"></span>
-                  </label>
-                  <span className="tool-toggle">▼</span>
-                </div>
-                <div className="tool-content">
-                  {tool.description && (
-                    <div className="tool-description">{tool.description}</div>
+          {tools.map((tool, index) => (
+            <div key={index} id={`tool-${index}`} onClick={() => toggleToolSection(index)} className="tool-section">
+              <div className="tool-header">
+                <div className="tool-header-content">
+                  {tool.icon ? (
+                    <img src={tool.icon} alt="" />
+                  ) : (
+                    <svg width="20" height="20" viewBox="0 0 24 24">
+                      <path d="M22.7 19l-9.1-9.1c.9-2.3.4-5-1.5-6.9-2-2-5-2.4-7.4-1.3L9 6 6 9 1.6 4.7C.4 7.1.9 10.1 2.9 12.1c1.9 1.9 4.6 2.4 6.9 1.5l9.1 9.1c.4.4 1 .4 1.4 0l2.3-2.3c.5-.4.5-1.1.1-1.4z"/>
+                    </svg>
                   )}
-                  {tool.tools && (
-                    <div className="sub-tools">
-                      {tool.tools.map((subTool, subIndex) => (
-                        <div key={subIndex} className="sub-tool">
-                          <div className="sub-tool-content">
-                            <div className="sub-tool-name">{subTool.name}</div>
-                            {subTool.description && (
-                              <div className="sub-tool-description">
-                                {subTool.description}
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
+                  <span className="tool-name">{tool.name}</span>
                 </div>
+                <label onClick={(e) => e.stopPropagation()} className="switch">
+                  <input
+                    type="checkbox"
+                    checked={tool.enabled}
+                    onChange={() => toggleTool(index)}
+                  />
+                  <span className="slider round"></span>
+                </label>
+                <span className="tool-toggle">▼</span>
               </div>
-            ))
-          )}
+              <div className="tool-content">
+                {tool.description && (
+                  <div className="tool-description">{tool.description}</div>
+                )}
+                {tool.tools && (
+                  <div className="sub-tools">
+                    {tool.tools.map((subTool, subIndex) => (
+                      <div key={subIndex} className="sub-tool">
+                        <div className="sub-tool-content">
+                          <div className="sub-tool-name">{subTool.name}</div>
+                          {subTool.description && (
+                            <div className="sub-tool-description">
+                              {subTool.description}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          ))}
         </div>
       </div>
 
