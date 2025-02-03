@@ -1,21 +1,21 @@
 import React, { useState, useRef, KeyboardEvent, useEffect } from "react"
 import { useNavigate } from "react-router-dom"
 import Toast from "../components/Toast"
-import { useSetAtom, useAtom } from 'jotai'
-import { updateStreamingCodeAtom } from '../atoms/codeStreaming'
-import { useTranslation } from 'react-i18next'
-import { historiesAtom, loadHistoriesAtom } from '../atoms/historyState'
-import { configAtom } from '../atoms/configState'
-import Setup from './Setup'
+import { useSetAtom, useAtom } from "jotai"
+import { updateStreamingCodeAtom } from "../atoms/codeStreaming"
+import { useTranslation } from "react-i18next"
+import { historiesAtom, loadHistoriesAtom } from "../atoms/historyState"
+import { configAtom } from "../atoms/configState"
+import Setup from "./Setup"
 
 const formatFileSize = (bytes: number) => {
   if (bytes === 0)
-    return '0 Bytes'
+    return "0 Bytes"
 
   const k = 1024
-  const sizes = ['Bytes', 'KB', 'MB', 'GB']
+  const sizes = ["Bytes", "KB", "MB", "GB"]
   const i = Math.floor(Math.log(bytes) / Math.log(k))
-  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i]
 }
 
 const Welcome = () => {
@@ -23,7 +23,7 @@ const Welcome = () => {
   const navigate = useNavigate()
   const [message, setMessage] = useState("")
   const [uploadedFiles, setUploadedFiles] = useState<File[]>([])
-  const [toast, setToast] = useState<{ message: string; type: 'info' | 'warning' | 'error' } | null>(null)
+  const [toast, setToast] = useState<{ message: string; type: "info" | "warning" | "error" } | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const updateStreamingCode = useSetAtom(updateStreamingCodeAtom)
   const [histories] = useAtom(historiesAtom)
@@ -51,7 +51,7 @@ const Welcome = () => {
   }
 
   const handleKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {
-    if (e.key === 'Enter') {
+    if (e.key === "Enter") {
       if (e.shiftKey) {
         return
       }
@@ -72,8 +72,8 @@ const Welcome = () => {
     const files = Array.from(e.target.files || [])
     if (files.length + uploadedFiles.length > 5) {
       setToast({
-        message: t('chat.uploadLimit'),
-        type: 'warning'
+        message: t("chat.uploadLimit"),
+        type: "warning"
       })
       return
     }
@@ -85,9 +85,42 @@ const Welcome = () => {
   }
 
   const isImageFile = (file: File) => {
-    return file.type.startsWith('image/')
+    return file.type.startsWith("image/")
   }
-  
+
+  const handlePaste = async (e: React.ClipboardEvent) => {
+    const items = e.clipboardData?.items
+    if (!items)
+      return
+
+    const imageItems = Array.from(items).filter(item => item.type.startsWith("image/"))
+    if (imageItems.length === 0)
+      return
+
+    if (uploadedFiles.length + imageItems.length > 5) {
+      setToast({
+        message: t("chat.uploadLimit"),
+        type: "warning"
+      })
+      return
+    }
+
+    const newFiles = await Promise.all(
+      imageItems.map(async item => {
+        const blob = item.getAsFile()
+        if (!blob)
+          return null
+        
+        const ext = blob.type.split("/")[1]
+        const filename = `pasted_image_${Date.now()}.${ext}`
+        return new File([blob], filename, { type: blob.type })
+      })
+    )
+
+    const validFiles = newFiles.filter((file): file is File => file !== null)
+    setUploadedFiles(prev => [...prev, ...validFiles])
+  }
+
   if (!config?.model) {
     return <Setup />
   }
@@ -95,8 +128,8 @@ const Welcome = () => {
   return (
     <div className="main-container">
       <div className="welcome-content">
-        <h1>{t('welcome.title')}</h1>
-        <p className="subtitle">{t('welcome.subtitle')}</p>
+        <h1>{t("welcome.title")}</h1>
+        <p className="subtitle">{t("welcome.subtitle")}</p>
         
         <form className="welcome-input" onSubmit={handleSubmit}>
           <div className="input-container">
@@ -104,7 +137,8 @@ const Welcome = () => {
               value={message}
               onChange={(e) => setMessage(e.target.value)}
               onKeyDown={handleKeyDown}
-              placeholder={t('chat.placeholder')}
+              onPaste={handlePaste}
+              placeholder={t("chat.placeholder")}
               autoFocus={true}
               rows={2}
             />
@@ -121,7 +155,7 @@ const Welcome = () => {
                 type="button" 
                 className="upload-btn" 
                 onClick={() => fileInputRef.current?.click()}
-                title={t('chat.uploadFile')}
+                title={t("chat.uploadFile")}
               >
                 <svg width="24" height="24" viewBox="0 0 24 24">
                   <path d="M16.5 6v11.5c0 2.21-1.79 4-4 4s-4-1.79-4-4V5c0-1.38 1.12-2.5 2.5-2.5s2.5 1.12 2.5 2.5v10.5c0 .55-.45 1-1 1s-1-.45-1-1V6H10v9.5c0 1.38 1.12 2.5 2.5 2.5s2.5-1.12 2.5-2.5V5c0-2.21-1.79-4-4-4S7 2.79 7 5v12.5c0 3.04 2.46 5.5 5.5 5.5s5.5-2.46 5.5-5.5V6h-1.5z"/>
@@ -188,7 +222,7 @@ const Welcome = () => {
               onClick={() => navigate(`/chat/${history.id}`)}
             >
               <div className="content-wrapper">
-                <strong>{history.title || t('chat.untitledChat')}</strong>
+                <strong>{history.title || t("chat.untitledChat")}</strong>
               </div>
               <div className="bottom-row">
                 <p>{new Date(history.createdAt).toLocaleString()}</p>
