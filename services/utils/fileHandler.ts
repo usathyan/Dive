@@ -3,7 +3,7 @@ import fs from "fs/promises";
 import path from "path";
 import logger from "./logger.js";
 
-const PROJECT_ROOT = process.cwd();
+const PROJECT_ROOT = path.join(process.resourcesPath, "tmp");
 
 export const SUPPORTED_IMAGE_EXTENSIONS = [".jpg", ".jpeg", ".png", ".gif", ".webp"];
 export const SUPPORTED_DOCUMENT_EXTENSIONS = [".pdf", ".docx", ".txt", ".rtf", ".odt", ".html", ".csv", ".epub"];
