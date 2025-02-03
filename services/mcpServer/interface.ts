@@ -14,9 +14,12 @@ export interface IMCPServerManager {
   initialize(): Promise<void>;
 
   // Server connection management
-  connectAllServers(): Promise<void>;
-  connectSingleServer(serverName: string, config: iServerConfig): Promise<void>;
-  reconnectServers(): Promise<void>;
+  connectAllServers(): Promise<{ serverName: string; error: unknown }[]>;
+  connectSingleServer(
+    serverName: string,
+    config: iServerConfig,
+  ): Promise<{ success: boolean; serverName: string; error?: unknown }>;
+  syncServersWithConfig(): Promise<{ serverName: string; error: unknown }[]>;
 
   // Tool management
   getAvailableTools(): ToolDefinition[];

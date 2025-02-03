@@ -180,7 +180,8 @@ export async function handleProcessQuery(
         content: [
           {
             type: "text",
-            text: currentContent,
+            // some model not allow empty content in text block
+            text: currentContent || "placeholder",
           },
           // Deepseek will recursive when tool_use exist in content
           ...(isDeepseek
@@ -210,10 +211,15 @@ export async function handleProcessQuery(
       onStream?.(
         JSON.stringify({
           type: "tool_calls",
-          content: toolCalls.map((call) => ({
-            name: call.function.name,
-            arguments: JSON.parse(call.function.arguments || "{}"),
-          })),
+          content: toolCalls.map((call) => {
+            logger.info(
+              `[Tool Calls] [${call.function.name}] ${JSON.stringify(call.function.arguments || "{}", null, 2)}`
+            );
+            return {
+              name: call.function.name,
+              arguments: JSON.parse(call.function.arguments || "{}"),
+            };
+          }),
         } as iStreamMessage)
       );
     }
@@ -230,8 +236,8 @@ export async function handleProcessQuery(
           arguments: toolArgs,
         });
 
-        if (result?.isError) logger.error(`[MCP Tool][${toolName}] ${JSON.stringify(result, null, 2)}`);
-
+        if (result?.isError) logger.error(`[Tool Result] [${toolName}] ${JSON.stringify(result, null, 2)}`);
+        else logger.info(`[Tool Result] [${toolName}] ${JSON.stringify(result, null, 2)}`);
         // Send tool execution results
         onStream?.(
           JSON.stringify({
