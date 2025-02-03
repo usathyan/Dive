@@ -8,9 +8,6 @@
 
   StrCmp $1 "" notRunning
 
-  ; If the app is running, notify the user and attempt to close it
-  MessageBox MB_OK "Dive is being uninstalled." IDOK forceClose
-
   forceClose:
     ; Attempt to kill the running application
     nsExec::ExecToStack 'taskkill /F /IM $0'
