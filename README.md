@@ -54,7 +54,7 @@ npm run download-node:win-x64
 
 2. Build using Docker
 ```bash
-npm run docker:build-win
+./scripts/build-win.sh
 ```
 
 ## Scripts
