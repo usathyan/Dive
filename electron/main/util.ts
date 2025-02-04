@@ -21,12 +21,14 @@ export function isPortInUse(port: number): Promise<boolean> {
 
 export function npmInstall(targetPath: string): Promise<void> {
   return new Promise((resolve, reject) => {
-    const npm = process.platform !== "win32" ? "npm" :
-      app.isPackaged ? path.join(process.resourcesPath, "node", "npm.cmd") : "npm.cmd"
+    const npm = process.platform === "win32"
+      ? (app.isPackaged ? path.join(process.resourcesPath, "node", "npm.cmd") : "npm.cmd")
+      : "npm"
 
     const installation = spawn(npm, ["install"], {
       cwd: targetPath,
       stdio: "inherit",
+      shell: process.platform === "darwin",
       windowsHide: true,
       windowsVerbatimArguments: true
     })
@@ -46,11 +48,8 @@ export function npmInstall(targetPath: string): Promise<void> {
 }
 
 export function modifyPath(customBinPath: string) {
-  if (process.platform === 'win32') {
-      process.env.PATH = `${customBinPath};${process.env.PATH}`
-  } else {
-      process.env.PATH = `${customBinPath}:${process.env.PATH}`
-  }
+  const connector = process.platform === "win32" ? ";" : ":"
+  process.env.PATH = `${customBinPath}${connector}${process.env.PATH}`
 }
 
 export function setNodePath() {

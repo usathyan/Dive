@@ -38,20 +38,20 @@ export let client: Promise<MCPClient> | null = null
 async function initClient(): Promise<MCPClient> {
   fse.mkdirSync(configDir, { recursive: true })
   fse.mkdirSync(appDir, { recursive: true })
-  
+
   if(!fse.existsSync(scriptsDir)) {
     fse.mkdirSync(scriptsDir, { recursive: true })
     const source = path.join(app.isPackaged ? process.resourcesPath : process.cwd(), "prebuilt/scripts")
     fse.copySync(source, scriptsDir)
   }
-  
-  await npmInstall(scriptsDir)
+
+  await npmInstall(scriptsDir).catch(console.error)
 
   const mcpServerConfigPath = path.join(configDir, "config.json")
-  if (!fse.existsSync(mcpServerConfigPath)) { 
+  if (!fse.existsSync(mcpServerConfigPath)) {
     fse.writeFileSync(mcpServerConfigPath, JSON.stringify(DEF_MCP_SERVER_CONFIG, null, 2));
   }
-  
+
   const customRulesPath = path.join(configDir, ".customrules")
   if (!fse.existsSync(customRulesPath)) {
     fse.writeFileSync(customRulesPath, "")
@@ -65,11 +65,11 @@ async function initClient(): Promise<MCPClient> {
     mcpServerConfigPath: mcpServerConfigPath,
     customRulesPath: customRulesPath,
   })
-  
+
   const systemCommandManager = SystemCommandManager.getInstance()
   systemCommandManager.initialize(process.platform === "win32" && app.isPackaged ? {
     // "node": path.join(process.resourcesPath, "node", "node.exe"),
-    "npx": path.join(process.resourcesPath, "node", "npx.cmd"), 
+    "npx": path.join(process.resourcesPath, "node", "npx.cmd"),
     "npm": path.join(process.resourcesPath, "node", "npm.cmd"),
   } : {})
 

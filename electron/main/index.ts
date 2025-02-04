@@ -16,6 +16,7 @@ const require = createRequire(import.meta.url)
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
 log.initialize()
+console.log = log.log
 Object.assign(console, log.functions)
 
 // The built directory structure
@@ -56,8 +57,18 @@ const preload = path.join(__dirname, "../preload/index.mjs")
 const indexHtml = path.join(RENDERER_DIST, "index.html")
 
 async function onReady() {
-  binDirList.forEach(modifyPath)
-  setNodePath()
+  if (process.platform === "win32") {
+    binDirList.forEach(modifyPath)
+    setNodePath()
+  } else if (process.platform === "darwin") {
+    modifyPath("/opt/homebrew/bin")
+    modifyPath("/opt/homebrew/sbin")
+    modifyPath("/usr/local/bin")
+    modifyPath("/usr/local/sbin")
+    modifyPath("/usr/bin")
+    modifyPath("/usr/sbin")
+  }
+
   initMCPClient()
   createWindow()
 }
@@ -76,9 +87,9 @@ async function createWindow() {
       // contextIsolation: false,
     },
   })
-  
+
   // resolve cors
-   win.webContents.session.webRequest.onBeforeSendHeaders(
+  win.webContents.session.webRequest.onBeforeSendHeaders(
     (details, callback) => {
       callback({ requestHeaders: { ...details.requestHeaders, Origin: '*' } });
     },
@@ -205,7 +216,7 @@ ipcMain.handle("api:fillPathToConfig", async (_, _config: string) => {
         ...servers[server],
         args,
       }
-      
+
       return acc
     }, servers)
 
