@@ -34,6 +34,7 @@ const ChatInput: React.FC<Props> = ({ onSendMessage, disabled }) => {
   const fileInputRef = useRef<HTMLInputElement>(null)
   const prevDisabled = useRef(disabled)
   const uploadedFiles = useRef<File[]>([])
+  const isComposing = useRef(false)
 
   const formatFileSize = (bytes: number): string => {
     if (bytes < 1024) return bytes + ' B'
@@ -194,11 +195,20 @@ const ChatInput: React.FC<Props> = ({ onSendMessage, disabled }) => {
   }
 
   const onKeydown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    if (e.key !== "Enter" || e.shiftKey)
+    if (e.key !== "Enter" || e.shiftKey || isComposing.current) {
       return
+    }
 
     e.preventDefault()
     handleSubmit(e)
+  }
+
+  const handleCompositionStart = () => {
+    isComposing.current = true
+  }
+
+  const handleCompositionEnd = () => {
+    isComposing.current = false
   }
 
   const handleFileClick = () => {
@@ -219,6 +229,8 @@ const ChatInput: React.FC<Props> = ({ onSendMessage, disabled }) => {
           value={message}
           onChange={adjustHeight}
           onKeyDown={onKeydown}
+          onCompositionStart={handleCompositionStart}
+          onCompositionEnd={handleCompositionEnd}
           placeholder={t('chat.placeholder')}
           rows={1}
           disabled={disabled}

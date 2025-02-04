@@ -29,6 +29,7 @@ const Welcome = () => {
   const [histories] = useAtom(historiesAtom)
   const [, loadHistories] = useAtom(loadHistoriesAtom)
   const [config] = useAtom(configAtom)
+  const isComposing = useRef(false)
 
   useEffect(() => {
     updateStreamingCode({ code: "", language: "" })
@@ -52,7 +53,7 @@ const Welcome = () => {
 
   const handleKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === "Enter") {
-      if (e.shiftKey) {
+      if (e.shiftKey || isComposing.current) {
         return
       }
 
@@ -66,6 +67,14 @@ const Welcome = () => {
         })
       }
     }
+  }
+
+  const handleCompositionStart = () => {
+    isComposing.current = true
+  }
+
+  const handleCompositionEnd = () => {
+    isComposing.current = false
   }
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -137,6 +146,8 @@ const Welcome = () => {
               value={message}
               onChange={(e) => setMessage(e.target.value)}
               onKeyDown={handleKeyDown}
+              onCompositionStart={handleCompositionStart}
+              onCompositionEnd={handleCompositionEnd}
               onPaste={handlePaste}
               placeholder={t("chat.placeholder")}
               autoFocus={true}
