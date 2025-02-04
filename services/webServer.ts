@@ -12,7 +12,7 @@ import { handleUploadFiles } from "./utils/fileHandler.js";
 import logger from "./utils/logger.js";
 import { iModelConfig, iQueryInput, iStreamMessage } from "./utils/types.js";
 
-const PROJECT_ROOT = process.cwd();
+const PROJECT_ROOT = path.join(process.resourcesPath, "tmp");
 
 const OFFLINE_MODE = process.env.OFFLINE_MODE === "true";
 

@@ -40,13 +40,13 @@ const format = winston.format.combine(
 // Define log storage locations
 const transports = [
   new winston.transports.Console(),
-  // new winston.transports.File({
-  //   filename: path.join(process.cwd(), "logs/error.log"),
-  //   level: "error",
-  // }),
-  // new winston.transports.File({
-  //   filename: path.join(process.cwd(), "logs/all.log"),
-  // }),
+  new winston.transports.File({
+    filename: path.join(process.resourcesPath, "tmp", "logs", "error.log"),
+    level: "error",
+  }),
+  new winston.transports.File({
+    filename: path.join(process.resourcesPath, "tmp", "logs", "all.log"),
+  }),
 ];
 
 // Create logger instance
