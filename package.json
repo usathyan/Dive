@@ -26,6 +26,10 @@
     "package": "npm run build:electron && electron-builder",
     "package:windows": "vite-node scripts/download-node.ts && run-s package:windows-*",
     "package:windows-installers": "npm run build:electron && electron-builder --win nsis --x64 --publish=never",
+    "package:darwin": "run-s package:darwin-*",
+    "package:darwin-dmg": "npm run build:electron && electron-builder --mac dmg --arm64 --publish=never",
+    "package:darwin-pkg": "npm run build:electron && electron-builder --mac pkg --arm64 --publish=never",
+    "package:darwin-zip": "npm run build:electron && electron-builder --mac zip --arm64 --publish=never",
     "package:linux": "run-s package:linux-*",
     "package:linux-tar": "npm run build:electron && electron-builder --linux tar.gz --x64 --publish=never",
     "package:linux-pkg": "npm run build:electron && electron-builder --linux deb --x64 --publish=never",
@@ -67,6 +71,7 @@
     "zod": "^3.24.1"
   },
   "devDependencies": {
+    "@electron/notarize": "^2.5.0",
     "@eslint/js": "^9.17.0",
     "@playwright/test": "^1.48.2",
     "@types/better-sqlite3": "^7.6.12",
