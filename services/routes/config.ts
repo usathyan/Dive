@@ -39,10 +39,11 @@ export function configRouter() {
       await fs.writeFile(configPath, JSON.stringify(newConfig, null, 2), "utf-8");
 
       // Reinitialize MCP client
-      await MCPServerManager.getInstance().reconnectServers();
+      const errorArray = await MCPServerManager.getInstance().syncServersWithConfig();
 
       res.json({
         success: true,
+        errors: errorArray,
       });
     } catch (error: any) {
       res.json({

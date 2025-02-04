@@ -14,12 +14,7 @@ export interface iTool {
 
 export interface iStreamMessage {
   type: "text" | "tool_calls" | "tool_result" | "error" | "chat_info";
-  content:
-    | iTextContent
-    | iErrorContent
-    | iToolCallsContent
-    | iToolResultContent
-    | iChatInfoContent;
+  content: iTextContent | iErrorContent | iToolCallsContent | iToolResultContent | iChatInfoContent;
 }
 
 export type iTextContent = string;
@@ -55,17 +50,17 @@ export interface iModelConfig {
 }
 
 export interface ModelSettings {
-  // 必要參數
-  model: string; // 例如: "gpt-4", "claude-3-opus-20240229"
-  modelProvider?: string; // 例如: "openai", "anthropic", "google-vertexai" 等
-  apiKey?: string; // API金鑰
+  // Required parameters
+  model: string; // e.g., "gpt-4", "claude-3-opus-20240229"
+  modelProvider?: string; // e.g., "openai", "anthropic", "google-vertexai" etc.
+  apiKey?: string; // API key
   configuration?: {
     baseURL: string;
   };
-  // 常用可選參數
-  temperature?: number; // 0-1 之間,控制輸出的隨機性
-  topP?: number; // 0-1 之間
-  maxTokens?: number; // 最大輸出token數
-  // 支援動態存取
+  // Common optional parameters
+  temperature?: number; // Between 0-1, controls output randomness
+  topP?: number; // Between 0-1
+  maxTokens?: number; // Maximum output tokens
+  // Support dynamic access
   [key: string]: string | number | undefined | { baseURL: string } | undefined;
 }

@@ -1,18 +1,18 @@
 import axios from "axios";
 import express from "express";
 import fs from "fs/promises";
+import { initChatModel } from "langchain/chat_models/universal";
 import multer from "multer";
 import path from "path";
 import { MCPClient } from "./client.js";
+import { getChatWithMessages } from "./database/index.js";
 import { PromptManager } from "./prompt/index.js";
 import { createRouter } from "./routes/index.js";
 import { handleUploadFiles } from "./utils/fileHandler.js";
 import logger from "./utils/logger.js";
 import { iModelConfig, iQueryInput, iStreamMessage } from "./utils/types.js";
-import { initChatModel } from "langchain/chat_models/universal";
-import { getChatWithMessages } from "./database/index.js";
 
-const PROJECT_ROOT = process.cwd();
+const PROJECT_ROOT = path.join(process.resourcesPath, "tmp");
 
 const OFFLINE_MODE = process.env.OFFLINE_MODE === "true";
 
@@ -28,21 +28,21 @@ export class WebServer {
     this.mcpClient = mcpClient;
     this.promptManager = PromptManager.getInstance();
     this.port = undefined;
-    
+
     // resolve cors
     this.app.use((req: any, res: any, next: any) => {
-      res.header('Access-Control-Allow-Origin', 'http://localhost:5173');
-      res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-      res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
-      res.header('Access-Control-Allow-Credentials', 'true');
+      res.header("Access-Control-Allow-Origin", "http://localhost:5173");
+      res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+      res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, Authorization");
+      res.header("Access-Control-Allow-Credentials", "true");
 
-      if (req.method === 'OPTIONS') {
+      if (req.method === "OPTIONS") {
         return res.sendStatus(200);
       }
-      
+
       next();
     });
-    
+
     // Set up file upload
     const storage = multer.diskStorage({
       //@ts-ignore
@@ -75,10 +75,7 @@ export class WebServer {
     // Middleware
     this.app.use(express.json());
     this.app.use(express.static(path.join(PROJECT_ROOT, "views/public")));
-    this.app.use(
-      "/uploads",
-      express.static(path.join(PROJECT_ROOT, "uploads"))
-    );
+    this.app.use("/uploads", express.static(path.join(PROJECT_ROOT, "uploads")));
 
     this.setupRoutes();
   }
@@ -101,16 +98,15 @@ export class WebServer {
         try {
           const { message, chatId } = req.body;
           const files = req.files as Express.Multer.File[];
-          // 只有offline mode 允許 filepaths 參數
+          // Only allow filepaths parameter in offline mode
           let filepaths = [] as string[];
 
           const bodyFilepaths = req.body.filepaths;
           if (bodyFilepaths) {
             if (OFFLINE_MODE) {
-              filepaths = typeof bodyFilepaths === 'string' ? 
-                JSON.parse(bodyFilepaths || '[]') : bodyFilepaths;
+              filepaths = typeof bodyFilepaths === "string" ? JSON.parse(bodyFilepaths || "[]") : bodyFilepaths;
             } else {
-              logger.error('filepaths arg is not allowed in online mode');
+              logger.error("filepaths arg is not allowed in online mode");
             }
           }
 
@@ -137,23 +133,19 @@ export class WebServer {
             queryInput.text = message;
           }
 
-          // 處理上傳的檔案
+          // Process uploaded files
           if (files?.length > 0 || filepaths?.length > 0) {
-            // 提供路徑與提供File實例
+            // Handle both file paths and file instances
             const processFiles = {
               files: files,
               filepaths: filepaths,
-            } as { files: Express.Multer.File[], filepaths: string[] };
+            } as { files: Express.Multer.File[]; filepaths: string[] };
             const { images, documents } = await handleUploadFiles(processFiles);
             queryInput.images = images;
             queryInput.documents = documents;
           }
 
-          await this.mcpClient.processQuery(
-            chatId,
-            queryInput,
-            onStream,
-          );
+          await this.mcpClient.processQuery(chatId, queryInput, onStream);
 
           res.write("data: [DONE]\n\n");
           res.end();
@@ -180,14 +172,11 @@ export class WebServer {
         return;
       }
       const history = result.messages;
-      const response = await axios.post(
-        "https://api.biggo.com/api/v1/searchai/backend/suggestions",
-        {
-          chat_model: "GPT-4o-mini",
-          chat_model_provider: "openai",
-          chat_history: history,
-        }
-      );
+      const response = await axios.post("https://api.biggo.com/api/v1/searchai/backend/suggestions", {
+        chat_model: "GPT-4o-mini",
+        chat_model_provider: "openai",
+        chat_history: history,
+      });
       const suggestions = response?.data?.suggestions;
       res.json({
         success: true,
@@ -196,7 +185,7 @@ export class WebServer {
     });
 
     this.app.post("/api/modelVerify", async (req, res) => {
-      try{
+      try {
         const { config } = req.body;
         if (!config) {
           res.json({
@@ -206,8 +195,13 @@ export class WebServer {
           return;
         }
         const modelName = (config as unknown as iModelConfig).model_settings.model;
+        const baseUrl =
+          (config as unknown as iModelConfig).model_settings?.configuration?.baseURL ||
+          (config as unknown as iModelConfig).model_settings.baseURL ||
+          "";
         const model = await initChatModel(modelName, {
           ...(config as unknown as iModelConfig).model_settings,
+          baseUrl,
           max_tokens: 5,
         });
         const result = await model.invoke("Only return 'Hi' strictly");
@@ -229,8 +223,7 @@ export class WebServer {
       const server = this.app
         .listen(port, () => {
           const address = server.address();
-          const actualPort =
-            typeof address === "object" && address ? address.port : port;
+          const actualPort = typeof address === "object" && address ? address.port : port;
           logger.info(`Web server running at http://localhost:${actualPort}`);
           this.port = actualPort;
           resolve(actualPort);

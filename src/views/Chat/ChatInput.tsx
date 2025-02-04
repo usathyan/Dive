@@ -171,7 +171,7 @@ const ChatInput: React.FC<Props> = ({ onSendMessage, disabled }) => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    if (!message.trim() || !onSendMessage || disabled)
+    if ((!message.trim() && !uploadedFiles.current.length) || !onSendMessage || disabled)
       return
 
     onSendMessage(message, fileInputRef.current?.files || undefined)

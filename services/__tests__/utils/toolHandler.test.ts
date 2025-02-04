@@ -19,7 +19,7 @@ describe("ToolHandler", () => {
   });
 
   describe("convertToOpenAITools", () => {
-    it("應該正確轉換為 OpenAI 工具格式", () => {
+    it("should correctly convert to OpenAI tool format", () => {
       const mockTools: Tool[] = [
         {
           name: "test_tool",
@@ -54,7 +54,7 @@ describe("ToolHandler", () => {
   });
 
   describe("loadConfig", () => {
-    it("應該正確載入配置檔案", async () => {
+    it("should correctly load configuration file", async () => {
       const mockConfig = {
         mcpServers: {
           server1: {
@@ -72,7 +72,7 @@ describe("ToolHandler", () => {
       expect(path.join).toHaveBeenCalledWith(expect.any(String), "config.json");
     });
 
-    it("當配置檔案不存在時應返回預設配置", async () => {
+    it("should return default configuration when config file doesn't exist", async () => {
       (fs.readFile as jest.Mock).mockRejectedValue(new Error("File not found"));
 
       const config = await loadConfig();
@@ -80,7 +80,7 @@ describe("ToolHandler", () => {
       expect(config).toEqual({ mcpServers: {} });
     });
 
-    it("應該使用提供的路徑", async () => {
+    it("should use provided path", async () => {
       const customPath = "/custom/path/config.json";
       const mockConfig = { mcpServers: {} };
       (fs.readFile as jest.Mock).mockResolvedValue(JSON.stringify(mockConfig));
@@ -92,7 +92,7 @@ describe("ToolHandler", () => {
   });
 
   describe("loadConfigAndServers", () => {
-    it("應該正確載入配置和伺服器列表", async () => {
+    it("should correctly load configuration and server list", async () => {
       const mockConfig = {
         mcpServers: {
           server1: { command: "test1", args: [] },
@@ -107,7 +107,7 @@ describe("ToolHandler", () => {
       expect(result.servers).toEqual(["server1", "server2"]);
     });
 
-    it("當配置檔案不存在時應返回空配置和空伺服器列表", async () => {
+    it("should return empty config and server list when config file doesn't exist", async () => {
       (fs.readFile as jest.Mock).mockRejectedValue(new Error("File not found"));
 
       const result = await loadConfigAndServers();

@@ -26,7 +26,9 @@ export function npmInstall(targetPath: string): Promise<void> {
 
     const installation = spawn(npm, ["install"], {
       cwd: targetPath,
-      stdio: "inherit"
+      stdio: "inherit",
+      windowsHide: true,
+      windowsVerbatimArguments: true
     })
 
     installation.on("close", (code) => {
@@ -41,4 +43,16 @@ export function npmInstall(targetPath: string): Promise<void> {
       reject(err)
     })
   })
+}
+
+export function modifyPath(customBinPath: string) {
+  if (process.platform === 'win32') {
+      process.env.PATH = `${customBinPath};${process.env.PATH}`
+  } else {
+      process.env.PATH = `${customBinPath}:${process.env.PATH}`
+  }
+}
+
+export function setNodePath() {
+  process.env.NODE_PATH = path.join(process.resourcesPath, "node", "node_modules")
 }

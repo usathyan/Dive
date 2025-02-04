@@ -28,7 +28,7 @@ export const mockStdioTransport = {
   close: jest.fn(),
 };
 
-// Mock 模組
+// Mock modules
 export const setupMcpSdkMocks = () => {
   jest.mock("@modelcontextprotocol/sdk/client/index.js", () => ({
     __esModule: true,
@@ -41,7 +41,7 @@ export const setupMcpSdkMocks = () => {
   }));
 };
 
-// 重置所有 mock
+// Reset all mocks
 export const resetMcpSdkMocks = () => {
   Object.values(mockClient).forEach((mock) => {
     if (typeof mock.mockReset === "function") {

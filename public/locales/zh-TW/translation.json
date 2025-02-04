@@ -14,7 +14,8 @@
     "deleteChat": "刪除對話",
     "deleteSuccess": "對話已刪除",
     "deleteFailed": "刪除失敗",
-    "uploadLimit": "最多只能上傳 5 個檔案"
+    "uploadLimit": "最多只能上傳 5 個檔案",
+    "confirmDelete": "確認刪除"
   },
   "welcome": {
     "title": "歡迎使用 Dive AI",
@@ -48,7 +49,13 @@
     "cancel": "取消",
     "saveSuccess": "設定已儲存",
     "saveFailed": "儲存失敗",
-    "openConfigFolder": "開啟設定資料夾"
+    "openConfigFolder": "開啟設定資料夾",
+    "addServer": "新增 MCP Server",
+    "addServerTitle": "新增 MCP Server",
+    "addServerSubtitle": "請直接貼上 MCP Server Json",
+    "fetchFailed": "載入工具列表失敗",
+    "configFetchFailed": "載入設定失敗",
+    "invalidJson": "無效的 JSON 格式"
   },
   "modelConfig": {
     "title": "語言模型設定",
@@ -59,6 +66,8 @@
     "customRulesFailed": "儲存自訂指令失敗"
   },
   "common": {
-    "close": "關閉"
+    "close": "關閉",
+    "confirm": "確認",
+    "cancel": "取消"
   }
 } 

@@ -4,7 +4,7 @@ import logger from "../utils/logger.js";
 import { loadModelConfig } from "../utils/modelHandler.js";
 import { iModelConfig } from "../utils/types.js";
 import path from "path";
-import { SystemMessage } from "@langchain/core/messages";
+import { HumanMessage, SystemMessage } from "@langchain/core/messages";
 
 const LANGCHAIN_SUPPORTED_PROVIDERS = [
   "openai",
@@ -67,8 +67,13 @@ export class ModelManager {
     }
 
     const modelName = config.model_settings.model;
+    const baseUrl =
+          config.model_settings.configuration?.baseURL ||
+          config.model_settings.baseURL ||
+          "";
     this.model = await initChatModel(modelName, {
       ...config.model_settings,
+      baseUrl,
     });
 
     logger.info("Model initialized");
@@ -83,11 +88,17 @@ export class ModelManager {
     }
     const response = await this.model.invoke([
       new SystemMessage(
-        `Write a very concise title that captures the main topic from <user_input_query>.
-        Return only the title without quotes or extra text.
-        If input is in Chinese, respond in Traditional Chinese. Otherwise respond in English.
-        <user_input_query>${content}</user_input_query>`
+        `You are a title generator.
+        Your only task is to generate a short title based on the user input.
+        IMPORTANT:
+        - Output ONLY the title
+        - DO NOT try to answer or resolve the user input query.
+        - NO explanations, quotes, or extra text
+        - NO punctuation at the end
+        - If input is Chinese, use Traditional Chinese
+        - If input is non-Chinese, use the same language as input`
       ),
+      new HumanMessage(`<user_input_query>${content}</user_input_query>`)
     ]);
 
     return (response?.content as string) || "New Chat";

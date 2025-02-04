@@ -1,14 +1,15 @@
-import React, { useState } from "react"
+import React, { useState, useEffect, useRef } from "react"
 import { useTranslation } from "react-i18next"
-import { ModelProvider, PROVIDER_LABELS } from "../atoms/interfaceState"
-import { ModelConfig } from "../atoms/configState"
+import { useAtom } from "jotai"
+import { FieldDefinition, ModelProvider, PROVIDER_LABELS } from "../atoms/interfaceState"
+import { ModelConfig, configAtom } from "../atoms/configState"
 import Toast from "./Toast"
 
 const PROVIDERS: ModelProvider[] = ["openai", "openai_compatible", "ollama", "anthropic"]
 
 interface ModelConfigFormProps {
   provider: ModelProvider
-  fields: Record<string, any>
+  fields: Record<string, FieldDefinition>
   initialData?: ModelConfig|null
   onProviderChange: (provider: ModelProvider) => void
   onSubmit: (data: ModelConfig) => void
@@ -31,7 +32,54 @@ const ModelConfigForm: React.FC<ModelConfigFormProps> = ({
   const [isVerifying, setIsVerifying] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isVerified, setIsVerified] = useState(false)
-  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null)
+  const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null)
+  const [listOptions, setListOptions] = useState<Record<string, string[]>>({})
+  const initProvider = useRef(provider)
+  const [, setConfig] = useAtom(configAtom)
+  
+  useEffect(() => {
+    setListOptions({})
+    if (initProvider.current !== provider) {
+      setFormData(getFieldDefaultValue() || {})
+    } else {
+      setFormData(initialData || {})
+    }
+  }, [provider])
+
+  useEffect(() => {
+    Object.entries(fields).forEach(([key, field]) => {
+      if (field.type === "list" && field.listCallback && field.listDependencies) {
+        const deps = field.listDependencies.reduce((acc, dep) => ({
+          ...acc,
+          [dep]: formData[dep] || ""
+        }), {})
+
+        const allDepsHaveValue = field.listDependencies.every(dep => !!formData[dep])
+        
+        if (allDepsHaveValue) {
+          field.listCallback(deps).then(options => {
+            setListOptions(prev => ({
+              ...prev,
+              [key]: options
+            }))
+            
+            if (options.length > 0 && !options.includes(formData[key])) {
+              handleChange(key, options[0])
+            }
+          })
+        }
+      }
+    })
+  }, [fields, formData])
+  
+  const getFieldDefaultValue = () => {
+    return Object.keys(fields).reduce((acc, key) => {
+      return {
+        ...acc,
+        [key]: fields[key].default
+      }
+    }, {} as Record<string, any>)
+  }
 
   const handleProviderChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const newProvider = e.target.value as ModelProvider
@@ -52,6 +100,7 @@ const ModelConfigForm: React.FC<ModelConfigFormProps> = ({
             model_settings: {
               ...formData,
               modelProvider: provider.startsWith("openai") ? "openai" : provider,
+              configuration: formData,
             }
           }
         }),
@@ -62,13 +111,13 @@ const ModelConfigForm: React.FC<ModelConfigFormProps> = ({
         setIsVerified(true)
         setToast({
           message: t("setup.verifySuccess"),
-          type: 'success'
+          type: "success"
         })
       } else {
         setIsVerified(false)
         setToast({
           message: t("setup.verifyFailed"),
-          type: 'error'
+          type: "error"
         })
       }
     } catch (error) {
@@ -76,7 +125,7 @@ const ModelConfigForm: React.FC<ModelConfigFormProps> = ({
       setIsVerified(false)
       setToast({
         message: t("setup.verifyError"),
-        type: 'error'
+        type: "error"
       })
     } finally {
       setIsVerifying(false)
@@ -86,21 +135,13 @@ const ModelConfigForm: React.FC<ModelConfigFormProps> = ({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     
-    const newErrors: Record<string, string> = {}
-    Object.entries(fields).forEach(([key, field]) => {
-      if (field.required && !formData[key]) {
-        newErrors[key] = t("setup.required")
-      }
-    })
-
-    if (Object.keys(newErrors).length > 0) {
-      setErrors(newErrors)
+    if (!validateForm())
       return
-    }
-
+    
     try {
       setIsSubmitting(true)
       await onSubmit(formData)
+      setConfig(formData)
     } finally {
       setIsSubmitting(false)
     }
@@ -116,6 +157,21 @@ const ModelConfigForm: React.FC<ModelConfigFormProps> = ({
       [key]: ""
     }))
     setIsVerified(false)
+  }
+
+  const validateForm = () => {
+    const newErrors: Record<string, string> = {}
+    Object.entries(fields).forEach(([key, field]) => {
+      if (field.required && !formData[key]) {
+        newErrors[key] = t("setup.required")
+      }
+    })
+
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors)
+      return false
+    }
+    return true
   }
 
   return (
@@ -140,13 +196,28 @@ const ModelConfigForm: React.FC<ModelConfigFormProps> = ({
             {field.required && <span className="required">*</span>}
           </label>
           <div className="field-description">{field.description}</div>
-          <input
-            type="text"
-            value={formData[key] || ""}
-            onChange={e => handleChange(key, e.target.value)}
-            placeholder={field.placeholder?.toString()}
-            className={errors[key] ? "error" : ""}
-          />
+          {field.type === "list" ? (
+            <select
+              value={formData[key] || ""}
+              onChange={e => handleChange(key, e.target.value)}
+              className={errors[key] ? "error" : ""}
+            >
+              <option value="">{field.placeholder}</option>
+              {listOptions[key]?.map(option => (
+                <option key={option} value={option}>
+                  {option}
+                </option>
+              ))}
+            </select>
+          ) : (
+            <input
+              type="text"
+              value={formData[key] || ""}
+              onChange={e => handleChange(key, e.target.value)}
+              placeholder={field.placeholder?.toString()}
+              className={errors[key] ? "error" : ""}
+            />
+          )}
           {errors[key] && <div className="error-message">{errors[key]}</div>}
         </div>
       ))}

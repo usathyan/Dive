@@ -17,24 +17,6 @@ describe("ConnectServer", () => {
     jest.clearAllMocks();
   });
 
-  it("should use process.execPath when command is node", async () => {
-    const serverName = "test_server";
-    const serverConfig = {
-      command: "node",
-      args: [],
-      env: {},
-    };
-
-    await handleConnectToServer(serverName, serverConfig);
-
-    // 驗證 StdioClientTransport 的調用
-    expect(StdioClientTransport).toHaveBeenCalledWith({
-      command: process.execPath,
-      args: [],
-      env: {},
-    });
-  });
-
   it("should list tools after successful connection", async () => {
     const serverName = "test_server";
     const serverConfig = {
@@ -45,10 +27,10 @@ describe("ConnectServer", () => {
 
     const result = await handleConnectToServer(serverName, serverConfig);
 
-    // 驗證 Client 的初始化參數
+    // Verify Client initialization parameters
     expect(Client).toHaveBeenCalledWith({ name: "mcp-client", version: "1.0.0" }, { capabilities: {} });
 
-    // 驗證 listTools 的調用和結果
+    // Verify listTools call and results
     expect(result.client.listTools).toHaveBeenCalled();
   });
 });

@@ -10,19 +10,22 @@ export interface ServerConfig {
 }
 
 export interface IMCPServerManager {
-  // 初始化
+  // Initialization
   initialize(): Promise<void>;
 
-  // 伺服器連接管理
-  connectAllServers(): Promise<void>;
-  connectSingleServer(serverName: string, config: iServerConfig): Promise<void>;
-  reconnectServers(): Promise<void>;
+  // Server connection management
+  connectAllServers(): Promise<{ serverName: string; error: unknown }[]>;
+  connectSingleServer(
+    serverName: string,
+    config: iServerConfig,
+  ): Promise<{ success: boolean; serverName: string; error?: unknown }>;
+  syncServersWithConfig(): Promise<{ serverName: string; error: unknown }[]>;
 
-  // 工具管理
+  // Tool management
   getAvailableTools(): ToolDefinition[];
   getToolToServerMap(): Map<string, Client>;
   getToolInfos(): iTool[];
 
-  // 中斷連線並清理資源
+  // Disconnect and clean up resources
   disconnectAllServers(): Promise<void>;
 }

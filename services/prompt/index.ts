@@ -11,13 +11,13 @@ export class PromptManager {
     this.prompts = new Map();
     this.customRulesPath = customRulesPath || path.resolve(process.cwd(), ".customrules");
 
-    // 讀取 .customrules 檔案
+    // Read .customrules file
     try {
       const customRules = fs.readFileSync(this.customRulesPath, "utf-8");
-      // 將 system prompt 和 custom rules 組合
+      // Combine system prompt and custom rules
       this.prompts.set("system", systemPrompt(customRules));
     } catch (error) {
-      console.warn("無法讀取 .customrules 檔案，僅使用預設 system prompt:", error);
+      console.warn(`Cannot read ${this.customRulesPath}: ${error}`);
       this.prompts.set("system", systemPrompt(""));
     }
   }
@@ -45,7 +45,7 @@ export class PromptManager {
       const customRules = fs.readFileSync(customRulesPath, "utf-8");
       return customRules;
     } catch (error) {
-      console.warn(`無法讀取 ${customRulesPath} : ${error}`);
+      console.warn(`Cannot read ${customRulesPath}: ${error}`);
       return "";
     }
   }

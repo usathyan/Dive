@@ -16,6 +16,11 @@ export const configDir = envPath.config
 export const homeDir = os.homedir()
 export const appDir = path.join(homeDir, ".dive")
 export const scriptsDir = path.join(appDir, "scripts")
+export const binDirList = [
+  path.join(process.resourcesPath, "node"),
+  path.join(process.resourcesPath, "uv"),
+  path.join(process.resourcesPath, "python"),
+]
 
 const DEF_MCP_SERVER_CONFIG = {
   "mcpServers": {
@@ -38,9 +43,10 @@ async function initClient(): Promise<MCPClient> {
     fse.mkdirSync(scriptsDir, { recursive: true })
     const source = path.join(app.isPackaged ? process.resourcesPath : process.cwd(), "prebuilt/scripts")
     fse.copySync(source, scriptsDir)
-    await npmInstall(scriptsDir)
   }
   
+  await npmInstall(scriptsDir)
+
   const mcpServerConfigPath = path.join(configDir, "config.json")
   if (!fse.existsSync(mcpServerConfigPath)) { 
     fse.writeFileSync(mcpServerConfigPath, JSON.stringify(DEF_MCP_SERVER_CONFIG, null, 2));
@@ -62,8 +68,8 @@ async function initClient(): Promise<MCPClient> {
   
   const systemCommandManager = SystemCommandManager.getInstance()
   systemCommandManager.initialize(process.platform === "win32" && app.isPackaged ? {
-    "node": path.join(process.resourcesPath, "node", "node.exe"),
-    "npx": path.join(process.resourcesPath, "node", "npx.cmd"),
+    // "node": path.join(process.resourcesPath, "node", "node.exe"),
+    "npx": path.join(process.resourcesPath, "node", "npx.cmd"), 
     "npm": path.join(process.resourcesPath, "node", "npm.cmd"),
   } : {})
 

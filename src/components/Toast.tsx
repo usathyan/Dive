@@ -1,16 +1,16 @@
-import React, { useEffect } from 'react'
-import { createPortal } from 'react-dom'
+import React, { useEffect } from "react"
+import { createPortal } from "react-dom"
 
 export interface ToastProps {
   message: string
-  type?: 'info' | 'success' | 'warning' | 'error'
+  type?: "info" | "success" | "warning" | "error"
   duration?: number
   onClose: () => void
 }
 
 const Toast: React.FC<ToastProps> = ({ 
   message, 
-  type = 'info', 
+  type = "info", 
   duration = 3000, 
   onClose 
 }) => {

@@ -3,25 +3,10 @@ import fs from "fs/promises";
 import path from "path";
 import logger from "./logger.js";
 
-const PROJECT_ROOT = process.cwd();
+const PROJECT_ROOT = path.join(process.resourcesPath, "tmp");
 
-export const SUPPORTED_IMAGE_EXTENSIONS = [
-  ".jpg",
-  ".jpeg",
-  ".png",
-  ".gif",
-  ".webp",
-];
-export const SUPPORTED_DOCUMENT_EXTENSIONS = [
-  ".pdf",
-  ".docx",
-  ".txt",
-  ".rtf",
-  ".odt",
-  ".html",
-  ".csv",
-  ".epub",
-];
+export const SUPPORTED_IMAGE_EXTENSIONS = [".jpg", ".jpeg", ".png", ".gif", ".webp"];
+export const SUPPORTED_DOCUMENT_EXTENSIONS = [".pdf", ".docx", ".txt", ".rtf", ".odt", ".html", ".csv", ".epub"];
 
 export function multerDestination(
   req: Request,
@@ -43,34 +28,28 @@ export function multerFilename(
   cb(null, uniqueSuffix + path.extname(file.originalname));
 }
 
-export async function handleUploadFiles({
-  files,
-  filepaths,
-}: {
-  files: Express.Multer.File[];
-  filepaths: string[];
-}) {
+export async function handleUploadFiles({ files, filepaths }: { files: Express.Multer.File[]; filepaths: string[] }) {
   const documents: string[] = [];
   const images: string[] = [];
 
   for (const file of files) {
     const hash = await calculateFileHash(file.path);
 
-    // 檢查是否已存在相同hash前綴的檔案
+    // Check if file with same hash prefix exists
     const uploadDir = path.join(PROJECT_ROOT, "uploads");
     const files = await fs.readdir(uploadDir);
     const existingFile = files.find((f) => f.startsWith(hash));
     if (existingFile) {
-      // 如果找到相同hash的檔案,使用該檔案
+      // If file with same hash found, use that file
       file.filename = existingFile;
-      await fs.unlink(file.path); // 刪除新上傳的檔案
+      await fs.unlink(file.path); // Delete newly uploaded file
       file.path = path.join(uploadDir, existingFile);
     } else {
       const newFileName = `${hash}-${file.originalname}`;
       const newPath = path.join(PROJECT_ROOT, "uploads", newFileName);
-      // 重命名檔案
+      // Rename file
       await fs.rename(file.path, newPath);
-      file.filename = newFileName; // 更新檔案名稱
+      file.filename = newFileName; // Update filename
     }
 
     const ext = path.extname(file.filename).toLowerCase();
@@ -85,7 +64,7 @@ export async function handleUploadFiles({
 
   for (const filepath of filepaths) {
     const ext = path.extname(filepath).toLowerCase();
-    if(SUPPORTED_IMAGE_EXTENSIONS.includes(ext)){
+    if (SUPPORTED_IMAGE_EXTENSIONS.includes(ext)) {
       images.push(filepath);
     } else if (SUPPORTED_DOCUMENT_EXTENSIONS.includes(ext)) {
       documents.push(filepath);

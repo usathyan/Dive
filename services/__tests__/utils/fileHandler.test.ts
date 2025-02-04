@@ -13,7 +13,7 @@ describe("FileHandler", () => {
   });
 
   describe("handleUploadFiles", () => {
-    it("正確處理圖片檔案", async () => {
+    it("correctly handle image files", async () => {
       const mockFiles = [
         {
           path: "test.jpg",
@@ -34,7 +34,7 @@ describe("FileHandler", () => {
       expect(result.documents).toHaveLength(0);
     });
 
-    it("正確處理文件檔案", async () => {
+    it("correctly handle document files", async () => {
       const mockFiles = [
         {
           path: "test.pdf",

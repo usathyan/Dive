@@ -24,12 +24,13 @@ export class MCPClient {
   }
 
   public async init() {
-    // 初始化 Model Manager
+    // Initialize Model Manager
     await ModelManager.getInstance(this.config?.modelConfigPath).initializeModel();
-    // 初始化 Prompt Manager
+    // Initialize Prompt Manager
     PromptManager.getInstance(this.config?.customRulesPath);
-    // 初始化 MCP Server Manager
+    // Initialize MCP Server Manager
     await MCPServerManager.getInstance(this.config?.mcpServerConfigPath).initialize();
+    console.log("\n"); // New line
   }
 
   public async processQuery(
@@ -176,7 +177,7 @@ export class MCPCliClient extends MCPClient {
         };
 
         await this.processQuery(chatId, input, onStream);
-        console.log("\n"); // 換行
+        console.log("\n");
       } catch (error: any) {
         console.error("\nError processing query:", error.message);
       }

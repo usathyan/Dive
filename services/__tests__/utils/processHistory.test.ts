@@ -12,7 +12,7 @@ describe("processHistory", () => {
   });
 
   describe("processHistoryMessages", () => {
-    it("應該正確處理純文字訊息", async () => {
+    it("should correctly process plain text messages", async () => {
       const mockMessages: Message[] = [
         {
           id: 1,
@@ -44,7 +44,7 @@ describe("processHistory", () => {
       expect((result[1] as AIMessage).content).toBe("Hi there");
     });
 
-    it("應該正確處理包含圖片的訊息", async () => {
+    it("should correctly process messages with images", async () => {
       const mockMessages: Message[] = [
         {
           id: 1,
@@ -72,7 +72,7 @@ describe("processHistory", () => {
       });
     });
 
-    it("應該正確處理包含文件的訊息", async () => {
+    it("should correctly process messages with documents", async () => {
       const mockMessages: Message[] = [
         {
           id: 1,
@@ -99,7 +99,7 @@ describe("processHistory", () => {
       });
     });
 
-    it("應該正確處理混合內容的訊息", async () => {
+    it("should correctly process messages with mixed content", async () => {
       const mockMessages: Message[] = [
         {
           id: 1,
@@ -131,7 +131,7 @@ describe("processHistory", () => {
       });
     });
 
-    it("應該正確處理沒有內容的訊息", async () => {
+    it("should correctly process messages without content", async () => {
       const mockMessages: Message[] = [
         {
           id: 1,

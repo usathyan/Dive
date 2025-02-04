@@ -16,7 +16,7 @@ export const messages = sqliteTable("messages", {
   files: text("files", { mode: "json" }).notNull(),
 });
 
-// 導出類型定義
+// export types
 export type Chat = typeof chats.$inferSelect;
 export type NewChat = typeof chats.$inferInsert;
 export type Message = typeof messages.$inferSelect;

@@ -2,10 +2,8 @@ import fs from "fs/promises";
 import sharp from "sharp";
 import logger from "./logger.js";
 
-// 讀取和轉換圖片
-export async function imageToBase64Original(
-  imagePath: string
-): Promise<string> {
+// Read and convert image
+export async function imageToBase64Original(imagePath: string): Promise<string> {
   try {
     const imageBuffer = await fs.readFile(imagePath);
     return `data:image/jpeg;base64,${imageBuffer.toString("base64")}`;
@@ -17,25 +15,25 @@ export async function imageToBase64Original(
 
 export async function imageToBase64(path: string): Promise<string> {
   try {
-    // 使用 sharp 壓縮圖片
+    // Use sharp to compress image
     const compressedImageBuffer = await sharp(path)
       .resize(800, 800, {
-        // 設定最大寬高
-        fit: "inside", // 保持圖片比例
-        withoutEnlargement: true, // 避免放大小圖
+        // Set maximum width and height
+        fit: "inside", // Keep aspect ratio
+        withoutEnlargement: true, // Avoid enlarging small images
       })
       .jpeg({
-        // 轉換為 JPEG 格式
-        quality: 80, // 設定壓縮品質 (0-100)
-        progressive: true, // 使用漸進式 JPEG
+        // Convert to JPEG format
+        quality: 80, // Set compression quality (0-100)
+        progressive: true, // Use progressive JPEG
       })
       .toBuffer();
 
-    // 轉換為 base64
+    // Convert to base64
     return `data:image/jpeg;base64,${compressedImageBuffer.toString("base64")}`;
   } catch (error) {
     logger.error("Error compressing image:", error);
-    // 如果壓縮失敗,使用原始方法作為備案
+    // If compression fails, use original method as fallback
     return imageToBase64Original(path);
   }
 }

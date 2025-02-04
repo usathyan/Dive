@@ -10,19 +10,19 @@ jest.mock("fs/promises");
 describe("Image Utils", () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    // 模擬檔案讀取，返回測試用的 buffer
+    // Mock file reading, return test buffer
     (fs.readFile as jest.Mock).mockResolvedValue(Buffer.from("test file content"));
   });
 
   describe("imageToBase64Original", () => {
-    it("正確轉換圖片為base64", async () => {
+    it("correctly convert image to base64", async () => {
       const result = await imageToBase64Original("test.jpg");
 
       expect(result).toMatch(/^data:image\/jpeg;base64,/);
       expect(fs.readFile).toHaveBeenCalledWith("test.jpg");
     });
 
-    it("正確處理讀取錯誤", async () => {
+    it("correctly handle reading errors", async () => {
       (fs.readFile as jest.Mock).mockRejectedValue(new Error("Read error"));
 
       await expect(imageToBase64Original("test.jpg")).rejects.toThrow("Read error");
@@ -30,7 +30,7 @@ describe("Image Utils", () => {
   });
 
   describe("imageToBase64", () => {
-    it("應該正確壓縮並轉換圖片", async () => {
+    it("should correctly compress and convert image", async () => {
       const mockBuffer = Buffer.from("test file content");
       const mockSharp = {
         resize: jest.fn().mockReturnThis(),

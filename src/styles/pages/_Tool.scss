@@ -658,24 +658,83 @@
   align-items: flex-start;
   margin-bottom: 32px;
 
-  .edit-config-btn {
+  .header-actions {
     display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 8px 16px;
-    border: none;
-    border-radius: 6px;
-    background: #1890ff;
-    color: white;
-    cursor: pointer;
-    transition: all 0.3s;
+    gap: 12px;
 
-    &:hover {
-      background: #40a9ff;
+    button {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 16px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-size: 14px;
+      
+      svg {
+        fill: currentColor;
+      }
+      
+      @media (prefers-color-scheme: dark) {
+        background: rgba(255, 255, 255, 0.1);
+        color: white;
+        
+        &:hover {
+          background: rgba(255, 255, 255, 0.15);
+        }
+      }
     }
 
-    svg {
-      fill: currentColor;
+    .add-btn {
+      background: $success-green;
+      color: white;
+      
+      &:hover {
+        background: $hover-green;
+      }
+      
+      @media (prefers-color-scheme: dark) {
+        background: rgba(82, 196, 26, 0.2);
+        
+        &:hover {
+          background: rgba(82, 196, 26, 0.3);
+        }
+      }
+    }
+
+    .edit-btn {
+      background: $primary-blue;
+      color: white;
+      
+      &:hover {
+        background: $hover-blue;
+      }
+      
+      @media (prefers-color-scheme: dark) {
+        background: rgba(24, 144, 255, 0.2);
+        
+        &:hover {
+          background: rgba(24, 144, 255, 0.3);
+        }
+      }
+    }
+
+    .folder-btn {
+      background: rgba(0, 0, 0, 0.05);
+      
+      &:hover {
+        background: rgba(0, 0, 0, 0.1);
+      }
+      
+      @media (prefers-color-scheme: dark) {
+        background: rgba(255, 255, 255, 0.1);
+        
+        &:hover {
+          background: rgba(255, 255, 255, 0.15);
+        }
+      }
     }
   }
 }

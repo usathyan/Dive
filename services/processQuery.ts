@@ -1,14 +1,5 @@
-import {
-  BaseChatModel,
-  BindToolsInput,
-} from "@langchain/core/language_models/chat_models";
-import {
-  AIMessage,
-  BaseMessage,
-  HumanMessage,
-  MessageContentComplex,
-  ToolMessage,
-} from "@langchain/core/messages";
+import { BaseChatModel, BindToolsInput } from "@langchain/core/language_models/chat_models";
+import { AIMessage, BaseMessage, HumanMessage, MessageContentComplex, ToolMessage } from "@langchain/core/messages";
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { imageToBase64 } from "./utils/image.js";
 import logger from "./utils/logger.js";
@@ -78,6 +69,13 @@ export async function handleProcessQuery(
 
   const runModel = model.bindTools?.(availableTools) || model;
 
+
+  const isOllama = model.lc_kwargs["defaultConfig"]?.modelProvider === "ollama";
+  const isDeepseek =
+    model.lc_kwargs["defaultConfig"]?.baseURL?.includes("deepseek") ||
+    model.lc_kwargs["defaultConfig"]?.model?.includes("deepseek-chat");
+
+
   while (hasToolCalls) {
     const stream = await runModel.stream(messages);
     let currentContent = "";
@@ -86,36 +84,57 @@ export async function handleProcessQuery(
     // Handle streaming response
     for await (const chunk of stream) {
       if (chunk.content) {
-        currentContent += chunk.content;
+        let chunkMessage = "";
+        if (Array.isArray(chunk.content)) {
+          // compatible Anthropic response format
+          const textContent = chunk.content.find((item) => item.type === "text" || item.type === "text_delta");
+          // @ts-ignore
+          chunkMessage = textContent?.text || "";
+        } else {
+          chunkMessage = chunk.content;
+        }
+        currentContent += chunkMessage;
         onStream?.(
           JSON.stringify({
             type: "text",
-            content: chunk.content,
+            content: chunkMessage,
           } as iStreamMessage)
         );
       }
 
-      // 處理工具調用的串流
-      /** 踩坑: 使用 stream 時，要讀 tool_call_chunks 來取得工具調用結果 
-        *  tool_calls 的 arguments 是空的。
-        */
-      if (chunk.tool_calls || chunk.tool_call_chunks) {
-        const toolCallChunks = chunk.tool_call_chunks || [];
+      // Handle tool call stream
+      /** Note: When using stream, read tool_call_chunks to get tool call results
+       *  tool_calls arguments are empty.
+       */
+      if (
+        chunk.tool_calls ||
+        chunk.tool_call_chunks ||
+        (Array.isArray(chunk.content) && chunk.content.some((item) => item.type === "tool_use"))
+      ) {
+        let toolCallChunks: any[] = [];
+
+        toolCallChunks = chunk.tool_call_chunks || [];
 
         for (const chunks of toolCallChunks) {
-          // 使用 index 來查找或創建工具調用記錄
           let index = chunks.index;
+          // Use index to find or create tool call record
+          // Ollama have multiple tool_call with same index and diff id
+          if (isOllama && index !== undefined && index >= 0 && toolCalls[index]) {
+            index = toolCalls.findIndex((toolCall) => toolCall.id === chunks.id);
+            if (index === undefined || index < 0) {
+              index = toolCalls.length;
+            }
+          }
+
           if (index !== undefined && index >= 0 && !toolCalls[index]) {
-            // 沒有找到對應的工具調用記錄，創建新的記錄
-            index = toolCalls.length;
-            toolCalls.push({
+            toolCalls[index] = {
               id: chunks.id,
               type: "function",
               function: {
                 name: chunks.name,
                 arguments: "",
               },
-            });
+            };
           }
 
           if (index !== undefined && index >= 0) {
@@ -123,29 +142,28 @@ export async function handleProcessQuery(
               toolCalls[index].function.name = chunks.name;
             }
 
-            if (chunks.args) {
-              toolCalls[index].function.arguments += chunks.args;
+            if (chunks.args || chunks.input) {
+              const newArgs = chunks.args || chunks.input || "";
+              toolCalls[index].function.arguments += newArgs;
             }
 
-            // 嘗試解析完整的參數
+            // Try to parse complete arguments
             try {
-              if (
-                toolCalls[index].function.arguments.startsWith("{") &&
-                toolCalls[index].function.arguments.endsWith("}")
-              ) {
-                const parsedArgs = JSON.parse(
-                  toolCalls[index].function.arguments
-                );
-                toolCalls[index].function.arguments =
-                  JSON.stringify(parsedArgs);
+              const args = toolCalls[index].function.arguments;
+              if (args.startsWith("{") && args.endsWith("}")) {
+                const parsedArgs = JSON.parse(args);
+                toolCalls[index].function.arguments = JSON.stringify(parsedArgs);
               }
             } catch (e) {
-              // 如果解析失敗，表示參數還未完整，繼續累積
+              // If parsing fails, arguments are not complete, continue accumulating
             }
           }
         }
       }
     }
+
+    // filter empty tool calls
+    toolCalls = toolCalls.filter((call) => call);
 
     // Update final response
     finalResponse += currentContent;
@@ -153,14 +171,28 @@ export async function handleProcessQuery(
     // If no tool calls, end loop
     if (toolCalls.length === 0) {
       hasToolCalls = false;
-      continue;
+      break;
     }
 
-    // Add AI tool call record to conversation
-    // This is necessary to correspond with tool results (toolCall.id)
+    // support anthropic multiple tool calls version but other not sure
     messages.push(
       new AIMessage({
-        content: currentContent,
+        content: [
+          {
+            type: "text",
+            // some model not allow empty content in text block
+            text: currentContent || "placeholder",
+          },
+          // Deepseek will recursive when tool_use exist in content
+          ...(isDeepseek
+            ? []
+            : toolCalls.map((toolCall) => ({
+                type: "tool_use",
+                id: toolCall.id,
+                name: toolCall.function.name,
+                input: toolCall.function.arguments === "" ? {} : JSON.parse(toolCall.function.arguments),
+              }))),
+        ],
         additional_kwargs: {
           tool_calls: toolCalls.map((toolCall) => ({
             id: toolCall.id,
@@ -179,10 +211,15 @@ export async function handleProcessQuery(
       onStream?.(
         JSON.stringify({
           type: "tool_calls",
-          content: toolCalls.map((call) => ({
-            name: call.function.name,
-            arguments: JSON.parse(call.function.arguments),
-          })),
+          content: toolCalls.map((call) => {
+            logger.info(
+              `[Tool Calls] [${call.function.name}] ${JSON.stringify(call.function.arguments || "{}", null, 2)}`
+            );
+            return {
+              name: call.function.name,
+              arguments: JSON.parse(call.function.arguments || "{}"),
+            };
+          }),
         } as iStreamMessage)
       );
     }
@@ -191,7 +228,7 @@ export async function handleProcessQuery(
     const toolResults = await Promise.all(
       toolCalls.map(async (toolCall) => {
         const toolName = toolCall.function.name;
-        const toolArgs = JSON.parse(toolCall.function.arguments);
+        const toolArgs = JSON.parse(toolCall.function.arguments || "{}");
         const client = toolToClientMap.get(toolName);
 
         const result = await client?.callTool({
@@ -199,11 +236,8 @@ export async function handleProcessQuery(
           arguments: toolArgs,
         });
 
-        if (result?.isError)
-          logger.error(
-            `[MCP Tool][${toolName}] ${JSON.stringify(result, null, 2)}`
-          );
-
+        if (result?.isError) logger.error(`[Tool Result] [${toolName}] ${JSON.stringify(result, null, 2)}`);
+        else logger.info(`[Tool Result] [${toolName}] ${JSON.stringify(result, null, 2)}`);
         // Send tool execution results
         onStream?.(
           JSON.stringify({
