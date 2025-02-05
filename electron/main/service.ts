@@ -10,6 +10,7 @@ import { migrate } from "drizzle-orm/better-sqlite3/migrator"
 import * as schema from "../../services/database/schema.js"
 import { isPortInUse, npmInstall } from "./util.js"
 import { SystemCommandManager } from "../../services/syscmd/index.js"
+import { MCPServerManager } from "../../services/mcpServer/index.js"
 
 export const envPath = envPaths(app.getName(), {suffix: ""})
 export const configDir = envPath.config
@@ -101,10 +102,11 @@ async function getFreePort(): Promise<number> {
 }
 
 export let port = Promise.resolve(0)
+export let server: WebServer | null = null
 async function initService(): Promise<number> {
   const _client = await client!
   await _client.init().catch(console.error)
-  const server = new WebServer(_client)
+  server = new WebServer(_client)
   await server.start(await getFreePort())
   return server.port!
 }
@@ -112,4 +114,8 @@ async function initService(): Promise<number> {
 export async function initMCPClient() {
   client = initClient()
   port = initService()
+}
+
+export async function cleanup() {
+  await MCPServerManager.getInstance().disconnectAllServers();
 }

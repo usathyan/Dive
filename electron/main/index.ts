@@ -4,7 +4,7 @@ import { fileURLToPath } from "node:url"
 import path from "node:path"
 import os from "node:os"
 import { update } from "./update"
-import { binDirList, initMCPClient, port, scriptsDir } from "./service"
+import { binDirList, cleanup, initMCPClient, port, scriptsDir } from "./service"
 import Anthropic from "@anthropic-ai/sdk"
 import log from "electron-log/main"
 import fse from "fs-extra"
@@ -140,10 +140,12 @@ async function createWindow() {
 
 app.whenReady().then(onReady)
 
-app.on("window-all-closed", () => {
+app.on("window-all-closed", async () => {
   win = null
-  if (process.platform !== "darwin")
+  if (process.platform !== "darwin") {
+    await cleanup()
     app.quit()
+  }
 })
 
 app.on("second-instance", () => {
