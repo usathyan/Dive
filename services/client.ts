@@ -131,7 +131,7 @@ export class MCPClient {
       // double check the chat exists and create to database if necessary
       const isChatExists = await checkChatExists(chat_id);
       if (!isChatExists) {
-        await createChat(chat_id, title);
+        await createChat(chat_id, title || "New Chat");
       }
 
       // if retry then delete the messages after the regenerateMessageId firstly

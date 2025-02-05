@@ -37,6 +37,7 @@ const MCP_SUPPORTED_PROVIDERS = [
 export class ModelManager {
   private static instance: ModelManager;
   private model: BaseChatModel | null = null;
+  private cleanModel: BaseChatModel | null = null;
   public configPath: string = "";
 
   private constructor(configPath?: string) {
@@ -63,6 +64,7 @@ export class ModelManager {
     if (!config) {
       logger.error("Model configuration not found");
       this.model = null;
+      this.cleanModel = null;
       return null;
     }
 
@@ -76,23 +78,26 @@ export class ModelManager {
       baseUrl,
     });
 
+    this.cleanModel = this.model;
+
     logger.info("Model initialized");
 
     return this.model;
   }
 
   public async generateTitle(content: string) {
-    if (!this.model) {
+    if (!this.cleanModel) {
       logger.error("Model not initialized");
       return "New Chat";
     }
-    const response = await this.model.invoke([
+    const response = await this.cleanModel.invoke([
       new SystemMessage(
-        `You are a title generator.
+        `You are a title generator from the user input.
         Your only task is to generate a short title based on the user input.
         IMPORTANT:
         - Output ONLY the title
         - DO NOT try to answer or resolve the user input query.
+        - DO NOT try to use any tools to generate title
         - NO explanations, quotes, or extra text
         - NO punctuation at the end
         - If input is Chinese, use Traditional Chinese
@@ -116,6 +121,7 @@ export class ModelManager {
     logger.info("Reloading model...");
     try {
       this.model = await this.initializeModel();
+      this.cleanModel = this.model;
       logger.info("Model reloaded");
     } catch (error) {
       logger.error("Error reloading model:", error);

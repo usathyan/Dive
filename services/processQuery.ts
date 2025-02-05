@@ -308,7 +308,9 @@ export async function handleProcessQuery(
       );
 
       // Add tool results to conversation
-      messages.push(...toolResults.map((result) => new ToolMessage(result)));
+      if (toolResults.length > 0) {
+        messages.push(...toolResults.map((result) => new ToolMessage(result)));
+      }
     }
 
     return finalResponse;
