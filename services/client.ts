@@ -1,7 +1,13 @@
 import { BaseMessage, SystemMessage } from "@langchain/core/messages";
 import { randomUUID } from "crypto";
 import * as readline from "node:readline";
-import { checkChatExists, createChat, createMessage, getChatWithMessages } from "./database/index.js";
+import {
+  checkChatExists,
+  createChat,
+  createMessage,
+  deleteMessagesAfter,
+  getChatWithMessages,
+} from "./database/index.js";
 import { MCPServerManager } from "./mcpServer/index.js";
 import { ModelManager } from "./models/index.js";
 import { handleProcessQuery } from "./processQuery.js";
@@ -36,7 +42,8 @@ export class MCPClient {
   public async processQuery(
     chatId: string | undefined,
     input: string | iQueryInput,
-    onStream?: (text: string) => void
+    onStream?: (text: string) => void,
+    regenerateMessageId?: string
   ) {
     let startTime = new Date();
     let chat_id = chatId || randomUUID();
@@ -52,10 +59,29 @@ export class MCPClient {
     const messageHistory = await getChatWithMessages(chat_id);
     if (messageHistory && messageHistory.messages.length > 0) {
       title = messageHistory.chat.title;
+      // if retry then slice the history messages before the regenerateMessageId
+      if (regenerateMessageId) {
+        const targetIndex = messageHistory.messages.findIndex((msg) => msg.messageId === regenerateMessageId);
+        if (targetIndex >= 0) {
+          messageHistory.messages = messageHistory.messages.slice(0, targetIndex);
+        }
+      }
       history = await processHistoryMessages(messageHistory.messages, history);
     }
 
     logger.debug(`[${chat_id}] Query pre-processing time: ${new Date().getTime() - startTime.getTime()}ms`);
+
+    if (onStream) {
+      onStream(
+        JSON.stringify({
+          type: "chat_info",
+          content: {
+            id: chat_id,
+            title: title || "New Chat",
+          },
+        } as iStreamMessage)
+      );
+    }
 
     try {
       const serverManager = MCPServerManager.getInstance();
@@ -68,7 +94,8 @@ export class MCPClient {
         await ModelManager.getInstance().getModel(),
         input,
         history,
-        onStream
+        onStream,
+        chat_id,
       );
 
       if (!onStream) {
@@ -82,24 +109,42 @@ export class MCPClient {
         await createChat(chat_id, title);
       }
 
-      if (chat_id) {
+      // if retry then delete the messages after the regenerateMessageId firstly
+      if (regenerateMessageId) {
+        await deleteMessagesAfter(chat_id, regenerateMessageId);
+      }
+      const userMessageId = randomUUID();
+      if (!regenerateMessageId) {
         const files = (typeof input === "object" && [...(input.images || []), ...(input.documents || [])]) || [];
         await createMessage({
           role: "user",
           chatId: chat_id,
-          messageId: randomUUID(),
+          messageId: userMessageId,
           content: userInput || "",
           files: files,
           createdAt: new Date().toISOString(),
         });
-        await createMessage({
-          role: "assistant",
-          chatId: chat_id,
-          messageId: randomUUID(),
-          content: result,
-          files: [],
-          createdAt: new Date().toISOString(),
-        });
+      }
+      const assistantMessageId = randomUUID();
+      await createMessage({
+        role: "assistant",
+        chatId: chat_id,
+        messageId: assistantMessageId,
+        content: result,
+        files: [],
+        createdAt: new Date().toISOString(),
+      });
+      if (onStream) {
+        onStream(
+          JSON.stringify({
+            type: "message_info",
+            content: {
+              // if retry then set the userMessageId is not required
+              userMessageId: regenerateMessageId ? "" : userMessageId,
+              assistantMessageId: assistantMessageId,
+            },
+          } as iStreamMessage)
+        );
       }
 
       if (onStream) {

@@ -1,9 +1,7 @@
 import express from "express";
-import {
-  deleteChat,
-  getAllChats,
-  getChatWithMessages,
-} from "../database/index.js";
+import { deleteChat, getAllChats, getChatWithMessages } from "../database/index.js";
+import { abortControllerMap } from "../processQuery.js";
+import logger from "../utils/logger.js";
 
 export function chatRouter() {
   const router = express.Router();
@@ -58,6 +56,36 @@ export function chatRouter() {
       success: true,
     });
   });
+
+  router.post("/:id/abort", async (req, res) => {
+    logger.info(`[${req.params.id}] Try to abort chat...`);
+    try {
+      const chatId = req.params.id;
+      const controller = abortControllerMap.get(chatId);
+      if (controller) {
+        controller.abort();
+        abortControllerMap.delete(chatId);
+        logger.info(`[${chatId}] Chat aborted successfully`);
+        res.json({
+          success: true,
+          message: "Chat aborted successfully",
+        });
+      } else {
+        logger.info(`[${chatId}] No active chat found with this ID`);
+        res.status(404).json({
+          success: false,
+          message: "No active chat found with this ID",
+        });
+      }
+    } catch (error: any) {
+      logger.error(`[${req.params.id}] Error aborting chat`, error);
+      res.status(500).json({
+        success: false,
+        message: error.message,
+      });
+    }
+  });
+
 
   return router;
 }

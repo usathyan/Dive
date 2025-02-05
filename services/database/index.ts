@@ -1,18 +1,18 @@
 import Database from "better-sqlite3";
-import { eq } from "drizzle-orm";
+import { and, eq, gt } from "drizzle-orm";
 import { BetterSQLite3Database, drizzle } from "drizzle-orm/better-sqlite3";
+import logger from "../utils/logger.js";
 import * as schema from "./schema.js";
 import { chats, messages, type NewMessage } from "./schema.js";
-import logger from "../utils/logger.js";
 
 export let db: BetterSQLite3Database<typeof schema>;
 
 export const setDatabase = (_db: BetterSQLite3Database<typeof schema>) => {
-  db = _db
-}
+  db = _db;
+};
 
 export const initDatabase = (dbPath?: string) => {
-  try{
+  try {
     const sqlite = new Database(dbPath || "data/database.sqlite");
     db = drizzle(sqlite, { schema: schema });
 
@@ -28,7 +28,6 @@ export const initDatabase = (dbPath?: string) => {
     throw error;
   }
 };
-
 
 export const getAllChats = async () => {
   const chats = await db.query.chats.findMany();
@@ -87,4 +86,18 @@ export const checkChatExists = async (chatId: string) => {
 export const deleteChat = async (chatId: string) => {
   await db.delete(chats).where(eq(chats.id, chatId));
   await db.delete(messages).where(eq(messages.chatId, chatId));
+};
+
+// Delete messages after a specific messageId in a chat
+export const deleteMessagesAfter = async (chatId: string, messageId: string) => {
+  const targetMessage = await db.query.messages.findFirst({
+    where: eq(messages.messageId, messageId),
+  });
+
+  if (!targetMessage) {
+    throw new Error(`Message ${messageId} does not exist`);
+  }
+
+  // Delete all messages with id greater than or equal to the target message's id
+  await db.delete(messages).where(and(eq(messages.chatId, chatId), gt(messages.id, targetMessage.id - 1)));
 };

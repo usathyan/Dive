@@ -161,6 +161,38 @@ export class WebServer {
       });
     });
 
+    //@ts-ignore
+    this.app.post("/api/chat/retry", async (req, res) => {
+      const { chatId, messageId } = req.body;
+      if (!chatId || !messageId) {
+        return res.status(400).json({
+          success: false,
+          message: "Chat ID and Message ID are required",
+        });
+      }
+      try {
+        // Set up SSE headers
+        res.setHeader("Content-Type", "text/event-stream");
+        res.setHeader("Cache-Control", "no-cache");
+        res.setHeader("Connection", "keep-alive");
+        const onStream = (text: string) => {
+          res.write(`data: ${JSON.stringify({ message: text })}\n\n`);
+        };
+        // Prepare query input
+        await this.mcpClient.processQuery(chatId, "", onStream, messageId);
+        res.write("data: [DONE]\n\n");
+        res.end();
+      } catch (error) {
+        logger.error(`Chat error: ${(error as Error).message}`);
+        const response = {
+          type: "error",
+          content: (error as Error).message,
+        } as iStreamMessage;
+        res.write(`data: ${JSON.stringify({ message: response })}\n\n`);
+        res.end();
+      }
+    });
+
     this.app.get("/api/suggestion/:chatId", async (req, res) => {
       const chatId = req.params.chatId;
       const result = await getChatWithMessages(chatId);

@@ -13,8 +13,14 @@ export interface iTool {
 }
 
 export interface iStreamMessage {
-  type: "text" | "tool_calls" | "tool_result" | "error" | "chat_info";
-  content: iTextContent | iErrorContent | iToolCallsContent | iToolResultContent | iChatInfoContent;
+  type: "text" | "tool_calls" | "tool_result" | "error" | "chat_info" | "message_info";
+  content:
+    | iTextContent
+    | iErrorContent
+    | iToolCallsContent
+    | iToolResultContent
+    | iChatInfoContent
+    | iMessageInfoContent;
 }
 
 export type iTextContent = string;
@@ -30,6 +36,11 @@ export type iToolResultContent = {
 export type iChatInfoContent = {
   id: string;
   title: string;
+};
+
+export type iMessageInfoContent = {
+  userMessageId: string;
+  assistantMessageId: string;
 };
 
 export interface iServerConfig {
