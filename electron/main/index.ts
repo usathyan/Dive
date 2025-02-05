@@ -10,7 +10,7 @@ import log from "electron-log/main"
 import fse from "fs-extra"
 import OpenAI from "openai"
 import { Ollama } from "ollama"
-import { modifyPath, setNodePath } from "./util"
+import { getNvmPath, modifyPath, setNodePath } from "./util"
 
 const require = createRequire(import.meta.url)
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
@@ -67,6 +67,11 @@ async function onReady() {
     modifyPath("/usr/local/sbin")
     modifyPath("/usr/bin")
     modifyPath("/usr/sbin")
+
+    const nvmPath = getNvmPath()
+    if (nvmPath) {
+      modifyPath(nvmPath)
+    }
   }
 
   initMCPClient()

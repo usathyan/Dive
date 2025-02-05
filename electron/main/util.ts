@@ -2,6 +2,7 @@ import net from "node:net"
 import path from "node:path"
 import { spawn } from "cross-spawn"
 import { app } from "electron"
+import fs from "fs"
 
 export function isPortInUse(port: number): Promise<boolean> {
   return new Promise((resolve) => {
@@ -54,4 +55,29 @@ export function modifyPath(customBinPath: string) {
 
 export function setNodePath() {
   process.env.NODE_PATH = path.join(process.resourcesPath, "node", "node_modules")
+}
+
+export function getNvmPath(): string {
+  const home = process.env.HOME
+  if (!home) return ""
+
+  const nvmPath = path.join(home, ".nvm", "versions", "node")
+
+  try {
+    if (fs.existsSync(nvmPath)) {
+      // 取得目前使用的 Node 版本
+      const currentVersion = fs.readdirSync(nvmPath)
+        .filter(dir => dir.startsWith("v"))
+        .sort()
+        .pop()
+
+      if (currentVersion) {
+        return path.join(nvmPath, currentVersion, "bin")
+      }
+    }
+  } catch (error) {
+    console.error("Error getting NVM path:", error)
+  }
+
+  return ""
 }
