@@ -95,9 +95,9 @@
   "nsis": {
     "oneClick": false,
     "perMachine": false,
+    "selectPerMachineByDefault": true,
     "allowToChangeInstallationDirectory": true,
-    "deleteAppDataOnUninstall": true,
-    "include": "build/installer.nsh"
+    "deleteAppDataOnUninstall": true
   },
   "extraResources": [
     {

@@ -38,7 +38,7 @@ const format = winston.format.combine(
 );
 
 // Define log storage locations
-const transports = [
+const transports = import.meta.env.PROD ? [] : [
   new winston.transports.Console(),
   new winston.transports.File({
     filename: path.join(process.resourcesPath, "tmp", "logs", "error.log"),
