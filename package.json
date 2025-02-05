@@ -29,6 +29,7 @@
     "package": "npm run build:electron && electron-builder",
     "package:windows": "vite-node scripts/download-node.ts && run-s package:windows-*",
     "package:windows-installers": "npm run build:electron && electron-builder --win nsis --x64 --publish=never",
+    "docker:build-win": "scripts/docker/build-win.sh",
     "package:darwin-dmg": "run-s package:darwin-dmg:*",
     "package:darwin-dmg:arm64": "scripts/install-deps.sh arm64 darwin && npm run build:electron && electron-builder --mac dmg --arm64 --publish=never",
     "package:darwin-dmg:x64": "scripts/install-deps.sh x64 darwin && npm run build:electron && electron-builder --mac dmg --x64 --publish=never",
