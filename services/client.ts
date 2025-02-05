@@ -50,11 +50,16 @@ export class MCPClient {
     logger.debug(`[${chat_id}] Processing query`);
     let history: BaseMessage[] = [];
     let title = "New Chat";
+    let titlePromise: Promise<string> | undefined;
 
     const systemPrompt = PromptManager.getInstance().getPrompt("system");
     if (systemPrompt) {
       history.push(new SystemMessage(systemPrompt));
     }
+
+    // we use the user input text to generate title
+    // TODO: will fix the issue when only file
+    const userInput = typeof input === "string" ? input : input.text;
 
     const messageHistory = await getChatWithMessages(chat_id);
     if (messageHistory && messageHistory.messages.length > 0) {
@@ -67,6 +72,13 @@ export class MCPClient {
         }
       }
       history = await processHistoryMessages(messageHistory.messages, history);
+    }
+    // no history messages means it's a new chat
+    else {
+      // Generate title for new chat asynchronously
+      if (userInput) {
+        titlePromise = ModelManager.getInstance().generateTitle(userInput);
+      }
     }
 
     logger.debug(`[${chat_id}] Query pre-processing time: ${new Date().getTime() - startTime.getTime()}ms`);
@@ -102,10 +114,23 @@ export class MCPClient {
         console.log("\nAssistant:\n", result);
       }
 
+      // Pending title generation, wait for it here with timeout
+      if (titlePromise) {
+        // Timeout is to prevent the title generation delay long time when the query process is aborted
+        try {
+          title = await Promise.race([
+            titlePromise,
+            new Promise<string>((_, reject) => setTimeout(() => reject(new Error("Title generation timeout")), 5000)),
+          ]);
+        } catch (error: any) {
+          logger.warn(`[${chat_id}] Title generation failed or timed out: ${error.message}`);
+          title = "New Chat";
+        }
+      }
+
+      // double check the chat exists and create to database if necessary
       const isChatExists = await checkChatExists(chat_id);
-      const userInput = typeof input === "string" ? input : input.text;
       if (!isChatExists) {
-        title = userInput ? await ModelManager.getInstance().generateTitle(userInput) : "New Chat";
         await createChat(chat_id, title);
       }
 

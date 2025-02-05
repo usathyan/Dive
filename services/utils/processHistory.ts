@@ -6,10 +6,12 @@ export async function processHistoryMessages(historyMessages: Message[], history
   for (const message of historyMessages) {
     const files = message.files as string[];
     if (!files || files.length === 0) {
-      if(message.role === "user") {
-        history.push(new HumanMessage(message.content));
+      // Handle empty content
+      const messageContent = message.content?.trim() ? message.content : "(placeholder)";
+      if (message.role === "user") {
+        history.push(new HumanMessage(messageContent));
       } else {
-        history.push(new AIMessage(message.content));
+        history.push(new AIMessage(messageContent));
       }
     } else {
       let content: any[] = [];
@@ -44,11 +46,11 @@ export async function processHistoryMessages(historyMessages: Message[], history
 
       if (message.role === "assistant") {
         history.push(new AIMessage({
-          content: content,
+            content: content,
         }));
       } else {
         history.push(new HumanMessage({
-          content: content,
+            content: content,
         }));
       }
     }
