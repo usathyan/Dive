@@ -8,12 +8,10 @@ RUN apt-get update && apt-get install -y \
 
 WORKDIR /app
 
-COPY package*.json ./
+COPY . .
 
 RUN npm ci
 RUN npm install --os=win32 --cpu=x64 sharp
-
-COPY . .
 
 ENV WINEARCH=win64
 ENV WINEDEBUG=-all
