@@ -3,7 +3,7 @@ import path from "path"
 import https from "https"
 import { Extract as unzipper } from "unzipper"
 
-const UV_VERSION = "0.5.24"
+const UV_VERSION = "0.5.29"
 const UV_FILENAME = "uv-x86_64-pc-windows-msvc.zip"
 const UV_URL = `https://github.com/astral-sh/uv/releases/download/${UV_VERSION}/${UV_FILENAME}`
 
