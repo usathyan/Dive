@@ -19,13 +19,23 @@ const FilePreview: React.FC<FilePreviewProps> = ({ files }) => {
     return file.name
   }
 
+  const getImageSrc = (file: File | string) => {
+    if (typeof file === 'string') {
+      if (!file.startsWith('http') && !file.startsWith('data:') && !file.startsWith('local-file://')) {
+        return `local-file://${file}`
+      }
+      return file
+    }
+    return URL.createObjectURL(file)
+  }
+
   return (
     <div className="message-files">
       {files.map((file, index) => (
         isImageFile(file) ? (
           <img 
             key={index}
-            src={typeof file === "string" ? file : URL.createObjectURL(file)}
+            src={getImageSrc(file)}
             alt={`Uploaded ${index + 1}`}
             className="message-image"
           />

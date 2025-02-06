@@ -1,4 +1,4 @@
-import { app, BrowserWindow, shell, ipcMain } from "electron"
+import { app, BrowserWindow, shell, ipcMain, protocol } from "electron"
 import { createRequire } from "node:module"
 import { fileURLToPath } from "node:url"
 import path from "node:path"
@@ -67,6 +67,11 @@ async function onReady() {
       modifyPath(nvmPath)
     }
   }
+  
+  protocol.registerFileProtocol("local-file", (request, callback) => {
+    const filePath = request.url.replace("local-file://", "")
+    callback({ path: decodeURI(filePath) })
+  })
 
   initMCPClient()
   createWindow()

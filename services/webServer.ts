@@ -11,8 +11,10 @@ import { createRouter } from "./routes/index.js";
 import { handleUploadFiles } from "./utils/fileHandler.js";
 import logger from "./utils/logger.js";
 import { iModelConfig, iQueryInput, iStreamMessage } from "./utils/types.js";
+import envPaths from "env-paths";
 
-const PROJECT_ROOT = path.join(process.resourcesPath, "tmp");
+const envPath = envPaths("dive", {suffix: ""})
+const PROJECT_ROOT = envPath.data;
 
 const OFFLINE_MODE = process.env.OFFLINE_MODE === "true";
 

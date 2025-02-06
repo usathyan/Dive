@@ -39,6 +39,7 @@ export async function handleUploadFiles({ files, filepaths }: { files: Express.M
 
     // Check if file with same hash prefix exists
     const uploadDir = path.join(PROJECT_ROOT, "uploads");
+    await fs.mkdir(uploadDir, { recursive: true });
     const files = await fs.readdir(uploadDir);
     const existingFile = files.find((f) => f.startsWith(hash));
     if (existingFile) {
@@ -56,9 +57,9 @@ export async function handleUploadFiles({ files, filepaths }: { files: Express.M
 
     const ext = path.extname(file.filename).toLowerCase();
     if (SUPPORTED_IMAGE_EXTENSIONS.includes(ext)) {
-      images.push(`uploads/${file.filename}`);
+      images.push(path.join(PROJECT_ROOT, "uploads", file.filename));
     } else if (SUPPORTED_DOCUMENT_EXTENSIONS.includes(ext)) {
-      documents.push(`uploads/${file.filename}`);
+      documents.push(path.join(PROJECT_ROOT, "uploads", file.filename));
     } else {
       logger.error(`Unsupported file type: ${file.filename}`);
     }
