@@ -6,7 +6,6 @@ import os from "node:os"
 import { update } from "./update"
 import { binDirList, cleanup, initMCPClient, port, scriptsDir } from "./service"
 import Anthropic from "@anthropic-ai/sdk"
-import log from "electron-log/main"
 import fse from "fs-extra"
 import OpenAI from "openai"
 import { Ollama } from "ollama"
@@ -14,10 +13,6 @@ import { getNvmPath, modifyPath, setNodePath } from "./util"
 
 const require = createRequire(import.meta.url)
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
-
-log.initialize()
-console.log = log.log
-Object.assign(console, log.functions)
 
 // The built directory structure
 //
@@ -59,7 +54,6 @@ const indexHtml = path.join(RENDERER_DIST, "index.html")
 async function onReady() {
   if (process.platform === "win32") {
     binDirList.forEach(modifyPath)
-    setNodePath()
   } else if (process.platform === "darwin") {
     modifyPath("/opt/homebrew/bin")
     modifyPath("/opt/homebrew/sbin")

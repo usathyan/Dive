@@ -1,5 +1,8 @@
 import path from "path";
 import winston from "winston";
+import envPaths from "env-paths";
+
+const envPath = envPaths("dive", {suffix: ""})
 
 // Define log levels
 const levels = {
@@ -38,14 +41,14 @@ const format = winston.format.combine(
 );
 
 // Define log storage locations
-const transports = import.meta.env.PROD ? [] : [
+const transports = [
   new winston.transports.Console(),
   new winston.transports.File({
-    filename: path.join(process.resourcesPath, "tmp", "logs", "error.log"),
+    filename: path.join(envPath.log, "error.log"),
     level: "error",
   }),
   new winston.transports.File({
-    filename: path.join(process.resourcesPath, "tmp", "logs", "all.log"),
+    filename: path.join(envPath.log, "all.log"),
   }),
 ];
 

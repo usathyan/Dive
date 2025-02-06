@@ -2,8 +2,10 @@ import crypto from "crypto";
 import fs from "fs/promises";
 import path from "path";
 import logger from "./logger.js";
+import envPaths from "env-paths";
 
-const PROJECT_ROOT = path.join(process.resourcesPath, "tmp");
+const envPath = envPaths("dive", {suffix: ""})
+const PROJECT_ROOT = envPath.data;
 
 export const SUPPORTED_IMAGE_EXTENSIONS = [".jpg", ".jpeg", ".png", ".gif", ".webp"];
 export const SUPPORTED_DOCUMENT_EXTENSIONS = [".pdf", ".docx", ".txt", ".rtf", ".odt", ".html", ".csv", ".epub"];
