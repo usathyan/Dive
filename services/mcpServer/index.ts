@@ -52,15 +52,25 @@ export class MCPServerManager implements IMCPServerManager {
     const { config, servers } = await loadConfigAndServers(this.configPath);
     logger.info(`Connect to ${servers.length} enabled servers...`);
 
-    for (const serverName of servers) {
-      const result = await this.connectSingleServer(serverName, config.mcpServers[serverName]);
-      if (!result.success) {
+    // async connect all servers
+    const connectionResults = await Promise.allSettled(
+      servers.map((serverName) => this.connectSingleServer(serverName, config.mcpServers[serverName]))
+    );
+
+    // collect error
+    connectionResults.forEach((result) => {
+      if (result.status === "rejected") {
         errorArray.push({
-          serverName,
-          error: result.error,
+          serverName: "unknown",
+          error: result.reason,
+        });
+      } else if (!result.value.success) {
+        errorArray.push({
+          serverName: result.value.serverName,
+          error: result.value.error,
         });
       }
-    }
+    });
 
     logger.info("Connect all MCP servers completed");
     logger.info("All available tools:");
