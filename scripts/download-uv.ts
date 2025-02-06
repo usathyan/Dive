@@ -7,6 +7,40 @@ const UV_VERSION = "0.5.24"
 const UV_FILENAME = "uv-x86_64-pc-windows-msvc.zip"
 const UV_URL = `https://github.com/astral-sh/uv/releases/download/${UV_VERSION}/${UV_FILENAME}`
 
+type Platform = "darwin" | "win32"
+type Arch = "arm64" | "x64"
+type UVConfig = {
+  filename: string
+  extractCmd: string
+}
+
+const getUVConfig = (platform: Platform, arch: Arch): UVConfig => {
+  const configs: Record<Platform, Record<Arch, UVConfig>> = {
+    darwin: {
+      arm64: {
+        filename: "uv-aarch64-apple-darwin.tar.gz",
+        extractCmd: "tar"
+      },
+      x64: {
+        filename: "uv-x86_64-apple-darwin.tar.gz",
+        extractCmd: "tar"
+      }
+    },
+    win32: {
+      x64: {
+        filename: "uv-x86_64-pc-windows-msvc.zip",
+        extractCmd: "unzip"
+      },
+      arm64: {
+        filename: "uv-x86_64-pc-windows-msvc.zip", // Windows only has x64 version currently
+        extractCmd: "unzip"
+      }
+    }
+  }
+
+  return configs[platform][arch]
+}
+
 async function downloadFile(url: string, dest: string): Promise<void> {
   return new Promise((resolve, reject) => {
     const request = https.get(url, {

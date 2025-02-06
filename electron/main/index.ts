@@ -55,19 +55,19 @@ async function onReady() {
   if (process.platform === "win32") {
     binDirList.forEach(modifyPath)
   } else if (process.platform === "darwin") {
+    modifyPath(path.join(process.resourcesPath, `bin/node/bin`))
+    modifyPath(path.join(process.resourcesPath, `bin/uv`))
+
     modifyPath("/opt/homebrew/bin")
-    modifyPath("/opt/homebrew/sbin")
     modifyPath("/usr/local/bin")
-    modifyPath("/usr/local/sbin")
     modifyPath("/usr/bin")
-    modifyPath("/usr/sbin")
 
     const nvmPath = getNvmPath()
     if (nvmPath) {
       modifyPath(nvmPath)
     }
   }
-  
+
   protocol.registerFileProtocol("local-file", (request, callback) => {
     try {
       const filePath = handleLocalFilePath(request.url)

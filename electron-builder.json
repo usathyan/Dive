@@ -50,6 +50,26 @@
     },
     "signIgnore": [
       "node_modules/sharp"
+    ],
+    "extraResources": [
+      {
+        "from": "bin/node/darwin-${arch}/",
+        "to": "bin/node/",
+        "filter": ["**/*"]
+      },
+      {
+        "from": "bin/uv/darwin-${arch}/",
+        "to": "bin/uv/",
+        "filter": [
+          "uv",
+          "uvx"
+        ]
+      },
+      {
+        "from": "bin/python/darwin-${arch}/",
+        "to": "python/",
+        "filter": ["**/*"]
+      }
     ]
   },
   "win": {
