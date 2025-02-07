@@ -65,7 +65,6 @@ export function getNvmPath(): string {
 
   try {
     if (fs.existsSync(nvmPath)) {
-      // 取得目前使用的 Node 版本
       const currentVersion = fs.readdirSync(nvmPath)
         .filter(dir => dir.startsWith("v"))
         .sort()
