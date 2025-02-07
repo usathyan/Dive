@@ -7,13 +7,15 @@ import { iServerConfig } from "./utils/types.js";
 // Connect to specified server
 export async function handleConnectToServer(
   serverName: string,
-  serverConfig: iServerConfig
+  serverConfig: iServerConfig,
 ) {
   logger.debug(`============`);
+  logger.debug(`Runtime Platform: ${process.platform}`);
   logger.debug(`Attempting to connect to server: ${serverName}`);
-
   // Check specific command 'node'
   serverConfig.command = SystemCommandManager.getInstance().getValue(serverConfig.command) || serverConfig.command;
+  serverConfig.env = process.platform === 'win32' ? { ...serverConfig.env, PYTHONIOENCODING: "utf-8" } : serverConfig.env;
+
 
   // Establish transport
   const transport = new StdioClientTransport({
