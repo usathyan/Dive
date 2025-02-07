@@ -16,6 +16,9 @@ export async function handleConnectToServer(
   serverConfig.command = SystemCommandManager.getInstance().getValue(serverConfig.command) || serverConfig.command;
   serverConfig.env = process.platform === 'win32' ? { ...serverConfig.env, PYTHONIOENCODING: "utf-8" } : serverConfig.env;
 
+  if (serverConfig.env && !Object.keys(serverConfig.env).length) {
+    serverConfig.env = undefined;
+  }
 
   // Establish transport
   const transport = new StdioClientTransport({
