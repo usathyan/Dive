@@ -55,8 +55,8 @@ async function onReady() {
   if (process.platform === "win32") {
     binDirList.forEach(modifyPath)
   } else if (process.platform === "darwin") {
-    modifyPath(path.join(process.resourcesPath, `bin/node/bin`))
-    modifyPath(path.join(process.resourcesPath, `bin/uv`))
+    // modifyPath(path.join(process.resourcesPath, `bin/node/bin`))
+    // modifyPath(path.join(process.resourcesPath, `bin/uv`))
 
     modifyPath("/opt/homebrew/bin")
     modifyPath("/usr/local/bin")
