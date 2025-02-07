@@ -222,7 +222,7 @@ export async function handleProcessQuery(
             {
               type: "text",
               // some model not allow empty content in text block
-              text: currentContent || "placeholder",
+              text: currentContent || ".",
             },
             // Deepseek will recursive when tool_use exist in content
             ...(isDeepseek

@@ -7,7 +7,7 @@ export async function processHistoryMessages(historyMessages: Message[], history
     const files = message.files as string[];
     if (!files || files.length === 0) {
       // Handle empty content
-      const messageContent = message.content?.trim() ? message.content : "(placeholder)";
+      const messageContent = message.content?.trim() ? message.content : ".";
       if (message.role === "user") {
         history.push(new HumanMessage(messageContent));
       } else {
