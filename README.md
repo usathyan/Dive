@@ -93,12 +93,11 @@ There are four ways to configure MCP servers:
 Example configuration:
 ```json
 {
-  "myServer": {
-    "command": "node",
-    "args": [
-      "-y",
-      "@modelcontextprotocol/server-memory"
-    ]
+  "mcpServers": {
+    "fetch": {
+      "command": "uvx",
+      "args": ["mcp-server-fetch"]
+    }
   }
 }
 ```
