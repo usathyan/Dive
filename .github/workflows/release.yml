@@ -42,19 +42,22 @@ jobs:
       - name: Install dependencies
         run: npm ci
       
-      - name: Download Node.js binary
-        run: npm run download-node:${{ matrix.platform }}-${{ matrix.arch }}
+      - name: Download Prebuilt binary
+        if: matrix.platform == 'windows'
+        run: |
+          npm run download-node:win-${{ matrix.arch }}
+          npm run download-python:win-64
+          npm run download-uv:win-64
+
       
       - name: Create release directory
-        run: mkdir -p release/v${{ env.VERSION }}
+        run: mkdir -p output
       
       - name: Build Windows
         if: matrix.platform == 'windows'
         run: |
-          npm run download-uv:win-64
-          npm run download-python:win-64
           npm run package:windows-installers
-          mv dist/*.exe release/v${{ env.VERSION }}/
+          mv release/v${{ env.VERSION }}/*.exe output/
       
       - name: Build macOS
         if: matrix.platform == 'darwin'
@@ -62,27 +65,23 @@ jobs:
           APPLE_ID: ${{ secrets.APPLE_ID }}
           APPLE_ID_PASSWORD: ${{ secrets.APPLE_ID_PASSWORD }}
           APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
-          CSC_LINK: ${{ secrets.MAC_CERTIFICATE }}
-          CSC_KEY_PASSWORD: ${{ secrets.MAC_CERTIFICATE_PASSWORD }}
         run: |
           if [ "${{ matrix.arch }}" = "arm64" ]; then
             npm run package:darwin-dmg:arm64
           else
             npm run package:darwin-dmg:x64
           fi
-          mv dist/*.dmg release/v${{ env.VERSION }}/
+          mv release/v${{ env.VERSION }}/*.dmg output/
       
       - name: Build Linux
         if: matrix.platform == 'linux'
         run: |
           npm run package:linux
-          mv dist/*.{AppImage,deb,tar.gz} release/v${{ env.VERSION }}/
+          mv release/v${{ env.VERSION }}/*.{AppImage,deb,tar.gz,zip} output/
       
       - name: Create Release
         uses: softprops/action-gh-release@v2
         with:
-          draft: false
-          prerelease: false
-          files: release/v${{ env.VERSION }}/*
+          files: output/*.{AppImage,deb,tar.gz,exe,dmg,zip}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} 
