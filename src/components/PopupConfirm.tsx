@@ -17,13 +17,13 @@ type PopupConfirmProps = PopupStylePorps & {
 	cancelTooltip?: string
 	footerHint?: React.ReactNode | string
 	footerType?: "center" | "flex-end"
-	ifHotkey?: boolean
+	listenHotkey?: boolean
 	onClickOutside?: () => void
 	onConfirm?: () => void
 	onCancel?: () => void
 }
 
-export default function PopupConfirm({ title, children, zIndex, noBackground, className, noBorder, showClose, onClickOutside, onConfirm, confirmText, confirmTooltip, disabled, onCancel, cancelText, cancelTooltip, footerHint, footerType, ifHotkey=true }: PopupConfirmProps) {
+export default function PopupConfirm({ title, children, zIndex, noBackground, className, noBorder, showClose, onClickOutside, onConfirm, confirmText, confirmTooltip, disabled, onCancel, cancelText, cancelTooltip, footerHint, footerType, listenHotkey=true }: PopupConfirmProps) {
 	const { t } = useTranslation()
   
   useEffect(() => {
@@ -41,7 +41,7 @@ export default function PopupConfirm({ title, children, zIndex, noBackground, cl
 			}
 		}
 
-		if(ifHotkey) {
+		if(listenHotkey) {
 			window.addEventListener("keydown", handleKeyDown)
 		}
 		return () => window.removeEventListener("keydown", handleKeyDown)
