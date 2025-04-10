@@ -100,14 +100,6 @@ const KeyPopupEdit = ({
     }
   }, [modelConfig]);
 
-  const handleProviderChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const newProvider = e.target.value as InterfaceProvider;
-    setProvider(newProvider);
-    setFormData({ active: true } as InterfaceModelConfig);
-    setFields(defaultInterface[newProvider]);
-    setErrors({});
-  };
-
   const handleChange = (key: string, value: any) => {
     setFormData((prev) => ({ ...prev, [key]: value }));
   };
@@ -358,8 +350,8 @@ const KeyPopupEdit = ({
                               <img
                                 src={
                                   isApiKeyVisible
-                                    ? "/icons/Hide.svg"
-                                    : "/icons/Show.svg"
+                                    ? "img://Hide.svg"
+                                    : "img://Show.svg"
                                 }
                                 alt={
                                   isApiKeyVisible
@@ -397,7 +389,7 @@ const KeyPopupEdit = ({
                                 </svg>
                               ) : (
                                 <img
-                                  src="/icons/Copy.svg"
+                                  src="img://Copy.svg"
                                   alt={t("models.copy")}
                                   width="20"
                                   height="20"
@@ -418,9 +410,6 @@ const KeyPopupEdit = ({
           <div className="models-key-form-group">
             <label className="models-key-field-title">
               <>{`Custom Model ID${t("models.optional")}`}</>
-              <div className="models-key-field-description">
-                Custom Model ID
-              </div>
             </label>
             <input
               type={"text"}

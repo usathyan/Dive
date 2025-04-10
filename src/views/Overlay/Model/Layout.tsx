@@ -1,4 +1,4 @@
-import { useSetAtom } from "jotai"
+import { useAtomValue, useSetAtom } from "jotai"
 import React, { useState } from "react"
 import { useTranslation } from "react-i18next"
 import Switch from "../../../components/Switch"
@@ -15,6 +15,7 @@ import { getVerifyStatus } from "./ModelVerify"
 import Dropdown from "../../../components/DropDown"
 import Tooltip from "../../../components/Tooltip"
 import KeyPopupEdit from "./KeyPopupEdit"
+import { systemThemeAtom, userThemeAtom } from "../../../atoms/themeState"
 
 const PageLayout = () => {
   const { t } = useTranslation()
@@ -28,6 +29,8 @@ const PageLayout = () => {
   const [showNoModelAlert, setShowNoModelAlert] = useState(false)
   const [showParameterPopup, setShowParameterPopup] = useState(false)
   const showToast = useSetAtom(showToastAtom)
+  const systemTheme = useAtomValue(systemThemeAtom)
+  const userTheme = useAtomValue(userThemeAtom)
 
   const { multiModelConfigList, setMultiModelConfigList,
           currentIndex, setCurrentIndex, saveConfig
@@ -180,6 +183,20 @@ const PageLayout = () => {
     setShowClose(false)
   }
 
+  const isProviderIconNoFilter = (model: string) => {
+    const isLightMode = userTheme === "system" ? systemTheme === "light" : userTheme === "light"
+    switch (model) {
+      case "ollama":
+      case "openai_compatible":
+      case "bedrock":
+        return true
+      case "mistralai":
+        return isLightMode
+      default:
+        return model.startsWith("google") && isLightMode
+    }
+  }
+
   return (
     <div className="models-page overlay-page">
       <button
@@ -281,7 +298,7 @@ const PageLayout = () => {
                     <img
                       src={PROVIDER_ICONS[multiModelConfig.name as InterfaceProvider]}
                       alt={multiModelConfig.name}
-                      className={`provider-icon ${multiModelConfig.name === "ollama" || multiModelConfig.name === "openai_compatible" ? "no-filter" : ""}`}
+                      className={`provider-icon ${isProviderIconNoFilter(multiModelConfig.name as InterfaceProvider) ? "no-filter" : ""}`}
                     />
                     <div className="provider-name">
                       {PROVIDER_LABELS[multiModelConfig.name as InterfaceProvider]}
@@ -294,20 +311,24 @@ const PageLayout = () => {
                       {(multiModelConfig as any).secretAccessKey && <div>SecretKey： ***{(multiModelConfig as any).secretAccessKey.slice(-5)}</div>}
                       {multiModelConfig.baseURL && <div>{multiModelConfig.baseURL}</div>}
                     </div>
-                    <button
-                      type="button"
-                      className="edit-btn"
-                      onClick={() => {
-                        setShowKeyPopupEdit(true)
-                        setCurrentIndex(index)
-                      }}
-                      title={t("models.editProvider")}
+                    <Tooltip
+                      content={t("models.editProvider")}
                     >
-                      <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 22 22" fill="none">
-                        <path d="M3 13.6684V18.9998H19" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                        <path d="M2.99991 13.5986L12.5235 4.12082C13.9997 2.65181 16.3929 2.65181 17.869 4.12082V4.12082C19.3452 5.58983 19.3452 7.97157 17.869 9.44058L8.34542 18.9183" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                      </svg>
-                    </button>
+                      <button
+                          type="button"
+                          className="edit-btn"
+                        onClick={() => {
+                          setShowKeyPopupEdit(true)
+                          setCurrentIndex(index)
+                        }}
+                        title={t("models.editProvider")}
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 22 22" fill="none">
+                          <path d="M3 13.6684V18.9998H19" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                          <path d="M2.99991 13.5986L12.5235 4.12082C13.9997 2.65181 16.3929 2.65181 17.869 4.12082V4.12082C19.3452 5.58983 19.3452 7.97157 17.869 9.44058L8.34542 18.9183" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                        </svg>
+                      </button>
+                    </Tooltip>
                   </div>
                   <div>
                     <div className="models-popup-btn-container">
