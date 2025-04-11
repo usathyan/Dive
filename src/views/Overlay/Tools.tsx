@@ -573,10 +573,8 @@ const FieldType = {
 }
 
 const McpEditPopup = ({ _type, _config, _mcpName, onDelete, onCancel, onSubmit }: mcpEditPopupProps) => {
-  const [type, setType] = useState(_type)
   const typeRef = useRef(_type)
   const { t } = useTranslation()
-  const [config, setConfig] = useState(_config)
   const [mcpList, setMcpList] = useState<mcpListProps[]>([])
   const [currentMcpIndex, setCurrentMcpIndex] = useState(0)
   const [isFormatError, setIsFormatError] = useState(false)
@@ -586,9 +584,9 @@ const McpEditPopup = ({ _type, _config, _mcpName, onDelete, onCancel, onSubmit }
   const showToast = useSetAtom(showToastAtom)
 
   useEffect(() => {
-    if(!config.mcpServers) return
+    if(!_config.mcpServers) return
     const newMcpList: mcpListProps[] = []
-    const newConfig = JSON.parse(JSON.stringify(config))
+    const newConfig = JSON.parse(JSON.stringify(_config))
 
     // remove disabled field
     Object.keys(newConfig.mcpServers).forEach((mcpName) => {
