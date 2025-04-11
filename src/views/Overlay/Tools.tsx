@@ -10,20 +10,10 @@ import { linter, lintGutter } from "@codemirror/lint"
 import { systemThemeAtom, themeAtom } from "../../atoms/themeState"
 import { closeOverlayAtom } from "../../atoms/layerState"
 import Switch from "../../components/Switch"
-import { Behavior, useLayer } from "../../hooks/useLayer"
 import { loadToolsAtom, Tool, toolsAtom } from "../../atoms/toolState"
 import Tooltip from "../../components/Tooltip"
 import PopupConfirm from "../../components/PopupConfirm"
 import Dropdown from "../../components/DropDown"
-
-interface ConfigModalProps {
-  title: string
-  subtitle?: string
-  config?: Record<string, any>
-  onSubmit: (config: Record<string, any>) => void
-  onCancel: () => void
-}
-
 interface ToolsCache {
   [key: string]: {
     description: string
@@ -34,149 +24,6 @@ interface ToolsCache {
     }[]
     disabled: boolean
   }
-}
-
-const ConfigModal: React.FC<ConfigModalProps> = ({
-  title,
-  subtitle,
-  config,
-  onSubmit,
-  onCancel
-}) => {
-  const { t } = useTranslation()
-  const [jsonString, setJsonString] = useState(config ? JSON.stringify(config, null, 2) : "")
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const showToast = useSetAtom(showToastAtom)
-  const [isFormatError, setIsFormatError] = useState(false)
-  const theme = useAtomValue(themeAtom)
-  const systemTheme = useAtomValue(systemThemeAtom)
-
-  useLayer({
-    onClose: () => {
-      onCancel()
-    },
-    behavior: Behavior.autoPush
-  })
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-
-    try {
-      let processedJsonString = jsonString.trim()
-      if (!processedJsonString.startsWith("{")) {
-        processedJsonString = `{${processedJsonString}}`
-      }
-
-      if (isFormatError)
-        return
-
-      const parsedConfig = JSON.parse(processedJsonString)
-      setIsSubmitting(true)
-      await onSubmit(parsedConfig)
-    } catch (err) {
-      if (err instanceof SyntaxError) {
-        showToast({
-          message: t("tools.invalidJson"),
-          type: "error"
-        })
-      }
-    } finally {
-      setIsSubmitting(false)
-    }
-  }
-
-  const createJsonLinter = () => {
-    return linter((view) => {
-      const doc = view.state.doc.toString()
-      if (!doc.trim())
-        return []
-
-      try {
-        jsonlint.parse(doc)
-        setIsFormatError(false)
-        return []
-      } catch (e: any) {
-        const lineMatch = e.message.match(/line\s+(\d+)/)
-        const line = lineMatch ? parseInt(lineMatch[1]) : 1
-        const linePos = view.state.doc.line(line)
-        setIsFormatError(true)
-
-        return [{
-          from: linePos.from,
-          to: linePos.to,
-          message: e.message,
-          severity: "error",
-        }]
-      }
-    })
-  }
-
-  const inputTheme = EditorView.theme({
-    '.cm-content': {
-      color: 'var(--text)',
-    },
-    '.cm-lineNumbers': {
-      color: 'var(--text)',
-    },
-  });
-
-  return (
-    <div className="modal-overlay">
-      <div className="modal-content">
-        <div className="modal-header">
-          <h2>{title}</h2>
-          <button
-            className="close-btn"
-            onClick={onCancel}
-          >
-            ×
-          </button>
-        </div>
-        <form onSubmit={handleSubmit} className="config-form">
-          {subtitle && <p className="subtitle">{subtitle}</p>}
-          <CodeMirror
-            placeholder={"{\n \"mcpServer\":{}\n}"}
-            theme={theme === 'system' ? systemTheme : theme}
-            minHeight="300px"
-            maxHeight="300px"
-            value={jsonString}
-            extensions={[
-              json(),
-              lintGutter(),
-              createJsonLinter(),
-              inputTheme
-            ]}
-            onChange={(value, viewUpdate) => {
-              if(!value.trim().startsWith("{")) {
-                setJsonString(`{\n ${value}\n}`)
-              }else{
-                setJsonString(value)
-              }
-            }}
-          />
-          <div className="form-actions">
-            <button
-              type="button"
-              onClick={onCancel}
-              className="cancel-btn"
-              disabled={isSubmitting}
-            >
-              {t("tools.cancel")}
-            </button>
-            <button
-              type="submit"
-              className="submit-btn"
-              disabled={isSubmitting}
-            >
-              {isSubmitting ? (
-                <div className="loading-spinner"></div>
-              ) : t("tools.save")}
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
-  )
 }
 
 const Tools = () => {
@@ -628,24 +475,6 @@ const Tools = () => {
           <div className="loading-spinner"></div>
         </div>
       )}
-
-      {/* {showConfigModal && (
-        <ConfigModal
-          title={t("tools.configTitle")}
-          config={mcpConfig}
-          onSubmit={handleConfigSubmit}
-          onCancel={() => setShowConfigModal(false)}
-        />
-      )}
-
-      {showAddModal && (
-        <ConfigModal
-          title={t("tools.addServerTitle")}
-          subtitle={t("tools.addServerSubtitle")}
-          onSubmit={handleAddSubmit}
-          onCancel={() => setShowAddModal(false)}
-        />
-      )} */}
 
       {showDeletePopup && (
         <PopupConfirm
