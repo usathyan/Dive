@@ -182,10 +182,8 @@ const ConfigModal: React.FC<ConfigModalProps> = ({
 const Tools = () => {
   const { t } = useTranslation()
   const tools = useAtomValue(toolsAtom)
-  // const [showConfigModal, setShowConfigModal] = useState(false)
   const [mcpConfig, setMcpConfig] = useState<Record<string, any>>({})
   const [isLoading, setIsLoading] = useState(false)
-  // const [showAddModal, setShowAddModal] = useState(false)
   const showToast = useSetAtom(showToastAtom)
   const closeOverlay = useSetAtom(closeOverlayAtom)
   const toolsCacheRef = useRef<ToolsCache>({})
@@ -324,7 +322,6 @@ const Tools = () => {
       }
       if (data.success) {
         setMcpConfig(newConfig)
-        // setShowConfigModal(false)
         setShowMcpEditJsonPopup(false)
         setShowMcpEditPopup(false)
         fetchTools()
@@ -434,7 +431,6 @@ const Tools = () => {
     }, mergedConfig.mcpServers)
 
     await handleConfigSubmit(mergedConfig)
-    // setShowAddModal(false)
     setShowMcpAddPopup(false)
   }
 
@@ -498,7 +494,6 @@ const Tools = () => {
               <button
                 className="add-btn"
                 onClick={() => {
-                  // setShowAddModal(true)
                   setShowMcpAddPopup(true)
                 }}
               >
@@ -513,7 +508,6 @@ const Tools = () => {
               <button
                 className="edit-btn"
                 onClick={() => {
-                  // setShowConfigModal(true)
                   setShowMcpEditJsonPopup(true)
                 }}
               >
