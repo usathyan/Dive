@@ -95,6 +95,7 @@
     "deleteAllTitle": "確定刪除全部工具？",
     "editTool": "編輯 {{tool}} config",
     "editJsonTool": "MCP Tools 設定",
+    "fieldTitle": "欄位",
     "addTool": "新增 MCP Tools",
     "jsonDesc": "請在欄位輸入或直接貼上MCP Server Json",
     "addArg": "新增參數",

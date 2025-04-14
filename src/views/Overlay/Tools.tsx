@@ -837,7 +837,7 @@ const McpEditPopup = ({ _type, _config, _mcpName, onDelete, onCancel, onSubmit }
 
     return (
       <div className="tool-edit-field">
-        <div className="tool-edit-title">Field</div>
+        <div className="tool-edit-title">{t("tools.fieldTitle")}</div>
         <div className="field-content">
           {/* Name */}
           <div className="field-item">
@@ -862,7 +862,7 @@ const McpEditPopup = ({ _type, _config, _mcpName, onDelete, onCancel, onSubmit }
           {/* Args */}
           <div className="field-item">
             <label>
-              Args
+              ARGS
               <button onClick={() => handleMcpChange("args", [...(currentMcpServers.args || []), ""])}>
                 + {t("tools.addArg")}
               </button>
@@ -895,7 +895,7 @@ const McpEditPopup = ({ _type, _config, _mcpName, onDelete, onCancel, onSubmit }
           {/* env */}
           <div className="field-item">
             <label>
-              Env
+              ENV
                 <button onClick={() => {
                 const newEnv = [...currentEnv]
                 let index = 0
@@ -979,7 +979,7 @@ const McpEditPopup = ({ _type, _config, _mcpName, onDelete, onCancel, onSubmit }
           </div>
           {/* Url */}
           <div className="field-item">
-            <label>Url</label>
+            <label>URL</label>
             <input
               placeholder={t("tools.urlPlaceholder")}
               type="text"

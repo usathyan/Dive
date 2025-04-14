@@ -94,6 +94,7 @@
     "deleteTitle": "确定删除 {{mcp}} 工具？",
     "deleteAllTitle": "确定删除全部工具？",
     "editTool": "编辑 {{tool}} config",
+    "fieldTitle": "栏位",
     "editJsonTool": "MCP Tools 设置",
     "addTool": "新增 MCP Tools",
     "jsonDesc": "请在栏位输入或直接粘贴 MCP Server Json",

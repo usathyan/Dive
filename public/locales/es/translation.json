@@ -94,6 +94,7 @@
     "deleteTitle": "¿Confirmar eliminar {{mcp}} herramienta?",
     "deleteAllTitle": "¿Confirmar eliminar todas las herramientas?",
     "editTool": "Editar {{tool}} config",
+    "fieldTitle": "Campo",
     "editJsonTool": "Configuración de Herramientas MCP",
     "addTool": "Agregar Herramientas MCP",
     "jsonDesc": "Por favor, ingresa o pega el JSON del servidor MCP en el campo",
