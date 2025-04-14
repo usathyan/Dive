@@ -707,8 +707,8 @@ const McpEditPopup = ({ _type, _config, _mcpName, onDelete, onCancel, onSubmit }
       // check Object key is valid
       for(const fieldKey of Object.keys(FieldType) as Array<keyof typeof FieldType>) {
         if(newMcpServers[fieldKey] && FieldType[fieldKey].type === "object") {
-          const keys = newMcpServers[fieldKey].map(([key]) => key)
-          const duplicateIndex = keys.findIndex((key, index) => keys.indexOf(key) !== index)
+          const keys = newMcpServers[fieldKey].map(([key]: [string]) => key)
+          const duplicateIndex = keys.findIndex((key: string, index: number) => keys.indexOf(key) !== index)
 
           if(duplicateIndex !== -1) {
             newMcpServers[fieldKey][duplicateIndex][2] = true
