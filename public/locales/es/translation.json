@@ -106,8 +106,14 @@
     "jsonFormatError4": "{{mcp}} estado de habilitación debe establecerse en true o false",
     "jsonFormatError5": "{{mcp}} comando debe ser un formato de cadena",
     "jsonFormatError6": "{{mcp}} argumentos deben proporcionarse en formato de matriz",
-    "jsonFormatError7": "{{mcp}} variables de entorno deben proporcionarse en formato de matriz",
-    "jsonFormatError8": "{{mcp}} URL debe ser un formato de cadena"
+    "jsonFormatError7": "{{mcp}} las variables de entorno deben proporcionarse como objeto",
+    "jsonFormatError8": "{{mcp}} la URL debe estar en formato de cadena",
+    "namePlaceholder": "Ingrese nombre...",
+    "commandPlaceholder": "Ingrese comando...",
+    "argsPlaceholder": "Ingrese argumentos...",
+    "envKey": "Ingrese nombre de variable (Key)...",
+    "envValue": "Ingrese valor de variable (Value)...",
+    "urlPlaceholder": "Ingrese URL..."
   },
   "modelConfig": {
     "title": "Configuración del Modelo",
@@ -205,7 +211,7 @@
       "chat-input_upload-file": "Subir Archivo",
       "chat-input_focus": "Enfocar Entrada",
       "chat-input_paste-last-message": "Pegar Último Mensaje",
-      "chat-message_copy-last": "Copiar Última Respuesta",
+      "chat_message_copy-last": "Copiar Última Respuesta",
       "chat_delete": "Eliminar Chat",
       "global_new-chat": "Nuevo Chat",
       "global_toggle-sidebar": "Alternar Barra Lateral",

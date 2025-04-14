@@ -106,8 +106,15 @@
     "jsonFormatError4": "{{mcp}} 啟用狀態必須設定為true或false",
     "jsonFormatError5": "{{mcp}} 指令必須為字串格式",
     "jsonFormatError6": "{{mcp}} 參數必須以陣列形式提供",
-    "jsonFormatError7": "{{mcp}} 環境變數必須以陣列形式提供",
-    "jsonFormatError8": "{{mcp}} URL必須為字串格式"
+    "jsonFormatError7": "{{mcp}} 環境變數必須以物件形式提供",
+    "jsonFormatError8": "{{mcp}} URL必須為字串格式",
+    "namePlaceholder": "輸入名稱...",
+    "commandPlaceholder": "輸入指令...",
+    "argsPlaceholder": "輸入參數...",
+    "envKey": "輸入變數名稱（Key）...",
+    "envValue": "輸入變數值（Value）...",
+    "inputKeyError": "{{ name }} 變數名稱重複",
+    "urlPlaceholder": "輸入URL..."
   },
   "modelConfig": {
     "title": "模型設定",

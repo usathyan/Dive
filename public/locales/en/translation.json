@@ -106,8 +106,14 @@
     "jsonFormatError4": "{{mcp}} enable status must be set to true or false",
     "jsonFormatError5": "{{mcp}} command must be a string format",
     "jsonFormatError6": "{{mcp}} arguments must be provided in array format",
-    "jsonFormatError7": "{{mcp}} environment variables must be provided in array format",
-    "jsonFormatError8": "{{mcp}} URL must be a string format"
+    "jsonFormatError7": "{{mcp}} environment variables must be provided as an object",
+    "jsonFormatError8": "{{mcp}} URL must be in string format",
+    "namePlaceholder": "Enter name...",
+    "commandPlaceholder": "Enter command...",
+    "argsPlaceholder": "Enter arguments...",
+    "envKey": "Enter variable name (Key)...",
+    "envValue": "Enter variable value (Value)...",
+    "urlPlaceholder": "Enter URL..."
   },
   "modelConfig": {
     "title": "Model Settings",

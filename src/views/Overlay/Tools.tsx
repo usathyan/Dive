@@ -563,7 +563,7 @@ const FieldType = {
     error: "tools.jsonFormatError6"
   },
   "env": {
-    type: "array",
+    type: "object",
     error: "tools.jsonFormatError7"
   },
   "url": {
@@ -712,6 +712,17 @@ const McpEditPopup = ({ _type, _config, _mcpName, onDelete, onCancel, onSubmit }
           newConfig.mcpServers[mcp.name] = mcp.mcpServers
         }
       }
+      Object.keys(newConfig.mcpServers).forEach(mcpName => {
+        if(newConfig.mcpServers[mcpName].env) {
+          newConfig.mcpServers[mcpName].env = Object.entries(newConfig.mcpServers[mcpName].env)
+            .reduce((acc, [k, v]) => {
+              if(k && v) {
+                acc[k] = v
+              }
+              return acc
+            }, {} as Record<string, any>)
+        }
+      })
       setIsSubmitting(true)
       await onSubmit(newConfig)
     } catch (err) {
@@ -800,6 +811,29 @@ const McpEditPopup = ({ _type, _config, _mcpName, onDelete, onCancel, onSubmit }
         <div className="tool-edit-field"></div>
       )
     }
+    let currentEnv = Object.entries(currentMcpServers?.env || {}).map(([key, value]) => [key, value, false] as [string, unknown, boolean]) ?? []
+
+    const handleEnvChange = (newEnv: [string, unknown, boolean][]) => {
+      const keys = newEnv.map(([key]) => key)
+      let duplicateIndex = -1
+      const hasDuplicate = keys.some((key, index) => {
+        if(keys.indexOf(key) !== index) {
+          duplicateIndex = index
+          return true
+        }
+        return false
+      })
+
+      currentEnv = newEnv.map(([key, value, isError]) => [key, value, false] as [string, unknown, boolean])
+
+      if (!hasDuplicate) {
+        const newEnv: Record<string, unknown> = {}
+        currentEnv.forEach(([key, value, isError]) => {
+          newEnv[key] = value
+        })
+        handleMcpChange("env", newEnv)
+      }
+    }
 
     return (
       <div className="tool-edit-field">
@@ -809,6 +843,7 @@ const McpEditPopup = ({ _type, _config, _mcpName, onDelete, onCancel, onSubmit }
           <div className="field-item">
             <label>Name</label>
             <input
+              placeholder={t("tools.namePlaceholder")}
               type="text"
               value={currentMcp.name}
               onChange={(e) => handleMcpChange("name", e.target.value)}
@@ -818,6 +853,7 @@ const McpEditPopup = ({ _type, _config, _mcpName, onDelete, onCancel, onSubmit }
           <div className="field-item">
             <label>Command</label>
             <input
+              placeholder={t("tools.commandPlaceholder")}
               type="text"
               value={currentMcpServers.command || ''}
               onChange={(e) => handleMcpChange("command", e.target.value)}
@@ -835,7 +871,9 @@ const McpEditPopup = ({ _type, _config, _mcpName, onDelete, onCancel, onSubmit }
               {currentMcpServers.args?.map((arg: string, index: number) => (
                 <div key={index} className="field-item-array-item">
                   <input
+                    placeholder={t("tools.argsPlaceholder")}
                     type="text"
+                    autoFocus
                     value={arg}
                     onChange={(e) => handleMcpChange("args", currentMcpServers.args?.map((arg: string, i: number) => i === index ? e.target.value : arg))}
                   />
@@ -858,30 +896,84 @@ const McpEditPopup = ({ _type, _config, _mcpName, onDelete, onCancel, onSubmit }
           <div className="field-item">
             <label>
               Env
-              <button onClick={() => handleMcpChange("env", [...(currentMcpServers.env || []), ""])}>
+                <button onClick={() => {
+                const newEnv = [...currentEnv]
+                let index = 0
+                while(newEnv.some(([key]) => key === `key${index}`)) {
+                  index++
+                }
+                const nextKey = `key${index}`
+                newEnv.push([nextKey, "", false] as [string, unknown, boolean])
+                handleEnvChange(newEnv)
+              }}>
                 + {t("tools.addEnv")}
               </button>
             </label>
-            <div className={`field-item-array ${currentMcpServers.env?.length > 0 ? "no-border" : ""}`}>
-              {currentMcpServers.env?.map((env: string, index: number) => (
-                <div key={index} className="field-item-array-item">
-                  <input
-                    type="text"
-                    value={env}
-                    onChange={(e) => handleMcpChange("env", currentMcpServers.env?.map((env: string, i: number) => i === index ? e.target.value : env))}
-                  />
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 18 18"
-                    width="22"
-                    height="22"
-                    className="field-item-array-item-clear"
-                    onClick={() => handleMcpChange("env", currentMcpServers.env?.filter((_: string, i: number) => i !== index))}
-                  >
-                    <path stroke="currentColor" strokeLinecap="round" strokeWidth="2" d="m13.91 4.09-9.82 9.82M13.91 13.91 4.09 4.09"></path>
-                  </svg>
-                </div>
+            <div className={`field-item-array ${currentEnv.length > 0 ? "no-border" : ""}`}>
+              {currentEnv
+                .map(([envKey, envValue, isError], index) => (
+                  <div key={index} className={`field-item-array-item ${isError ? "error" : ""}`}>
+                    {isError ? (
+                      <Tooltip
+                        content={t("tools.inputKeyError", { name: "Env" })}
+                        side="left"
+                      >
+                        <input
+                          className="env-key"
+                          type="text"
+                          autoFocus
+                          placeholder={t("tools.envKey")}
+                          value={envKey}
+                          onChange={(e) => {
+                            const newEnv = [...currentEnv]
+                            newEnv[index][0] = e.target.value
+                            newEnv[index][2] = false
+                            handleEnvChange(newEnv)
+                          }}
+                        />
+                      </Tooltip>
+                    ) : (
+                      <input
+                        className="env-key"
+                        type="text"
+                        autoFocus
+                        placeholder={t("tools.envKey")}
+                        value={envKey}
+                        onChange={(e) => {
+                          const newEnv = [...currentEnv]
+                          newEnv[index][0] = e.target.value
+                          newEnv[index][2] = false
+                          handleEnvChange(newEnv)
+                        }}
+                      />
+                    )}
+                    <input
+                      className="env-value"
+                      type="text"
+                      placeholder={t("tools.envValue")}
+                      value={envValue as string}
+                      onChange={(e) => {
+                        const newEnv = [...currentEnv]
+                        newEnv[index][1] = e.target.value
+                        newEnv[index][2] = false
+                        handleEnvChange(newEnv)
+                      }}
+                    />
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 18 18"
+                      width="22"
+                      height="22"
+                      className="field-item-array-item-clear"
+                      onClick={() => {
+                        const newEnv = currentEnv.filter((_, i) => i !== index)
+                        handleEnvChange(newEnv)
+                      }}
+                    >
+                      <path stroke="currentColor" strokeLinecap="round" strokeWidth="2" d="m13.91 4.09-9.82 9.82M13.91 13.91 4.09 4.09"></path>
+                    </svg>
+                  </div>
               ))}
             </div>
           </div>
@@ -889,6 +981,7 @@ const McpEditPopup = ({ _type, _config, _mcpName, onDelete, onCancel, onSubmit }
           <div className="field-item">
             <label>Url</label>
             <input
+              placeholder={t("tools.urlPlaceholder")}
               type="text"
               value={currentMcpServers.url || ''}
               onChange={(e) => handleMcpChange("url", e.target.value)}
@@ -1015,7 +1108,7 @@ const McpEditPopup = ({ _type, _config, _mcpName, onDelete, onCancel, onSubmit }
 
     const handleJsonChangeMcp = async (value: string) => {
       try {
-        let newJson = JSON.parse(value)
+        let newJson = jsonlint.parse(value)
         if(Object.keys(newJson)[0] !== "mcpServers") {
           newJson = { mcpServers: newJson }
         }

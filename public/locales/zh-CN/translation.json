@@ -106,8 +106,14 @@
     "jsonFormatError4": "{{mcp}} 启用状态必须设置为true或false",
     "jsonFormatError5": "{{mcp}} 指令必须为字符串格式",
     "jsonFormatError6": "{{mcp}} 参数必须以数组形式提供",
-    "jsonFormatError7": "{{mcp}} 环境变量必须以数组形式提供",
-    "jsonFormatError8": "{{mcp}} URL必须为字符串格式"
+    "jsonFormatError7": "{{mcp}} 环境变量必须以对象形式提供",
+    "jsonFormatError8": "{{mcp}} URL必须为字符串格式",
+    "namePlaceholder": "输入名称...",
+    "commandPlaceholder": "输入指令...",
+    "argsPlaceholder": "输入参数...",
+    "envKey": "输入变量名称（Key）...",
+    "envValue": "输入变量值（Value）...",
+    "urlPlaceholder": "输入URL..."
   },
   "modelConfig": {
     "title": "模型设置",
@@ -208,7 +214,7 @@
       "chat-input_upload-file": "上传文件",
       "chat-input_focus": "输入窗口获得焦点",
       "chat-input_paste-last-message": "粘贴最后一条的回应文字",
-      "chat-message_copy-last": "复制最后一条回应",
+      "chat_message_copy-last": "复制最后一条回应",
       "chat_delete": "删除对话",
       "global_new-chat": "开始新对话",
       "global_toggle-sidebar": "显示/隐藏侧边栏",
