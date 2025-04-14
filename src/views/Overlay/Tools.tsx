@@ -401,6 +401,19 @@ const Tools = () => {
                       { label:
                           <div className="tool-edit-menu-item">
                             <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 22 22" fill="none">
+                              <path d="M3 13.6684V18.9998H19" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                              <path d="M2.99991 13.5986L12.5235 4.12082C13.9997 2.65181 16.3929 2.65181 17.869 4.12082V4.12082C19.3452 5.58983 19.3452 7.97157 17.869 9.44058L8.34542 18.9183" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                            </svg>
+                            {t("tools.toolMenu2")}
+                          </div>,
+                        onClick: () => {
+                          setCurrentMcp(tool.name)
+                          setShowMcpEditPopup(true)
+                        }
+                      },
+                      { label:
+                          <div className="tool-edit-menu-item">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 22 22" fill="none">
                               <path d="M3 5H19" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                               <path d="M17 7V18.2373C16.9764 18.7259 16.7527 19.1855 16.3778 19.5156C16.0029 19.8457 15.5075 20.0192 15 19.9983H7C6.49249 20.0192 5.99707 19.8457 5.62221 19.5156C5.24735 19.1855 5.02361 18.7259 5 18.2373V7" stroke="currentColor" strokeWidth="2" strokeLinejoin="round"/>
                               <path d="M8 10.04L14 16.04" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round"/>
@@ -412,20 +425,7 @@ const Tools = () => {
                         onClick: () => {
                           setCurrentMcp(tool.name)
                           setShowDeletePopup(true)
-                        }},
-                      { label:
-                          <div className="tool-edit-menu-item">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 22 22" fill="none">
-                              <path d="M3 13.6684V18.9998H19" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                              <path d="M2.99991 13.5986L12.5235 4.12082C13.9997 2.65181 16.3929 2.65181 17.869 4.12082V4.12082C19.3452 5.58983 19.3452 7.97157 17.869 9.44058L8.34542 18.9183" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                            </svg>
-                            {t("tools.toolMenu2")}
-                          </div>,
-                        onClick: () => {
-                          setCurrentMcp(tool.name)
-                          setShowMcpEditPopup(true)
-                        }
-                      },
+                      }},
                     ]}
                   >
                     <div className="tool-edit-menu">
