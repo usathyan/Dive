@@ -535,9 +535,17 @@ export default React.memo(Tools)
 interface mcpListProps {
   originalName: string
   name: string
-  mcpServers: Record<string, any>
+  mcpServers: mcpServersProps
   jsonString: string
   isError: boolean
+}
+
+interface mcpServersProps {
+  enabled?: boolean
+  command?: string
+  args?: string[]
+  env?: [string, unknown, boolean][]
+  url?: string
 }
 
 interface mcpEditPopupProps {
@@ -604,7 +612,7 @@ const McpEditPopup = ({ _type, _config, _mcpName, onDelete, onCancel, onSubmit }
         newMcpList.push({
           originalName: mcpName,
           name: mcpName,
-          mcpServers: newConfig.mcpServers[mcpName],
+          mcpServers: encodeMcpServers(newConfig.mcpServers[mcpName]),
           jsonString: JSON.stringify(newJson, null, 2),
           isError: false
         })
@@ -649,39 +657,62 @@ const McpEditPopup = ({ _type, _config, _mcpName, onDelete, onCancel, onSubmit }
       newMcpServers[key] = value
     }
 
-    const newJsonString = { mcpServers: { [newName]: newMcpServers } }
-
+    const newJsonString = { mcpServers: { [newName]: decodeMcpServers(newMcpServers) } }
     setMcpList(prev => {
       const newMcpList = [...prev]
       newMcpList[currentMcpIndex].name = newName
       newMcpList[currentMcpIndex].mcpServers = newMcpServers
-      newMcpList[currentMcpIndex].jsonString = JSON.stringify(newJsonString, null, 2)
-      newMcpList[currentMcpIndex].isError = !isValidName()
+      newMcpList[currentMcpIndex].jsonString = isValidField(newMcpServers) ? JSON.stringify(newJsonString, null, 2) : newMcpList[currentMcpIndex].jsonString
+      newMcpList.forEach(mcp => mcp.isError = !isValidName(newMcpList, mcp.name) || !isValidField(mcp.mcpServers))
       return newMcpList
     })
   }
 
-  const isValidName = () => {
-    const names = mcpList.map(mcp => mcp.name)
-    const hasDuplicate = names.some((name, index) =>
-      names.indexOf(name) !== index
-    )
-    return !hasDuplicate
+  const encodeMcpServers = (mcpServers: mcpServersProps & { env?: Record<string, unknown> }) => {
+    // from object to array [[key, value, isError],...]
+    const newMcpServers = JSON.parse(JSON.stringify(mcpServers))
+    Object.keys(newMcpServers).forEach((fieldKey) => {
+      if(FieldType[fieldKey as keyof typeof FieldType]?.type === "object") {
+        const newField = Object.entries(newMcpServers[fieldKey])
+                              .map(([key, value]) => [key, value, false] as [string, unknown, boolean])
+        newMcpServers[fieldKey] = newField
+      }
+    })
+    return newMcpServers
   }
 
-  const isValidForm = (value: Record<string, any>) => {
+  const decodeMcpServers = (mcpServers: mcpServersProps) => {
+    // from array [[key, value, isError],...] to object
+    const newMcpServers = JSON.parse(JSON.stringify(mcpServers))
+    Object.keys(newMcpServers).forEach((fieldKey) => {
+      if(FieldType[fieldKey as keyof typeof FieldType]?.type === "object") {
+        newMcpServers[fieldKey] = Object.fromEntries(newMcpServers[fieldKey])
+      }
+    })
+    return newMcpServers
+  }
+
+  const isValidName = (newMcpList: mcpListProps[], newName: string) => {
+    const names = newMcpList.map(mcp => mcp.name).filter(name => name === newName)
+    return names.length <= 1
+  }
+
+  const isValidField = (value: Record<string, any>) => {
     try {
-      const newMcpServers = value.mcpServers
-      if(Object.keys(newMcpServers)?.length !== 1) return false
-      if(Object.keys(newMcpServers)?.some(key => key === "")) return false
-      // check field type
+      let newMcpServers = value
+      if(newMcpServers.mcpServers) {
+        newMcpServers = newMcpServers.mcpServers
+      }
+
+      // check Object key is valid
       for(const fieldKey of Object.keys(FieldType) as Array<keyof typeof FieldType>) {
-        for(const mcp of Object.keys(newMcpServers)) {
-          if(Object.keys(newMcpServers[mcp]).some(key => key === fieldKey)) {
-            const fieldType = Array.isArray(newMcpServers[mcp][fieldKey]) ? "array" : typeof newMcpServers[mcp][fieldKey]
-            if(FieldType[fieldKey].type !== fieldType) {
-              return false
-            }
+        if(newMcpServers[fieldKey] && FieldType[fieldKey].type === "object") {
+          const keys = newMcpServers[fieldKey].map(([key]) => key)
+          const duplicateIndex = keys.findIndex((key, index) => keys.indexOf(key) !== index)
+
+          if(duplicateIndex !== -1) {
+            newMcpServers[fieldKey][duplicateIndex][2] = true
+            return false
           }
         }
       }
@@ -709,9 +740,11 @@ const McpEditPopup = ({ _type, _config, _mcpName, onDelete, onCancel, onSubmit }
         newConfig.mcpServers = newMcpServers
       } else {
         for(const mcp of mcpList) {
-          newConfig.mcpServers[mcp.name] = mcp.mcpServers
+          newConfig.mcpServers[mcp.name] = decodeMcpServers(mcp.mcpServers)
         }
       }
+
+      //clear env empty key
       Object.keys(newConfig.mcpServers).forEach(mcpName => {
         if(newConfig.mcpServers[mcpName].env) {
           newConfig.mcpServers[mcpName].env = Object.entries(newConfig.mcpServers[mcpName].env)
@@ -723,6 +756,7 @@ const McpEditPopup = ({ _type, _config, _mcpName, onDelete, onCancel, onSubmit }
             }, {} as Record<string, any>)
         }
       })
+
       setIsSubmitting(true)
       await onSubmit(newConfig)
     } catch (err) {
@@ -811,28 +845,16 @@ const McpEditPopup = ({ _type, _config, _mcpName, onDelete, onCancel, onSubmit }
         <div className="tool-edit-field"></div>
       )
     }
-    let currentEnv = Object.entries(currentMcpServers?.env || {}).map(([key, value]) => [key, value, false] as [string, unknown, boolean]) ?? []
 
     const handleEnvChange = (newEnv: [string, unknown, boolean][]) => {
       const keys = newEnv.map(([key]) => key)
-      let duplicateIndex = -1
-      const hasDuplicate = keys.some((key, index) => {
-        if(keys.indexOf(key) !== index) {
-          duplicateIndex = index
-          return true
+      keys.forEach((key, index) => {
+        newEnv[index][2] = false
+        if(keys.filter(k => k === key).length > 1) {
+          newEnv[index][2] = true
         }
-        return false
       })
-
-      currentEnv = newEnv.map(([key, value, isError]) => [key, value, false] as [string, unknown, boolean])
-
-      if (!hasDuplicate) {
-        const newEnv: Record<string, unknown> = {}
-        currentEnv.forEach(([key, value, isError]) => {
-          newEnv[key] = value
-        })
-        handleMcpChange("env", newEnv)
-      }
+      handleMcpChange("env", newEnv)
     }
 
     return (
@@ -867,8 +889,8 @@ const McpEditPopup = ({ _type, _config, _mcpName, onDelete, onCancel, onSubmit }
                 + {t("tools.addArg")}
               </button>
             </label>
-            <div className={`field-item-array ${currentMcpServers.args?.length > 0 ? "no-border" : ""}`}>
-              {currentMcpServers.args?.map((arg: string, index: number) => (
+            <div className={`field-item-array ${(currentMcpServers?.args && currentMcpServers.args.length > 0) ? "no-border" : ""}`}>
+              {currentMcpServers?.args && currentMcpServers.args.map((arg: string, index: number) => (
                 <div key={index} className="field-item-array-item">
                   <input
                     placeholder={t("tools.argsPlaceholder")}
@@ -896,8 +918,10 @@ const McpEditPopup = ({ _type, _config, _mcpName, onDelete, onCancel, onSubmit }
           <div className="field-item">
             <label>
               ENV
-                <button onClick={() => {
-                const newEnv = [...currentEnv]
+              <button onClick={() => {
+                const newEnv = Array.isArray(currentMcpServers?.env)
+                  ? [...currentMcpServers.env]
+                  : []
                 let index = 0
                 while(newEnv.some(([key]) => key === `key${index}`)) {
                   index++
@@ -909,51 +933,43 @@ const McpEditPopup = ({ _type, _config, _mcpName, onDelete, onCancel, onSubmit }
                 + {t("tools.addEnv")}
               </button>
             </label>
-            <div className={`field-item-array ${currentEnv.length > 0 ? "no-border" : ""}`}>
-              {currentEnv
-                .map(([envKey, envValue, isError], index) => (
+            <div className={`field-item-array ${(currentMcpServers?.env && currentMcpServers.env.length > 0) ? "no-border" : ""}`}>
+              {(currentMcpServers?.env && currentMcpServers.env.length > 0) && currentMcpServers?.env.map(([envKey, envValue, isError]: [string, unknown, boolean], index: number) => (
                   <div key={index} className={`field-item-array-item ${isError ? "error" : ""}`}>
-                    {isError ? (
-                      <Tooltip
-                        content={t("tools.inputKeyError", { name: "Env" })}
-                        side="left"
-                      >
-                        <input
-                          className="env-key"
-                          type="text"
-                          autoFocus
-                          placeholder={t("tools.envKey")}
-                          value={envKey}
-                          onChange={(e) => {
-                            const newEnv = [...currentEnv]
-                            newEnv[index][0] = e.target.value
-                            newEnv[index][2] = false
-                            handleEnvChange(newEnv)
-                          }}
-                        />
-                      </Tooltip>
-                    ) : (
+                    <div className="key-input-wrapper">
                       <input
                         className="env-key"
                         type="text"
-                        autoFocus
                         placeholder={t("tools.envKey")}
                         value={envKey}
                         onChange={(e) => {
-                          const newEnv = [...currentEnv]
+                          const newEnv = [...(currentMcpServers.env || [])]
                           newEnv[index][0] = e.target.value
                           newEnv[index][2] = false
                           handleEnvChange(newEnv)
                         }}
                       />
-                    )}
+                      {isError ? (
+                        <Tooltip content={t("tools.inputKeyError", { name: "ENV" })} side="left">
+                          <div
+                            className="env-key-error"
+                            onClick={(e) => {
+                              const input = e.currentTarget.parentElement?.parentElement?.querySelector('input')
+                              if (input) {
+                                input.focus()
+                              }
+                            }}
+                          />
+                        </Tooltip>
+                      ) : null}
+                    </div>
                     <input
                       className="env-value"
                       type="text"
                       placeholder={t("tools.envValue")}
                       value={envValue as string}
                       onChange={(e) => {
-                        const newEnv = [...currentEnv]
+                        const newEnv = [...(currentMcpServers.env || [])]
                         newEnv[index][1] = e.target.value
                         newEnv[index][2] = false
                         handleEnvChange(newEnv)
@@ -967,7 +983,7 @@ const McpEditPopup = ({ _type, _config, _mcpName, onDelete, onCancel, onSubmit }
                       height="22"
                       className="field-item-array-item-clear"
                       onClick={() => {
-                        const newEnv = currentEnv.filter((_, i) => i !== index)
+                        const newEnv = (currentMcpServers.env || []).filter((_, i) => i !== index)
                         handleEnvChange(newEnv)
                       }}
                     >
@@ -993,6 +1009,28 @@ const McpEditPopup = ({ _type, _config, _mcpName, onDelete, onCancel, onSubmit }
   }, [mcpList, currentMcpIndex, typeRef])
 
   const JSONEditor = useMemo(() => {
+    const isValidJSON = (value: Record<string, any>) => {
+      try {
+        const newMcpServers = value.mcpServers
+        if(Object.keys(newMcpServers)?.length !== 1) return false
+        if(Object.keys(newMcpServers)?.some(key => key === "")) return false
+        // check field type
+        for(const fieldKey of Object.keys(FieldType) as Array<keyof typeof FieldType>) {
+          for(const mcp of Object.keys(newMcpServers)) {
+            if(Object.keys(newMcpServers[mcp]).some(key => key === fieldKey)) {
+              const fieldType = Array.isArray(newMcpServers[mcp][fieldKey]) ? "array" : typeof newMcpServers[mcp][fieldKey]
+              if(FieldType[fieldKey].type !== fieldType) {
+                return false
+              }
+            }
+          }
+        }
+        return true
+      } catch(e) {
+        return false
+      }
+    }
+
     const createJsonLinter = () => {
       return linter((view) => {
         const doc = view.state.doc.toString()
@@ -1128,12 +1166,12 @@ const McpEditPopup = ({ _type, _config, _mcpName, onDelete, onCancel, onSubmit }
             isError: false
           }])
           setCurrentMcpIndex(0)
-        } else if(isValidForm(newJson)) {
+        } else if(isValidJSON(newJson)) {
           setMcpList(prev => {
             const newMcpList = [...prev]
             newMcpList[currentMcpIndex].jsonString = value
             newMcpList[currentMcpIndex].name = newMcpName
-            newMcpList[currentMcpIndex].mcpServers = newMcpServers[newMcpName]
+            newMcpList[currentMcpIndex].mcpServers = encodeMcpServers(newMcpServers[newMcpName])
             newMcpList[currentMcpIndex].isError = false
             return newMcpList
           })
@@ -1230,7 +1268,7 @@ const McpEditPopup = ({ _type, _config, _mcpName, onDelete, onCancel, onSubmit }
       className={`tool-edit-popup-container ${typeRef.current}`}
       onConfirm={handleSubmit}
       onCancel={onCancel}
-      disabled={isFormatError || !isValidName() || mcpList.some(mcp => mcp.isError) || isSubmitting}
+      disabled={isFormatError || !isValidName(mcpList, mcpList[currentMcpIndex]?.name) || mcpList.some(mcp => mcp.isError) || isSubmitting}
       zIndex={1000}
       listenHotkey={false}
       confirmText={isSubmitting ? (
@@ -1252,7 +1290,7 @@ const McpEditPopup = ({ _type, _config, _mcpName, onDelete, onCancel, onSubmit }
             <span>{mcpToolTitle(typeRef.current)}</span>
             <div className="tool-edit-header-actions">
               {typeRef.current === "edit" && <Switch
-                checked={mcpList[currentMcpIndex]?.mcpServers.enabled}
+                checked={mcpList[currentMcpIndex]?.mcpServers.enabled || false}
                 onChange={() => handleMcpChange("enabled", !mcpList[currentMcpIndex]?.mcpServers.enabled)}
               />}
             </div>

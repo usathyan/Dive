@@ -808,7 +808,7 @@
       }
 
       .tool-edit-field {
-        min-width: 300px;
+        width: 300px;
 
         input {
           width: 100%;
@@ -903,6 +903,19 @@
               align-items: center;
               gap: 5px;
 
+              .key-input-wrapper {
+                position: relative;
+
+                .env-key-error {
+                  position: absolute;
+                  top: 0;
+                  left: 0;
+                  width: 100%;
+                  height: 100%;
+                  cursor: text;
+                }
+              }
+
               .field-item-array-item-clear {
                 width: 20px;
                 height: 20px;
@@ -933,7 +946,7 @@
         display: flex;
         flex-direction: column;
         flex: 1;
-        min-width: 500px;
+        width: 500px;
         position: relative;
 
         &.edit-json,
