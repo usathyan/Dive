@@ -6,6 +6,7 @@
   - [Update Repository](#update-repository)
   - [Install dependencies](#install-dependencies)
   - [Start development server](#start-development-server)
+  - [Development Configuration](#development-configuration)
 - [Build for production](#build-for-production)
   - [Cross-platform Build for Windows](#cross-platform-build-for-windows)
 - [Scripts](#scripts)
@@ -54,6 +55,21 @@ uv sync
 
 ```bash
 npm run dev
+```
+
+### Development Configuration
+
+When running Dive in development mode, the configuration file will be automatically generated in the `.config` directory of your project root. This is different from the production environment where configuration files are stored in the user's home directory.
+
+This allows developers to have separate configurations for development and production environments, making it easier to test different MCP server setups without affecting the production configuration.
+
+To access or modify the development configuration:
+```
+/path/to/project/.config/mcp_config.json
+/path/to/project/.config/command_alias.json
+/path/to/project/.config/model_config.json
+/path/to/project/.config/dive_httpd.json
+/path/to/project/.config/customrules
 ```
 
 ## Build for production
@@ -182,5 +198,5 @@ electron/
 └── preload/          # Preload scripts
     └── index.ts       # Bridge between main and renderer
 
-services/            # Backend services
+mcp-host              # git submodule for [dive-mcp-host](https://github.com/OpenAgentPlatform/dive-mcp-host)
 ```
