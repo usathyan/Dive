@@ -69,7 +69,6 @@ const dbPath = path.join(configDir, "db.sqlite")
 export const DEF_DIVE_HTTPD_CONFIG = {
   "db": {
     "uri": `sqlite:///${dbPath}`,
-    "async_uri": `sqlite+aiosqlite:///${dbPath}`,
     "pool_size": 5,
     "pool_recycle": 60,
     "max_overflow": 10,
