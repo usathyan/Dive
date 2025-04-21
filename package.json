@@ -30,7 +30,7 @@
     "package": "npm run build && electron-builder",
     "package:windows": "npm run download:windows-bin && npm run prepare-python win-x64 && run-s package:windows-*",
     "package:windows-installers": "npm run build && electron-builder --win nsis --x64 --publish=never",
-    "package:darwin-dmg": "npm run download:darwin-bin && npm run prepare-python darwin && npm run build && electron-builder --mac dmg --arm64 --x64 --publish=never",
+    "package:darwin": "npm run download:darwin-bin && npm run prepare-python darwin && npm run build && electron-builder --mac --arm64 --x64 --publish=never",
     "package:darwin-dmg:arm64": "npm run prepare-python darwin-arm64 && npm run build && electron-builder --mac dmg --arm64 --publish=never",
     "package:darwin-dmg:x64": "npm run prepare-python darwin-x64 && npm run build && electron-builder --mac dmg --x64 --publish=never",
     "package:linux": "npm run download:linux-bin && npm run prepare-python linux-x64 && run-s package:linux-*",
