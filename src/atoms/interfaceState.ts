@@ -85,8 +85,8 @@ export const defaultInterface: Record<InterfaceProvider, InterfaceDefinition> = 
       label: "Base URL",
       description: "Base URL for API calls",
       required: true,
-      default: "",
-      placeholder: ""
+      default: "https://api.openai.com",
+      placeholder: "https://api.openai.com"
     },
     model: {
       type: "list",
