@@ -336,6 +336,20 @@ export async function verifyModelWithConfig(config: InterfaceModelConfig, signal
     }
   }
 
+  const body: any = {
+    ..._formData,
+    modelProvider,
+    configuration,
+  }
+
+  if (!body.baseURL) {
+    delete body.baseURL
+  }
+
+  if (!body?.configuration?.baseURL) {
+    delete body.configuration.baseURL
+  }
+
   return await fetch("/model_verify", {
     signal,
     method: "POST",
@@ -343,11 +357,7 @@ export async function verifyModelWithConfig(config: InterfaceModelConfig, signal
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      modelSettings: {
-        ..._formData,
-        modelProvider,
-        configuration,
-      },
+      modelSettings: body,
     }),
   }).then(res => res.json())
 }
