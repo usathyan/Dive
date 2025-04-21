@@ -246,6 +246,14 @@ export const writeRawConfigAtom = atom(
         delete config.configuration.sessionToken
       }
 
+      if (config.modelProvider === "openai" && !config.apiKey) {
+        config.apiKey = ""
+      }
+
+      if (!config.model) {
+        config.model = ""
+      }
+
       acc[key] = cleanUpModelConfig(config) as ModelConfig
       return acc
     }, {} as ModelConfigMap)
@@ -263,7 +271,7 @@ export const writeRawConfigAtom = atom(
         },
         body: JSON.stringify({
           configs,
-          enable_tools: (getVerifyStatus(verifiedModel) !== "unSupportTool" && getVerifyStatus(verifiedModel) !== "unSupportModel") ? true : false,
+          enableTools: getVerifyStatus(verifiedModel) !== "unSupportTool" && getVerifyStatus(verifiedModel) !== "unSupportModel",
           activeProvider: activeProvider ?? get(activeProviderAtom),
         }),
       })
@@ -328,19 +336,28 @@ export async function verifyModelWithConfig(config: InterfaceModelConfig, signal
     }
   }
 
-  return await fetch("/api/modelVerify", {
+  const body: any = {
+    ..._formData,
+    modelProvider,
+    configuration,
+  }
+
+  if (!body.baseURL) {
+    delete body.baseURL
+  }
+
+  if (!body?.configuration?.baseURL) {
+    delete body.configuration.baseURL
+  }
+
+  return await fetch("/model_verify", {
     signal,
     method: "POST",
     headers: {
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      provider: modelProvider,
-      modelSettings: {
-        ..._formData,
-        modelProvider,
-        configuration,
-      },
+      modelSettings: body,
     }),
   }).then(res => res.json())
 }
@@ -350,7 +367,7 @@ export const writeEmptyConfigAtom = atom(
   async (get, set) => {
     const config = {
       configs: {},
-      enable_tools: true,
+      enableTools: true,
       activeProvider: EMPTY_PROVIDER,
     }
 
@@ -375,5 +392,9 @@ function cleanUpModelConfig(config: any) {
   delete _config.configuration.model
   delete _config.configuration.apiKey
   delete _config.configuration.name
+  delete _config.configuration.embed
+  delete _config.configuration.embed_dims
+  delete _config.configuration.maxTokens
+  delete _config.configuration.vector_store
   return _config
 }

@@ -10,7 +10,7 @@ import { openOverlayAtom } from "../atoms/layerState"
 import useHotkeyEvent from "../hooks/useHotkeyEvent"
 import Textarea from "../components/WrappedTextarea"
 import Tooltip from "../components/Tooltip"
-import { loadToolsAtom, toolsAtom } from "../atoms/toolState"
+import { enabledToolsAtom, loadToolsAtom } from "../atoms/toolState"
 
 const formatFileSize = (bytes: number) => {
   if (bytes === 0)
@@ -36,7 +36,7 @@ const Welcome = () => {
   const openOverlay = useSetAtom(openOverlayAtom)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const loadTools = useSetAtom(loadToolsAtom)
-  const tools = useAtomValue(toolsAtom)
+  const tools = useAtomValue(enabledToolsAtom)
   const hasActiveConfig = useAtomValue(isConfigActiveAtom)
   const supportTools = useAtomValue(currentModelSupportToolsAtom)
   const activeConfig = useAtomValue(activeConfigAtom)
