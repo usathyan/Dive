@@ -57,7 +57,7 @@ const Tools = () => {
         abortControllerRef.current.abort()
       }
     }
-  }, [])
+  }, [showMcpEditPopup, showMcpAddPopup, showMcpEditJsonPopup])
 
   const fetchTools = async () => {
     try {
@@ -120,6 +120,10 @@ const Tools = () => {
 
       if (!config.mcpServers[key].args) {
         config.mcpServers[key].args = []
+      }
+
+      if (!("enabled" in config.mcpServers[key])) {
+        config.mcpServers[key].enabled = true
       }
     })
 
@@ -390,7 +394,7 @@ const Tools = () => {
               <button
                 className="edit-btn"
                 onClick={() => {
-                  setCurrentMcp(tools[0].name)
+                  setCurrentMcp(sortedTools[0].name)
                   setShowMcpEditPopup(true)
                 }}
               >
@@ -744,7 +748,7 @@ const McpEditPopup = ({ _type, _config, _mcpName, onDelete, onCancel, onSubmit }
           if(FieldType[fieldKey].type === "object") {
             const keys = newMcpServers[fieldKey].map(([key]: [string]) => key)
             const duplicateIndex = keys.findIndex((key: string, index: number) => keys.indexOf(key) !== index)
-  
+
             if(duplicateIndex !== -1) {
               newMcpServers[fieldKey][duplicateIndex][2] = true
               return false
