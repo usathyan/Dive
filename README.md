@@ -25,17 +25,16 @@ Dive is an open-source MCP Host Desktop Application that seamlessly integrates w
 - 💡 **Custom Instructions**: Personalized system prompts for tailored AI behavior
 - 🔄 **Auto-Update Mechanism**: Automatically checks for and installs the latest application updates
 
-## Major Upgrade Notice ⚠️
+## Recent updates(2025/4/26)
 
-- 🔄 **v0.8.0 Architecture Change**: MCP Host implementation has been changed to Python-based [dive-mcp-host](https://github.com/OpenAgentPlatform/dive-mcp-host)
-- ⚠️ **Message Format Incompatibility**: Due to message format changes, upgrading to v0.8.0 will result in the loss of chat history
-
-
-## Recent updates(2025/3/14)
-
-- 🌍 **Spanish Translation**: Added Spanish language support
+- 🚀 **Dive MCP Host v0.8.0**: DiveHost rewritten in Python is now a separate project at [dive-mcp-host](https://github.com/OpenAgentPlatform/dive-mcp-host)
+- ⚙️ **Enhanced LLM Settings**: Add, modify, delete LLM Provider API Keys and custom Model IDs
+- 🔍 **Model Validation**: Validate or skip validation for models supporting Tool/Function calling
+- 🔧 **Improved MCP Configuration**: Add, edit, and delete MCP tools directly from the UI
+- 🌍 **Japanese Translation**: Added Japanese language support
 - 🤖 **Extended Model Support**: Added Google Gemini and Mistral AI models integration
 
+> **Important:** Due to DiveHost migration from TypeScript to Python in v0.8.0, configuration files and chat history records will not be automatically upgraded. If you need to access your old data after upgrading, you can still downgrade to a previous version.
 
 ## Download and Install ⬇️
 
