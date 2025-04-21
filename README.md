@@ -25,7 +25,7 @@ Dive is an open-source MCP Host Desktop Application that seamlessly integrates w
 - 💡 **Custom Instructions**: Personalized system prompts for tailored AI behavior
 - 🔄 **Auto-Update Mechanism**: Automatically checks for and installs the latest application updates
 
-## Recent updates(2025/4/26)
+## Recent updates(2025/4/21)
 
 - 🚀 **Dive MCP Host v0.8.0**: DiveHost rewritten in Python is now a separate project at [dive-mcp-host](https://github.com/OpenAgentPlatform/dive-mcp-host)
 - ⚙️ **Enhanced LLM Settings**: Add, modify, delete LLM Provider API Keys and custom Model IDs
