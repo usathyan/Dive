@@ -84,7 +84,7 @@ export const defaultInterface: Record<InterfaceProvider, InterfaceDefinition> = 
       inputType: "text",
       label: "Base URL",
       description: "Base URL for API calls",
-      required: false,
+      required: true,
       default: "",
       placeholder: ""
     },
