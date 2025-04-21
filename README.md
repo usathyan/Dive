@@ -139,7 +139,7 @@ See [BUILD.md](BUILD.md) for more details.
 
 ## Connect With Us 🌐
 - 💬 Join our [Discord](https://discord.com/invite/qceMERf4y2)
-- 🐦 Follow us on [Twitter/X](https://x.com/Dive_ai_agent), [Reddit](https://www.reddit.com/user/Dive_Ai-agent/), [Thread](https://www.threads.net/@dive_mcpserver)
+- 🐦 Follow us on [Twitter/X](https://x.com/Dive_ai_agent) [Reddit](https://www.reddit.com/user/Dive_Ai-agent/) [Thread](https://www.threads.net/@dive_mcpserver)
 - ⭐ Star us on GitHub
 - 🐛 Report issues on our [Issue Tracker](https://github.com/OpenAgentPlatform/Dive/issues)
 
