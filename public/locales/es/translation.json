@@ -205,7 +205,10 @@
     "title": "Configuración del Sistema",
     "language": "Idioma del Sistema",
     "theme": "Modo de visualización",
-    "defaultInstructions": "hablar en inglés"
+    "defaultInstructions": "hablar en inglés",
+    "autoDownload": "Descargar actualizaciones automáticamente",
+    "autoLaunch": "Iniciar Dive AI automáticamente al arrancar",
+    "minimalToTray": "Minimizar a la bandeja del sistema"
   },
   "toast": {
     "copiedToClipboard": "Copiado al portapapeles"
@@ -224,5 +227,10 @@
       "global_close-layer": "Cerrar Ventana",
       "global_toggle-keymap-modal": "Alternar Ayuda de Atajos de Teclado"
     }
+  },
+  "update": {
+    "downloading": "下载中",
+    "readyToInstall": "下载完成",
+    "clickToInstall": "点击安装更新"
   }
 }
