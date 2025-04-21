@@ -18,6 +18,7 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "check": "tsc -b",
+    "check-i18n": "node scripts/checkI18n.js",
     "build": "tsc -b && vite build --config vite.config.electron.ts",
     "postinstall": "patch-package && electron-builder install-app-deps && vite-node scripts/download-host-deps.ts",
     "docker:build-win": "scripts/docker/build-win.sh",
