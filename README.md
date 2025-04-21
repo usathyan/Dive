@@ -12,7 +12,7 @@
 
 Dive is an open-source MCP Host Desktop Application that seamlessly integrates with any LLMs supporting function calling capabilities. ✨
 
-![Dive Demo](./docs/DiveAI.gif)
+![Dive Demo](./docs/0.8.0_DiveGIF.gif)
 
 
 ## Features 🎯
