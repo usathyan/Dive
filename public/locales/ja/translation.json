@@ -220,6 +220,7 @@
       "chat-input_upload-file": "ファイルをアップロード",
       "chat-input_focus": "入力にフォーカス",
       "chat-input_paste-last-message": "最後のメッセージを貼り付け",
+      "chat-message_copy-last": "最後のメッセージをコピー",
       "chat_delete": "チャットを削除",
       "global_new-chat": "新規チャット",
       "global_toggle-sidebar": "サイドバーの切り替え",
