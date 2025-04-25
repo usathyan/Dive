@@ -131,11 +131,11 @@ const verifyModel = async (modelConfig: InterfaceModelConfig, signal?: AbortSign
 export const getVerifyStatus = (data: any) => {
   if(data === "ignore") {
     return "ignore"
-  }else if(data && data.connectingSuccess && data.supportTools) {
+  }else if(data && data.connecting && data.connecting.success && data.supportTools && data.supportTools.success) {
     return "success"
-  }else if(data && data.connectingSuccess && !data.supportTools) {
+  }else if(data && data.connecting && data.connecting.success && !(data.supportTools && data.supportTools.success)) {
     return "unSupportTool"
-  }else if(data && (!data.connectingSuccess || !data.success)) {
+  }else if(data && data.connecting && !data.connecting.success) {
     return "unSupportModel"
   }
 

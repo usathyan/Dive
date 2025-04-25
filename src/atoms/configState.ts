@@ -6,6 +6,29 @@ import { getModelPrefix } from "../util"
 import { transformModelProvider } from "../helper/config"
 import { ignoreFieldsForModel } from "../constants"
 
+
+export type OldVerifyStatus = {
+  success: boolean
+  connectingSuccess: boolean
+  supportTools: boolean
+  connectingResult: string | null
+  supportToolsResult: string | null
+}
+
+export type NewVerifyStatus = {
+  success: boolean
+  connecting: {
+    success: boolean
+    final_state: string
+    error_msg: string | null
+  }
+  supportTools: {
+    success: boolean
+    final_state: string
+    error_msg: string | null
+  }
+}
+
 export type ProviderRequired = {
   apiKey: string
   baseURL: string
@@ -103,7 +126,7 @@ export const enabledConfigsAtom = atom<ModelConfigMap>(
         const verifiedConfig = allVerifiedList[config.apiKey || config.baseURL as string]
         if(config.active
           && config.model
-          && (!verifiedConfig || !verifiedConfig[config.model as string] || verifiedConfig[config.model as string].connectingSuccess || verifiedConfig[config.model as string] === "ignore")
+          && (!verifiedConfig || !verifiedConfig[config.model as string] || verifiedConfig[config.model as string].connecting?.success || verifiedConfig[config.model as string] === "ignore")
         ) {
           acc[key] = config
         }
@@ -171,7 +194,7 @@ export const activeProviderAtom = atom<string>(
     }
 
     const verifiedModel = verifiedStatus?.[activeModel]
-    if(verifiedModel && typeof verifiedModel === "object" && "connectingSuccess" in verifiedModel && !verifiedModel.connectingSuccess) {
+    if(verifiedModel && typeof verifiedModel === "object" && "connecting" in verifiedModel && !verifiedModel.connecting.success) {
       return EMPTY_PROVIDER
     }
 
