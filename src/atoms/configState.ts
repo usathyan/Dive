@@ -206,14 +206,15 @@ export const currentModelSupportToolsAtom = atom<boolean>(
   (get) => {
     const allVerifiedList = get(modelVerifyListAtom)
     const activeConfig = get(activeConfigAtom)
+    const activeModel = activeConfig?.model as string
     const verifiedConfig = allVerifiedList[activeConfig?.apiKey || activeConfig?.baseURL as string]
     // Can only check for tool support when the model is verified,
     // if the model is not verified, consider it as support tools
     return !verifiedConfig
             || !activeConfig
-            || !verifiedConfig[activeConfig.model as string]
-            || verifiedConfig[activeConfig.model as string].supportTools
-            || verifiedConfig[activeConfig.model as string] === "ignore"
+            || !verifiedConfig[activeModel]
+            || (verifiedConfig[activeModel].supportTools && verifiedConfig[activeModel].supportTools.success)
+            || verifiedConfig[activeModel] === "ignore"
   }
 )
 
