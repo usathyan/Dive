@@ -2,7 +2,7 @@
 import { useAtom } from "jotai"
 import React, { useEffect, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
-import { InterfaceModelConfig, MultiModelConfig } from "../../../../atoms/configState"
+import { InterfaceModelConfig, modelVerifyListAtom, MultiModelConfig } from "../../../../atoms/configState"
 import { defaultInterface } from "../../../../atoms/interfaceState"
 import { showToastAtom } from "../../../../atoms/toastState"
 import CheckBox from "../../../../components/CheckBox"
@@ -34,8 +34,7 @@ const ModelPopup = ({
   const [verifyingCnt, setVerifyingCnt] = useState(0)
   const [verifiedCnt, setVerifiedCnt] = useState(0)
   const [showConfirmVerify, setShowConfirmVerify] = useState(false)
-  const localListOptions = localStorage.getItem("modelVerify")
-  const allVerifiedList = localListOptions ? JSON.parse(localListOptions) : {}
+  const [allVerifiedList, setAllVerifiedList] = useAtom(modelVerifyListAtom)
   const { verify, abort } = useModelVerify()
 
   const [showAdvancedSetting, setShowAdvancedSetting] = useState(false);
@@ -47,7 +46,7 @@ const ModelPopup = ({
         } = useModelsProvider()
 
   const multiModelConfig = (multiModelConfigList?.[currentIndex] ?? {}) as MultiModelConfig
-  const currentVerifyList = multiModelConfig ? allVerifiedList[multiModelConfig?.apiKey || multiModelConfig?.baseURL] ?? {} : {}
+  const currentVerifyList = multiModelConfig ? (allVerifiedList ?? {})[multiModelConfig?.apiKey || multiModelConfig?.baseURL] ?? {} : {}
 
   const searchListOptions = useMemo(() => {
     let result = listOptions
@@ -188,8 +187,6 @@ const ModelPopup = ({
       }
 
       // if model is not in current listOptions, remove it from verifiedList
-      const localListOptions = localStorage.getItem("modelVerify")
-      const allVerifiedList = localListOptions ? JSON.parse(localListOptions) : {}
       const verifiedList = allVerifiedList[key] ?? {}
       const cleanedVerifiedList = {} as Record<string, ModelVerifyStatus>
       Object.keys(verifiedList).forEach(modelName => {
@@ -197,10 +194,10 @@ const ModelPopup = ({
           cleanedVerifiedList[modelName] = verifiedList[modelName]
         }
       })
-      localStorage.setItem("modelVerify", JSON.stringify({
+      setAllVerifiedList({
         ...allVerifiedList,
         [key as string]: cleanedVerifiedList
-      }))
+      })
 
       await handleSubmit(data)
     } catch (error) {
@@ -289,7 +286,7 @@ const ModelPopup = ({
     })
     setListOptions(_listOptions)
     allVerifiedList[multiModelConfig?.apiKey || multiModelConfig?.baseURL] = currentVerifyList
-    localStorage.setItem("modelVerify", JSON.stringify(allVerifiedList))
+    setAllVerifiedList({...allVerifiedList})
     setShowConfirmVerify(false)
     if(ifSave){
       await saveModel()
@@ -347,8 +344,8 @@ const ModelPopup = ({
   }
 
   const verifyMenu = (option: ListOption) => {
-    const status = option.verifyStatus ?? "unVerified";
-    const menu = [];
+    const status = option.verifyStatus ?? "unVerified"
+    const menu = []
 
     menu.push({
       label: (
@@ -375,14 +372,14 @@ const ModelPopup = ({
             />
             <circle cx="8" cy="15" r="3" stroke="currentColor" strokeWidth="2" />
           </svg>
-          {t('models.verifyMenu0')}
+          {t("models.verifyMenu0")}
         </div>
       ),
       onClick: () => {
-        setSelectedModel(option.name);
-        setShowAdvancedSetting(true);
+        setSelectedModel(option.name)
+        setShowAdvancedSetting(true)
       },
-    });
+    })
 
     // verify model
     if(status !== "success"){
@@ -508,12 +505,12 @@ const ModelPopup = ({
         <AdvancedSettingPopup
           modelName={selectedModel}
           onClose={() => {
-            setShowAdvancedSetting(false);
-            setSelectedModel('');
+            setShowAdvancedSetting(false)
+            setSelectedModel("")
           }}
           onSave={() => {
-            setShowAdvancedSetting(false);
-            setSelectedModel("");
+            setShowAdvancedSetting(false)
+            setSelectedModel("")
           }}
         />
       )}
