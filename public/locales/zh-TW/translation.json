@@ -30,7 +30,11 @@
     "save": "儲存",
     "toolCalls": "🛠 呼叫 {{name}} 工具結果",
     "unsupportTools": "{{model}} 不支援Tool Calls",
-    "dragFiles": "拖放文件到此處以添加到對話"
+    "dragFiles": "拖放文件到此處以添加到對話",
+    "tools-btn.disable.toast": "已停用Tool Calls",
+    "tools-btn.disable": "暫時停用Tool Calls",
+    "tools-btn.enable.toast": "已啟用Tool Calls",
+    "tools-btn.enable": "啟用Tool Calls"
   },
   "welcome": {
     "title": "歡迎使用 Dive AI",

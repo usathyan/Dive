@@ -30,7 +30,11 @@
     "save": "Guardar",
     "toolCalls": "🛠 Resultado de la llamada a la herramienta {{name}}",
     "unsupportTools": "{{model}} no admite llamadas a herramientas",
-    "dragFiles": "Arrastra archivos aquí para agregar a la conversación"
+    "dragFiles": "Arrastra archivos aquí para agregar a la conversación",
+    "tools-btn.disable.toast": "Llamadas a herramientas desactivadas",
+    "tools-btn.disable": "Desactivar temporalmente las llamadas a herramientas",
+    "tools-btn.enable.toast": "Llamadas a herramientas activadas",
+    "tools-btn.enable": "Activar llamadas a herramientas"
   },
   "welcome": {
     "title": "Bienvenido a Dive AI",

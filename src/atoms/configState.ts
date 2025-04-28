@@ -50,6 +50,7 @@ export type ModelConfig = ProviderRequired & ModelParameter & {
   modelProvider: ModelProvider
   configuration: Partial<ProviderRequired> & ModelParameter
   active: boolean
+  enableTools?: boolean
 }
 
 export type InterfaceModelConfig = Omit<ModelConfig, "modelProvider"> & Partial<ModelParameter> & Partial<BedrockCredentials> & {
@@ -323,6 +324,8 @@ export const writeRawConfigAtom = atom(
     const allVerifiedList = get(modelVerifyListAtom)
     const activeConfig = configs[activeProvider as string]
     const verifiedModel = allVerifiedList[activeConfig?.apiKey ?? activeConfig?.baseURL]?.[activeConfig.model ?? ""]
+    const ifUnSupportTools = getVerifyStatus(verifiedModel) === "unSupportTool" || getVerifyStatus(verifiedModel) === "unSupportModel"
+    const enableTools = ifUnSupportTools ? ("enableTools" in activeConfig ? activeConfig.enableTools : true) : true
 
     const ifConfigActive = activeProvider && configs[activeProvider as string]?.active
     const provider = ifConfigActive ? (activeProvider ?? get(activeProviderAtom)) : EMPTY_PROVIDER
@@ -335,7 +338,7 @@ export const writeRawConfigAtom = atom(
         },
         body: JSON.stringify({
           configs,
-          enableTools: getVerifyStatus(verifiedModel) !== "unSupportTool" && getVerifyStatus(verifiedModel) !== "unSupportModel",
+          enableTools,
           activeProvider: provider,
           disableDiveSystemPrompt: disableDiveSystemPrompt ?? get(disableDiveSystemPromptAtom)
         }),

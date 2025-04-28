@@ -30,7 +30,11 @@
     "save": "保存",
     "toolCalls": "🛠 调用 {{name}} 工具结果",
     "unsupportTools": "{{model}} 不支持Tool Calls",
-    "dragFiles": "拖放文件到此处以添加到对话"
+    "dragFiles": "拖放文件到此处以添加到对话",
+    "tools-btn.disable.toast": "已停用Tool Calls",
+    "tools-btn.disable": "暂时停用Tool Calls",
+    "tools-btn.enable.toast": "已启用Tool Calls",
+    "tools-btn.enable": "启用Tool Calls"
   },
   "welcome": {
     "title": "欢迎使用 Dive AI",
@@ -251,7 +255,7 @@
       "chat-input_upload-file": "上传文件",
       "chat-input_focus": "输入窗口获得焦点",
       "chat-input_paste-last-message": "粘贴最后一条的回应文字",
-      "chat-message_copy-last": "复制最后一条回应",
+      "chat_message_copy-last": "复制最后一条回应",
       "chat_delete": "删除对话",
       "global_new-chat": "开始新对话",
       "global_toggle-sidebar": "显示/隐藏侧边栏",

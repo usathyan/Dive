@@ -11,6 +11,7 @@ import { enabledToolsAtom, loadToolsAtom } from "../atoms/toolState"
 import { useNavigate } from "react-router-dom"
 import "../styles/components/_ChatInput.scss"
 import { InterfaceProvider } from "../atoms/interfaceState"
+import { showToastAtom } from "../atoms/toastState"
 
 interface Props {
   page: "welcome" | "chat"
@@ -53,6 +54,7 @@ const ChatInput: React.FC<Props> = ({ page, onSendMessage, disabled, onAbort }) 
   const activeProvider = useAtomValue(activeProviderAtom)
   const configList = useAtomValue(configDictAtom)
   const saveAllConfig = useSetAtom(writeRawConfigAtom)
+  const showToast = useSetAtom(showToastAtom)
 
   useEffect(() => {
     loadTools()
@@ -246,8 +248,20 @@ const ChatInput: React.FC<Props> = ({ page, onSendMessage, disabled, onAbort }) 
     if(!hasActiveConfig){
       return
     }
-    const newConfigList = { ...configList, [config.activeProvider]: { ...configList[config.activeProvider], enableTools: !configList[config.activeProvider]?.enableTools } }
+    const enableTools = "enableTools" in configList[config.activeProvider] ? configList[config.activeProvider]?.enableTools : true
+    const newConfigList = { ...configList, [config.activeProvider]: { ...configList[config.activeProvider], enableTools: !enableTools } }
     saveAllConfig({ providerConfigs: newConfigList as InterfaceModelConfigMap, activeProvider: config.activeProvider as InterfaceProvider })
+    if(enableTools){
+      showToast({
+        message: t("chat.tools-btn.disable.toast"),
+        type: "success"
+      })
+    } else {
+      showToast({
+        message: t("chat.tools-btn.enable.toast"),
+        type: "success"
+      })
+    }
   }
 
   const handleTextareaChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -346,7 +360,27 @@ const ChatInput: React.FC<Props> = ({ page, onSendMessage, disabled, onAbort }) 
     <div className="chat-input-wrapper">
       {activeConfig?.model && activeConfig?.model !== "none" && !supportTools && (
         <div className="chat-input-banner">
-          {t("chat.unsupportTools", { model: activeConfig?.model })}
+          <div>
+            {t("chat.unsupportTools", { model: activeConfig?.model })}
+          </div>
+          <button
+            className="enable-tools-btn"
+            onClick={toggleEnableTools}
+          >
+            {ifEnableTools() ?
+              <>
+                <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 11 11" fill="none">
+                  <path d="M3 9L3 2" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+                  <path d="M8 9L8 2" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+                </svg>
+                {t("chat.tools-btn.disable")}
+              </> : <>
+                <svg xmlns="http://www.w3.org/2000/svg" width="10" height="11" viewBox="0 0 10 11" fill="none">
+                  <path d="M2.40367 1.92843C2.58324 1.92843 2.73887 1.98399 2.94238 2.10304L7.69497 4.84113C8.05012 5.04748 8.21373 5.22208 8.21373 5.49986C8.21373 5.77764 8.05012 5.95224 7.69497 6.15859L2.94238 8.89669C2.73887 9.01177 2.58324 9.07129 2.40367 9.07129C2.05251 9.07129 1.78516 8.80542 1.78516 8.36891V2.62685C1.78516 2.19431 2.05251 1.92843 2.40367 1.92843Z" fill="currentColor"/>
+                </svg>
+                {t("chat.tools-btn.enable")}
+              </>}
+          </button>
         </div>
       )}
       {(!activeConfig?.model || activeConfig?.model == "none") && (
@@ -444,9 +478,17 @@ const ChatInput: React.FC<Props> = ({ page, onSendMessage, disabled, onAbort }) 
                 openOverlay("Tools")
               }}
             >
-              <svg width="20" height="20" viewBox="0 0 24 24">
-                <path d="M22.7 19l-9.1-9.1c.9-2.3.4-5-1.5-6.9-2-2-5-2.4-7.4-1.3L9 6 6 9 1.6 4.7C.4 7.1.9 10.1 2.9 12.1c1.9 1.9 4.6 2.4 6.9 1.5l9.1 9.1c.4.4 1 .4 1.4 0l2.3-2.3c.5-.4.5-1.1.1-1.4z"/>
-              </svg>
+              {ifEnableTools() ?
+              <>
+                <svg width="20" height="20" viewBox="0 0 24 24">
+                  <path d="M22.7 19l-9.1-9.1c.9-2.3.4-5-1.5-6.9-2-2-5-2.4-7.4-1.3L9 6 6 9 1.6 4.7C.4 7.1.9 10.1 2.9 12.1c1.9 1.9 4.6 2.4 6.9 1.5l9.1 9.1c.4.4 1 .4 1.4 0l2.3-2.3c.5-.4.5-1.1.1-1.4z"/>
+                </svg>
+              </> : <>
+                <svg width="20" height="20" viewBox="0 0 24 24">
+                  <path d="M22.7 19l-9.1-9.1c.9-2.3.4-5-1.5-6.9-2-2-5-2.4-7.4-1.3L9 6 6 9 1.6 4.7C.4 7.1.9 10.1 2.9 12.1c1.9 1.9 4.6 2.4 6.9 1.5l9.1 9.1c.4.4 1 .4 1.4 0l2.3-2.3c.5-.4.5-1.1.1-1.4z"/>
+                  <line x1="22" y1="4" x2="2" y2="25" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+                </svg>
+              </>}
               {`${tools.length} ${t("chat.tools")}`}
             </button>
             {(disabled && !isAborting) ? (
