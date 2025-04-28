@@ -1,9 +1,9 @@
 import React, { useRef, useState, useCallback, useEffect } from "react"
 import { useLocation, useNavigate, useParams } from "react-router-dom"
 import ChatMessages, { Message } from "./ChatMessages"
-import ChatInput from "./ChatInput"
-import { useAtom, useSetAtom } from 'jotai'
-import { codeStreamingAtom } from '../../atoms/codeStreaming'
+import ChatInput from "../../components/ChatInput"
+import { useAtom, useSetAtom } from "jotai"
+import { codeStreamingAtom } from "../../atoms/codeStreaming"
 import useHotkeyEvent from "../../hooks/useHotkeyEvent"
 import { showToastAtom } from "../../atoms/toastState"
 import { useTranslation } from "react-i18next"
@@ -518,6 +518,7 @@ const ChatWindow = () => {
             onEdit={onEdit}
           />
           <ChatInput
+            page="chat"
             onSendMessage={onSendMsg}
             disabled={isChatStreaming}
             onAbort={onAbort}

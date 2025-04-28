@@ -2,7 +2,7 @@
 
 .welcome-content {
   width: 100%;
-  max-width: 600px;
+  max-width: 740px;
   text-align: center;
 
   h1 {
@@ -98,6 +98,9 @@
           font-size: 16px;
           line-height: 1.5;
           color: var(--text);
+          min-height: 100px;
+          box-sizing: border-box;
+          max-height: 354px;
 
           &::placeholder {
             color: var(--text-inverted-weak);
