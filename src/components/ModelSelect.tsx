@@ -73,15 +73,15 @@ const ModelSelect = () => {
           value: model.key,
           label: (
               <div className="model-select-label" key={model.key}>
-              <img
-                src={PROVIDER_ICONS[model.provider.replace("-", "_") as keyof typeof PROVIDER_ICONS]}
-                alt={model.provider}
-                className={`model-select-label-icon ${isProviderIconNoFilter(model.provider) ? "no-filter" : ""}`}
-              />
-              <span className="model-select-label-text">
-                {optionMask(model)}
-              </span>
-                </div>
+                <img
+                  src={PROVIDER_ICONS[model.provider.replace("-", "_") as keyof typeof PROVIDER_ICONS]}
+                  alt={model.provider}
+                  className={`model-select-label-icon ${isProviderIconNoFilter(model.provider) ? "no-filter" : ""}`}
+                />
+                <span className="model-select-label-text">
+                  {optionMask(model)}
+                </span>
+              </div>
             )
           })
         )}

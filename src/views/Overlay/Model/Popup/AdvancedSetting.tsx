@@ -1,23 +1,23 @@
-import { useAtom } from 'jotai'
-import { RefObject, useEffect, useLayoutEffect, useRef, useState } from 'react'
-import { useTranslation } from 'react-i18next'
-import { InterfaceProvider } from '../../../../atoms/interfaceState'
-import { showToastAtom } from '../../../../atoms/toastState'
-import PopupConfirm from '../../../../components/PopupConfirm'
-import Select from '../../../../components/Select'
-import Tooltip from '../../../../components/Tooltip'
-import WrappedInput from '../../../../components/WrappedInput'
-import { compressData } from '../../../../helper/config'
+import { useAtom } from "jotai"
+import { RefObject, useEffect, useLayoutEffect, useRef, useState } from "react"
+import { useTranslation } from "react-i18next"
+import { InterfaceProvider } from "../../../../atoms/interfaceState"
+import { showToastAtom } from "../../../../atoms/toastState"
+import PopupConfirm from "../../../../components/PopupConfirm"
+import Select from "../../../../components/Select"
+import Tooltip from "../../../../components/Tooltip"
+import WrappedInput from "../../../../components/WrappedInput"
+import { compressData } from "../../../../helper/config"
 import {
   formatParametersForSave,
   initializeAdvancedParameters,
   Parameter,
-} from '../../../../helper/modelParameterUtils'
-import { useModelsProvider } from '../ModelsProvider'
-import { ModelVerifyDetail, useModelVerify } from '../ModelVerify'
-import NonStreamingParameter from './SpecialParameters/NonStreaming'
-import ReasoningLevelParameter from './SpecialParameters/ReasoningLevel'
-import TokenBudgetParameter from './SpecialParameters/TokenBudget'
+} from "../../../../helper/modelParameterUtils"
+import { useModelsProvider } from "../ModelsProvider"
+import { ModelVerifyDetail, useModelVerify } from "../ModelVerify"
+import NonStreamingParameter from "./SpecialParameters/NonStreaming"
+import ReasoningLevelParameter from "./SpecialParameters/ReasoningLevel"
+import TokenBudgetParameter from "./SpecialParameters/TokenBudget"
 
 interface AdvancedSettingPopupProps {
   modelName: string
@@ -34,21 +34,23 @@ const AdvancedSettingPopup = ({ modelName, onClose, onSave }: AdvancedSettingPop
     currentIndex,
     setMultiModelConfigList,
   } = useModelsProvider()
-  const { verify, abort } = useModelVerify()
+  const { verify } = useModelVerify()
 
   const [parameters, setParameters] = useState<Parameter[]>([])
-  const [provider, setProvider] = useState<InterfaceProvider>('openai')
+  const [provider, setProvider] = useState<InterfaceProvider>("openai")
   const isVerifying = useRef(false)
   const [isVerifySuccess, setIsVerifySuccess] = useState(false)
-  const [verifyStatus, setVerifyStatus] = useState<string>('')
-  const [verifyDetail, setVerifyDetail] = useState<string>('')
+  const [verifyStatus, setVerifyStatus] = useState<string>("")
+  const [verifyDetail, setVerifyDetail] = useState<string>("")
   const bodyRef = useRef<HTMLDivElement>(null)
   const isAddParameter = useRef(false)
   const prevParamsLength = useRef(0)
   // load parameters of current model
   useEffect(() => {
     const currentModelProvider = multiModelConfigList[currentIndex]
-    if (!currentModelProvider) return
+    if (!currentModelProvider) {
+      return
+    }
 
     const provider = currentModelProvider.name
     const existingParams = currentModelProvider.parameters[modelName]
@@ -80,8 +82,10 @@ const AdvancedSettingPopup = ({ modelName, onClose, onSave }: AdvancedSettingPop
     return updatedModelConfigList
   }
 
-  const handleParameterTypeChange = (type: 'int' | 'float' | 'string', index?: number) => {
-    if (index == undefined || index < 0) return
+  const handleParameterTypeChange = (type: "int" | "float" | "string", index?: number) => {
+    if (index == undefined || index < 0) {
+      return
+    }
     const updatedParameters = [...parameters]
     updatedParameters[index].type = type
     setParameters(updatedParameters)
@@ -89,14 +93,18 @@ const AdvancedSettingPopup = ({ modelName, onClose, onSave }: AdvancedSettingPop
 
   const handleParameterValueChange = (value: string | number | boolean, index?: number) => {
     // Added boolean type
-    if (index == undefined || index < 0) return
+    if (index == undefined || index < 0) {
+      return
+    }
     const updatedParameters = [...parameters]
     updatedParameters[index].value = value
     setParameters(updatedParameters)
   }
 
   const handleParameterNameChange = (value: string, index?: number) => {
-    if (index == undefined || index < 0) return
+    if (index == undefined || index < 0) {
+      return
+    }
     const updatedParameters = [...parameters]
     updatedParameters[index].name = value
     // Check for duplicates ignoring the current parameter being edited
@@ -124,19 +132,21 @@ const AdvancedSettingPopup = ({ modelName, onClose, onSave }: AdvancedSettingPop
 
   const handleAddParameter = () => {
     isAddParameter.current = true
-    setParameters([...parameters, { name: '', type: '', value: '' }])
+    setParameters([...parameters, { name: "", type: "", value: "" }])
   }
   useLayoutEffect(() => {
-    if (!isAddParameter.current) return
+    if (!isAddParameter.current) {
+      return
+    }
     if (parameters.length > prevParamsLength.current && bodyRef.current) {
       const parameterItems = bodyRef.current.querySelectorAll(
-        '.model-custom-parameters .parameters-list .item',
+        ".model-custom-parameters .parameters-list .item",
       )
       if (parameterItems.length > 0) {
         const lastItem = parameterItems[parameterItems.length - 1]
-        const nameInput = lastItem?.querySelector('.name input[type="text"]') as HTMLInputElement
+        const nameInput = lastItem?.querySelector(".name input[type='text']") as HTMLInputElement
         nameInput && nameInput.focus()
-        lastItem?.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
+        lastItem?.scrollIntoView({ behavior: "smooth", block: "nearest" })
       }
     }
     prevParamsLength.current = parameters.length
@@ -186,14 +196,14 @@ const AdvancedSettingPopup = ({ modelName, onClose, onSave }: AdvancedSettingPop
   // verify current model setting if work
   const onVerifyConfirm = async () => {
     isVerifying.current = true
-    setVerifyStatus(t('setup.verifying'))
-    setVerifyDetail('')
+    setVerifyStatus(t("setup.verifying"))
+    setVerifyDetail("")
 
     const integratedParametersConfig = integrateParametersConfig()
     if (integratedParametersConfig.length <= 0) {
       isVerifying.current = false
-      setVerifyStatus(t('setup.verifyFailed'))
-      setVerifyDetail('No model config to verify')
+      setVerifyStatus(t("setup.verifyFailed"))
+      setVerifyDetail("No model config to verify")
       return
     }
     integratedParametersConfig[currentIndex].models = [modelName]
@@ -216,16 +226,16 @@ const AdvancedSettingPopup = ({ modelName, onClose, onSave }: AdvancedSettingPop
       const _detail = detail.find((item) => item.name == modelName)
       if (_detail) {
         setVerifyStatus(
-          _detail.status === 'success'
-            ? t('setup.verifySuccess')
-            : _detail.status === 'error'
-            ? t('setup.verifyError')
-            : t('setup.verifying'),
+          _detail.status === "success"
+            ? t("setup.verifySuccess")
+            : _detail.status === "error"
+            ? t("setup.verifyError")
+            : t("setup.verifying"),
         )
-        if (!_detail.detail?.['connectingSuccess']) {
-          setVerifyDetail(_detail.detail?.['connectingResult'] || '')
-        } else if (!_detail.detail?.['supportTools']) {
-          setVerifyDetail(_detail.detail?.['supportToolsResult'] || '')
+        if (!(_detail.detail?.["connecting"] && _detail.detail?.["connecting"].success)) {
+          setVerifyDetail(_detail.detail?.["connecting"]?.error_msg || "")
+        } else if (!(_detail.detail?.["supportTools"] && _detail.detail?.["supportTools"].success)) {
+          setVerifyDetail(_detail.detail?.["supportTools"]?.error_msg || "")
         }
       }
     }
@@ -250,8 +260,8 @@ const AdvancedSettingPopup = ({ modelName, onClose, onSave }: AdvancedSettingPop
   const handleCopiedError = async (text: string) => {
     await navigator.clipboard.writeText(text)
     showToast({
-      message: t('toast.copiedToClipboard'),
-      type: 'success',
+      message: t("toast.copiedToClipboard"),
+      type: "success",
     })
   }
 
@@ -259,7 +269,7 @@ const AdvancedSettingPopup = ({ modelName, onClose, onSave }: AdvancedSettingPop
     <PopupConfirm
       zIndex={900}
       className="model-parameters-popup"
-      confirmText={t('tools.save') || 'Save'}
+      confirmText={t("tools.save") || "Save"}
       onConfirm={handleSave}
       onCancel={handleClose}
       onClickOutside={handleClose}
@@ -269,7 +279,7 @@ const AdvancedSettingPopup = ({ modelName, onClose, onSave }: AdvancedSettingPop
     >
       <div className="models-key-popup parameters">
         <div className="models-key-form-group">
-          <div className="header">{t('models.modelSetting', { name: modelName })}</div>
+          <div className="header">{t("models.modelSetting", { name: modelName })}</div>
 
           <div className="body" ref={bodyRef}>
             {/* Streaming Mode Area */}
@@ -285,11 +295,11 @@ const AdvancedSettingPopup = ({ modelName, onClose, onSave }: AdvancedSettingPop
             {/* Custom Input Header */}
             <div className="add-custom-parameter">
               <div className="title">
-                <label>{t('models.customInput')}</label>
+                <label>{t("models.customInput")}</label>
               </div>
               <button className="btn" onClick={handleAddParameter}>
-                <img src={'img://CircleAdd.svg'} />
-                {t('models.addCustomParameter')}
+                <img src={"img://CircleAdd.svg"} />
+                {t("models.addCustomParameter")}
               </button>
             </div>
 
@@ -298,9 +308,9 @@ const AdvancedSettingPopup = ({ modelName, onClose, onSave }: AdvancedSettingPop
               <div className="parameters-list">
                 {parameters.map((param, index) => {
                   if (
-                    param.name === 'reasoning_effort' ||
-                    param.name === 'budget_tokens' ||
-                    param.name === 'disable_streaming'
+                    param.name === "reasoning_effort" ||
+                    param.name === "budget_tokens" ||
+                    param.name === "disable_streaming"
                   ) {
                     return null
                   }
@@ -348,79 +358,79 @@ const AdvancedSettingPopup = ({ modelName, onClose, onSave }: AdvancedSettingPop
                         </svg>
                       </div>
                       <div className="name">
-                        <label>{t('models.parameterName')}</label>
+                        <label>{t("models.parameterName")}</label>
                         <div>
                           <WrappedInput
-                            className={param.isDuplicate ? 'error' : ''}
+                            className={param.isDuplicate ? "error" : ""}
                             type="text"
                             value={param.name}
-                            placeholder={t('models.parameterNameDescription')}
+                            placeholder={t("models.parameterNameDescription")}
                             onChange={(e) => handleParameterNameChange(e.target.value, index)}
                           />
                           {param.isDuplicate && (
                             <div className="error-message">
-                              {t('models.parameterNameDuplicate')}
+                              {t("models.parameterNameDuplicate")}
                             </div>
                           )}
                         </div>
                       </div>
                       <div className="row">
                         <div className="type">
-                          <label>{t('models.parameterType')}</label>
+                          <label>{t("models.parameterType")}</label>
                           <Select
                             leftSlotType="row"
                             options={[
                               {
-                                value: 'int',
-                                label: 'int',
-                                info: `(${t('models.parameterTypeInt')})`,
+                                value: "int",
+                                label: "int",
+                                info: `(${t("models.parameterTypeInt")})`,
                               },
                               {
-                                value: 'float',
-                                label: 'float',
-                                info: `(${t('models.parameterTypeFloat')})`,
+                                value: "float",
+                                label: "float",
+                                info: `(${t("models.parameterTypeFloat")})`,
                               },
                               {
-                                value: 'string',
-                                label: 'string',
-                                info: `(${t('models.parameterTypeString')})`,
+                                value: "string",
+                                label: "string",
+                                info: `(${t("models.parameterTypeString")})`,
                               },
                             ]}
                             value={param.type}
                             onSelect={(value) =>
-                              handleParameterTypeChange(value as 'int' | 'float' | 'string', index)
+                              handleParameterTypeChange(value as "int" | "float" | "string", index)
                             }
-                            placeholder={t('models.parameterTypeDescription')}
+                            placeholder={t("models.parameterTypeDescription")}
                             size="m"
                           />
                         </div>
                         <div className="value">
-                          <label>{t('models.parameterValue')}</label>
+                          <label>{t("models.parameterValue")}</label>
                           <WrappedInput
-                            type={param.type === 'string' ? 'text' : 'number'}
+                            type={param.type === "string" ? "text" : "number"}
                             value={param.value as string | number}
                             onChange={(e) => handleParameterValueChange(e.target.value, index)}
                             placeholder={
-                              param.type === 'int'
-                                ? t('models.parameterTypeIntDescription')
-                                : param.type === 'float'
-                                ? t('models.parameterTypeFloatDescription')
-                                : param.type === 'string'
-                                ? t('models.parameterTypeStringDescription')
-                                : t('models.parameterValueDescription')
+                              param.type === "int"
+                                ? t("models.parameterTypeIntDescription")
+                                : param.type === "float"
+                                ? t("models.parameterTypeFloatDescription")
+                                : param.type === "string"
+                                ? t("models.parameterTypeStringDescription")
+                                : t("models.parameterValueDescription")
                             }
-                            disabled={param.type === ''}
+                            disabled={param.type === ""}
                             min={
-                              param.type === 'int' ? 0 : param.type === 'float' ? 0.0 : undefined
+                              param.type === "int" ? 0 : param.type === "float" ? 0.0 : undefined
                             }
                             max={
-                              param.type === 'int'
+                              param.type === "int"
                                 ? 1000000
-                                : param.type === 'float'
+                                : param.type === "float"
                                 ? 1.0
                                 : undefined
                             }
-                            step={param.type === 'float' ? 0.1 : undefined}
+                            step={param.type === "float" ? 0.1 : undefined}
                           />
                         </div>
                       </div>
@@ -430,13 +440,13 @@ const AdvancedSettingPopup = ({ modelName, onClose, onSave }: AdvancedSettingPop
               </div>
             </div>
 
-            <div className={`verify-status-container ${verifyDetail ? 'error' : ''}`}>
+            <div className={`verify-status-container ${verifyDetail ? "error" : ""}`}>
               <div className="verify-info">
                 <span>{verifyStatus}</span>
                 {verifyDetail && <span> - {verifyDetail}</span>}
               </div>
               {verifyDetail && (
-                <Tooltip content={t('models.copyContent')}>
+                <Tooltip content={t("models.copyContent")}>
                   <div onClick={() => handleCopiedError(verifyDetail)} className="error-message">
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
@@ -502,10 +512,10 @@ const SpecialParameters = ({
   parameters: Parameter[]
   setParameters: (parameters: Parameter[]) => void
 }) => {
-  if (modelName.includes('o3-mini') && provider === 'openai') {
+  if (modelName.includes("o3-mini") && provider === "openai") {
     return <ReasoningLevelParameter parameters={parameters} setParameters={setParameters} />
   }
-  if (modelName.includes('claude-3-7') && (provider === 'anthropic' || provider === 'bedrock')) {
+  if (modelName.includes("claude-3-7") && (provider === "anthropic" || provider === "bedrock")) {
     return (
       <TokenBudgetParameter
         min={1024}
@@ -531,12 +541,14 @@ const FooterHint = ({
       <button
         className="cancel-btn"
         onClick={() => {
-          if (isVerifying.current) return
+          if (isVerifying.current) {
+            return
+          }
           onVerifyConfirm()
         }}
         disabled={isVerifying.current ?? false}
       >
-        {t('models.verify')}
+        {t("models.verify")}
       </button>
     </div>
   )

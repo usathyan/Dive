@@ -1,10 +1,10 @@
-import { useAtomValue, useSetAtom } from "jotai"
+import { useAtom, useAtomValue, useSetAtom } from "jotai"
 import React, { useState } from "react"
 import { useTranslation } from "react-i18next"
 import Switch from "../../../components/Switch"
 import { closeOverlayAtom } from "../../../atoms/layerState"
 import PopupConfirm from "../../../components/PopupConfirm"
-import { MultiModelConfig } from "../../../atoms/configState"
+import { modelVerifyListAtom, MultiModelConfig } from "../../../atoms/configState"
 import KeyPopup from "./KeyPopup"
 import ModelPopup from "./Popup"
 import ParameterPopup from "./ParameterPopup"
@@ -31,6 +31,7 @@ const PageLayout = () => {
   const showToast = useSetAtom(showToastAtom)
   const systemTheme = useAtomValue(systemThemeAtom)
   const userTheme = useAtomValue(userThemeAtom)
+  const [allVerifiedList, setAllVerifiedList] = useAtom(modelVerifyListAtom)
 
   const { multiModelConfigList, setMultiModelConfigList,
           currentIndex, setCurrentIndex, saveConfig
@@ -92,8 +93,6 @@ const PageLayout = () => {
   }
 
   const getModelCount = (config: MultiModelConfig, ifSupport: boolean = true) => {
-    const modelVerifyText = localStorage.getItem("modelVerify")
-    const allVerifiedList = modelVerifyText ? JSON.parse(modelVerifyText) : {}
     const currentVerifyList = allVerifiedList[config.apiKey || config.baseURL] ?? {}
     return config.models.filter(model => ifSupport ? getVerifyStatus(currentVerifyList[model]) !== "unSupportModel" : getVerifyStatus(currentVerifyList[model]) === "unSupportModel").length
   }
@@ -162,10 +161,8 @@ const PageLayout = () => {
           localStorage.setItem("customModelList", JSON.stringify(allCustomModelList))
 
           // delete verifiedList from local storage
-          const localListOptions = localStorage.getItem("modelVerify")
-          const allVerifiedList = localListOptions ? JSON.parse(localListOptions) : {}
           delete allVerifiedList[key]
-          localStorage.setItem("modelVerify", JSON.stringify(allVerifiedList))
+          setAllVerifiedList({...allVerifiedList})
         }
       } else {
         showToast({
