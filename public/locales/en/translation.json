@@ -204,7 +204,7 @@
     "modelSetting": "{{name}} Model Settings",
     "streamingModeTooltip": "Streaming Mode is when the model responds, it shows the content gradually, instead of showing it all at once. Turning off the button, in the Non-Streaming Mode, will wait for the model to generate the content completely and display it all at once, avoiding compatibility issues with tool calls in the model.",
     "streamingModeDescription": "Control how model responses are displayed",
-    "streamingModeAlert": "Reminder: {{name}} model does not support tool calls in Streaming mode. If you need to use tool functionality, please turn off this button and adjust to Non-Streaming Mode.",
+    "streamingModeAlert": "Reminder: Some models only support tool calling in either Streaming Mode or Non-Streaming Mode. It's recommended to fully understand your needs before adjusting this parameter.",
     "customInput": "Custom Input",
     "addCustomParameter": "Add Custom Parameter",
     "parameterName": "Parameter Name",
