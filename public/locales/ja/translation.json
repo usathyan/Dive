@@ -30,7 +30,11 @@
     "save": "保存",
     "toolCalls": "🛠 {{name}} ツール呼び出し結果",
     "unsupportTools": "{{model}} はツール呼び出しをサポートしていません",
-    "dragFiles": "ファイルをここにドロップしてチャットに追加"
+    "dragFiles": "ファイルをここにドロップしてチャットに追加",
+    "tools-btn.disable.toast": "Tool Callsを停止しました",
+    "tools-btn.disable": "Tool Callsを停止",
+    "tools-btn.enable.toast": "Tool Callsを有効にしました",
+    "tools-btn.enable": "Tool Callsを有効"
   },
   "welcome": {
     "title": "Dive AI へようこそ",

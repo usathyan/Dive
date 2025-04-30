@@ -30,7 +30,11 @@
     "save": "Save",
     "toolCalls": "🛠 {{name}} Tool Call Result",
     "unsupportTools": "{{model}} does not support Tool Calls",
-    "dragFiles": "Drop files here to add to chat"
+    "dragFiles": "Drop files here to add to chat",
+    "tools-btn.disable.toast": "Tool Calls disabled",
+    "tools-btn.disable": "Disable Tool Calls temporarily",
+    "tools-btn.enable.toast": "Tool Calls enabled",
+    "tools-btn.enable": "Enable Tool Calls"
   },
   "welcome": {
     "title": "Welcome to Dive AI",
