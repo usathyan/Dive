@@ -123,6 +123,7 @@ const ChatWindow = () => {
 
                 const content = `${callContent}${resultContent}`
                 const toolName = toolsName.size > 0 ? JSON.stringify(Array.from(toolsName).join(", ")) : ""
+                // eslint-disable-next-line quotes
                 acc[acc.length - 1].text += `\n<tool-call name=${toolName || '""'}>${content}</tool-call>\n\n`
 
                 toolCallBuf = []
@@ -192,7 +193,8 @@ const ChatWindow = () => {
   }, [])
 
   const onSendMsg = useCallback(async (msg: string, files?: FileList) => {
-    if (isChatStreaming) return
+    if (isChatStreaming)
+      return
 
     const formData = new FormData()
     if (msg)
@@ -399,7 +401,7 @@ const ChatWindow = () => {
               case "tool_result":
                 const result = data.content as ToolResult
 
-                toolCallResults.current = toolCallResults.current.replace(`</tool-call>\n`, "")
+                toolCallResults.current = toolCallResults.current.replace("</tool-call>\n", "")
                 toolCallResults.current += `##Tool Result:${safeBase64Encode(JSON.stringify(result.result))}</tool-call>\n`
 
                 setMessages(prev => {
@@ -486,7 +488,7 @@ const ChatWindow = () => {
 
     if ((state?.initialMessage || state?.files) && !isInitialMessageHandled.current) {
       isInitialMessageHandled.current = true
-      handleInitialMessage(state?.initialMessage || '', state?.files)
+      handleInitialMessage(state?.initialMessage || "", state?.files)
     }
   }, [handleInitialMessage])
 

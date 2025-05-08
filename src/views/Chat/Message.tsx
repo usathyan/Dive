@@ -260,7 +260,7 @@ const Message = ({ messageId, text, isSent, files, isError, isLoading, onRetry, 
   if (isEditing) {
     return (
       <div className="message-container">
-        <div className={`message sent edit`}>
+        <div className="message sent edit">
           {editText}
         </div>
       </div>
