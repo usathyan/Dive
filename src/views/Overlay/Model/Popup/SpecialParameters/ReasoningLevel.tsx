@@ -13,7 +13,7 @@ const ReasoningLevelParameter = ({
   // reasoning_effort
   const { t } = useTranslation()
 
-  const [reasoningLevel, setReasoningLevel] = useState<string>('low')
+  const [reasoningLevel, setReasoningLevel] = useState<string>('')
 
   useEffect(() => {
     const parameter = parameters.find((p) => p.name === 'reasoning_effort' && p.isSpecific)
@@ -82,19 +82,19 @@ const ReasoningLevelParameter = ({
           <div className="reasoning-level-btn-group">
             <button
               className={`btn ${reasoningLevel === 'low' ? 'active' : ''}`}
-              onClick={() => handleReasoningLevelChange('low')}
+              onClick={() => handleReasoningLevelChange(reasoningLevel === "low" ? "" : "low")}
             >
               <span>Low</span>
             </button>
             <button
               className={`btn ${reasoningLevel === 'medium' ? 'active' : ''}`}
-              onClick={() => handleReasoningLevelChange('medium')}
+              onClick={() => handleReasoningLevelChange(reasoningLevel === "medium" ? "" : 'medium')}
             >
               <span>Medium</span>
             </button>
             <button
               className={`btn ${reasoningLevel === 'high' ? 'active' : ''}`}
-              onClick={() => handleReasoningLevelChange('high')}
+              onClick={() => handleReasoningLevelChange(reasoningLevel === "high" ? "" : 'high')}
             >
               <span>High</span>
             </button>

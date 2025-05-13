@@ -206,7 +206,7 @@
     "hide": "Ocultar",
     "display": "Mostrar",
     "copy": "Copiar",
-    "modelSetting": "Configuración de {{name}}",
+    "modelSetting": "Configuración Avanzada",
     "streamingModeTooltip": "Streaming Mode es cuando el modelo responde, muestra el contenido gradualmente, en lugar de mostrarlo de una vez. Desactivar el botón, en el modo Non-Streaming Mode, esperará a que el modelo genere el contenido completo y lo muestre de una vez, evitando problemas de compatibilidad con las llamadas a herramientas.",
     "streamingModeDescription": "Controla cómo se muestra la respuesta del modelo",
     "streamingModeAlert": "Recordatorio: Algunos modelos solo admiten llamadas a herramientas en Streaming Mode o Non-Streaming Mode. Se recomienda comprender completamente sus necesidades antes de ajustar este parámetro.",
@@ -227,7 +227,8 @@
     "parameterTypeStringDescription": "Ingrese una cadena, como medium",
     "reasoningLevelDescription": "Establece la profundidad de la reflexión del modelo",
     "reasoningLevelTooltip": "Low representa una respuesta rápida, enfocada en conclusiones y sin detalles adicionales, con un razonamiento directo y simple. Medium proporciona una respuesta con suficiente explicación lógica, cubriendo información clave. High ofrece una respuesta profunda con un razonamiento estructurado y detallado.",
-    "tokenBudgetDescription": "Establece el límite de tokens de razonamiento ({{min}}~{{max}})"
+    "tokenBudgetDescription": "Establece el límite de tokens de razonamiento ({{min}}~{{max}})",
+    "parameterVerify": "Verificación de parámetros"
   },
   "system": {
     "title": "Configuración del Sistema",
