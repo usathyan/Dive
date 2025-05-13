@@ -130,6 +130,8 @@
     "inputKeyError": "{{ name }} 變數名稱重複",
     "urlPlaceholder": "輸入URL...",
     "transportPlaceholder": "選擇Transport...",
+    "providerSearchPlaceholder": "輸入搜尋 Provider...",
+    "noProviderSearchResult": "搜尋不到相關Provider",
     "toogleTool.alt": "啟用 MCP Tools",
     "logTitle": "執行 UVX 命令",
     "logProcessing": "處理中..."
