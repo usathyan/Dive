@@ -425,7 +425,7 @@ const ChatWindow = () => {
                 break
 
               case "chat_info":
-                document.title = `${data.data.chat.title.substring(0, 40)}${data.data.chat.title.length > 40 ? "..." : ""} - Dive AI`
+                document.title = `${data.content.title.substring(0, 40)}${data.content.title.length > 40 ? "..." : ""} - Dive AI`
                 currentChatId.current = data.content.id
                 navigate(`/chat/${data.content.id}`, { replace: true })
                 break
