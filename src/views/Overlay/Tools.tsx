@@ -315,10 +315,10 @@ const Tools = () => {
 
   const handleReloadMCPServers = async () => {
     setIsLoading(true)
-    const disabledTools = Object.keys(toolsCacheRef.current).filter(tool => toolsCacheRef.current[tool].disabled && mcpConfig.mcpServers[tool].enabled)
+    const disabledTools = Object.keys(toolsCacheRef.current).filter(tool => toolsCacheRef.current[tool].disabled && mcpConfig?.mcpServers?.[tool]?.enabled)
     await updateMCPConfig(mcpConfig, true)
     await fetchTools()
-    const newDisabledTools = Object.keys(toolsCacheRef.current).filter(tool => toolsCacheRef.current[tool].disabled && mcpConfig.mcpServers[tool].enabled)
+    const newDisabledTools = Object.keys(toolsCacheRef.current).filter(tool => toolsCacheRef.current[tool].disabled && mcpConfig?.mcpServers?.[tool]?.enabled)
     const hasToolsEnabled = disabledTools.some(tool => !newDisabledTools.includes(tool))
 
     if (hasToolsEnabled) {
