@@ -251,8 +251,8 @@
     "autoDownloadDescription": "Descargar automáticamente la nueva versión de DIVE cuando se reinicie o se haga clic en el botón \"Actualizar\" en la página del menú",
     "autoLaunch": "Iniciar automáticamente",
     "autoLaunchDescription": "Iniciar Dive AI automáticamente cuando se reinicie",
-    "minimalToTray": "Minimizar",
-    "minimalToTrayDescription": "Cuando se cierra la ventana, no se cerrará el programa, sino que se minimizará a un icono",
+    "minimalToTray": "Minimizar a la barra de tareas",
+    "minimalToTrayDescription": "Cuando se cierra la ventana, el programa no se cerrará, sino que se minimizará a un icono",
     "defaultSystemPrompt": "Dive Default System Prompt",
     "defaultSystemPromptDescription": "Dive Default System Prompt se utiliza como el sistema predeterminado de chat. Le dice al LLM que Dive chat soporta KaTeX / Markdown / Mermaid, etc. Este uso consume ciertos tokens, lo que puede hacer que la respuesta sea más lenta que la de un prompt sin sistema predeterminado. Por otro lado, si se desactiva, la calidad de la respuesta del LLM puede disminuir"
   },

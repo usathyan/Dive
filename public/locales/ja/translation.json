@@ -251,8 +251,8 @@
     "autoDownloadDescription": "新バージョンのDIVEを自動的にバックグラウンドでダウンロードします。ユーザーが次回起動時、またはメニューページの「新バージョンアップデート」ボタンをクリックすると、新バージョンが有効になります",
     "autoLaunch": "自動起動",
     "autoLaunchDescription": "PC起動時に自動的にDive AIを起動します",
-    "minimalToTray": "最小化",
-    "minimalToTrayDescription": "閉じるとプログラムが終了せず、最小化アイコンに縮小されます",
+    "minimalToTray": "最小化時にトレイに格納",
+    "minimalToTrayDescription": "ウィンドウを閉じると、プログラムはシステムトレイに最小化される代わりに完全に終了しません",
     "defaultSystemPrompt": "Diveデフォルトシステムプロンプト",
     "defaultSystemPromptDescription": "Diveデフォルトシステムプロンプトはチャットのデフォルトのシステムプロンプトとして使用されます。LLMにDiveチャットがKaTeX/Markdown/Mermaidなどの出力をサポートすることを説明します。この機能は一定のトークンを消費しますが、システムプロンプトなしのプロンプトよりも応答が遅くなる場合があります。一方、LLMの応答の品質が向上する可能性があります"
   },
