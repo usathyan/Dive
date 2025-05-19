@@ -96,13 +96,39 @@
   overflow: auto;
   border-color: var(--border-weak);
 
+  @include scrollbar;
+
   pre {
     margin: 0;
     white-space: pre-wrap;
     word-break: break-all;
+
+    @include scrollbar-light;
+  }
+
+  .tool-call-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+
+    .copy-btn {
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 0;
+      color: var(--text-weak);
+
+      &:focus {
+        outline: none;
+      }
+
+      &:hover {
+        color: var(--text-strong);
+      }
+    }
   }
 }
-
 
 .setup-page {
   display: flex;

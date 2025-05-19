@@ -1,9 +1,9 @@
 import React, { useRef, useEffect, useCallback, useState } from "react"
 import { PrismAsyncLight as SyntaxHighlighter } from "react-syntax-highlighter"
-import { tomorrow, darcula } from 'react-syntax-highlighter/dist/esm/styles/prism'
-import { themeAtom } from '../../atoms/themeState'
-import { useAtom, useAtomValue } from 'jotai'
-import { codeStreamingAtom } from '../../atoms/codeStreaming'
+import { tomorrow, darcula } from "react-syntax-highlighter/dist/esm/styles/prism"
+import { themeAtom } from "../../atoms/themeState"
+import { useAtom, useAtomValue } from "jotai"
+import { codeStreamingAtom } from "../../atoms/codeStreaming"
 import { useTranslation } from "react-i18next"
 import CodePreview from "./CodePreview"
 import { useLayer } from "../../hooks/useLayer"
@@ -75,7 +75,7 @@ const CodeModal = () => {
     try {
       await navigator.clipboard.writeText(text)
     } catch (err) {
-      console.error('Failed to copy text: ', err)
+      console.error("Failed to copy text: ", err)
     }
   }
 
@@ -135,23 +135,23 @@ const CodeModal = () => {
                       </button>
                   </Tooltip>
                 </div>
-                <Tooltip
-                  content={t("chat.copyCode")}
-                >
-                  <button
-                    className="copy-btn"
-                    onClick={() => copyToClipboard(code)}
-                  >
-                    <svg xmlns="http://www.w3.org/2000/svg" width="18px" height="18px" viewBox="0 0 22 22" fill="transparent">
-                      <path d="M13 20H2V6H10.2498L13 8.80032V20Z" fill="transparent" stroke="currentColor" strokeWidth="2" strokeMiterlimit="10" strokeLinejoin="round"/>
-                      <path d="M13 9H10V6L13 9Z" fill="currentColor" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                      <path d="M9 3.5V2H17.2498L20 4.80032V16H16" fill="transparent" stroke="currentColor" strokeWidth="2" strokeMiterlimit="10" strokeLinejoin="round"/>
-                      <path d="M20 5H17V2L20 5Z" fill="currentColor" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                    </svg>
-                  </button>
-                </Tooltip>
               </>
             )}
+            <Tooltip
+              content={t("chat.copyCode")}
+            >
+              <button
+                className="copy-btn"
+                onClick={() => copyToClipboard(code)}
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" width="18px" height="18px" viewBox="0 0 22 22" fill="transparent">
+                  <path d="M13 20H2V6H10.2498L13 8.80032V20Z" fill="transparent" stroke="currentColor" strokeWidth="2" strokeMiterlimit="10" strokeLinejoin="round"/>
+                  <path d="M13 9H10V6L13 9Z" fill="currentColor" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                  <path d="M9 3.5V2H17.2498L20 4.80032V16H16" fill="transparent" stroke="currentColor" strokeWidth="2" strokeMiterlimit="10" strokeLinejoin="round"/>
+                  <path d="M20 5H17V2L20 5Z" fill="currentColor" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+              </button>
+            </Tooltip>
           </div>
         </div>
         <div className="code-modal-body" ref={codeModalRef}>
@@ -162,13 +162,13 @@ const CodeModal = () => {
               showLineNumbers={true}
               customStyle={{
                 margin: 0,
-                height: '100%',
-                background: 'transparent'
+                height: "100%",
+                background: "transparent"
               }}
               codeTagProps={{
                 style: {
-                  fontSize: '14px',
-                  lineHeight: '1.5'
+                  fontSize: "14px",
+                  lineHeight: "1.5"
                 }
               }}
             >
