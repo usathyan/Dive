@@ -3,7 +3,7 @@ import { atom } from "jotai"
 import { atomWithStorage } from "jotai/utils"
 import { EMPTY_PROVIDER, InterfaceProvider, ModelProvider } from "./interfaceState"
 import { getModelPrefix } from "../util"
-import { transformModelProvider } from "../helper/config"
+import { getInterfaceProvider, transformModelProvider } from "../helper/config"
 import { ignoreFieldsForModel } from "../constants"
 
 
@@ -23,6 +23,11 @@ export type NewVerifyStatus = {
     error_msg: string | null
   }
   supportTools: {
+    success: boolean
+    final_state: string
+    error_msg: string | null
+  }
+  supportToolsInPrompt: {
     success: boolean
     final_state: string
     error_msg: string | null
@@ -149,7 +154,7 @@ export const enabledModelsIdsAtom = atom<{key: string, name: string, provider: s
       return {
         key,
         name: `${getModelPrefix(enabledConfigs[key], 4)}/${modelName}`,
-        provider: enabledConfigs[key].modelProvider
+        provider: getInterfaceProvider(enabledConfigs[key])
       }
     })
   }
@@ -215,6 +220,7 @@ export const currentModelSupportToolsAtom = atom<boolean>(
             || !activeConfig
             || !verifiedConfig[activeModel]
             || (verifiedConfig[activeModel].supportTools && verifiedConfig[activeModel].supportTools.success)
+            || (verifiedConfig[activeModel].supportToolsInPrompt && verifiedConfig[activeModel].supportToolsInPrompt.success)
             || verifiedConfig[activeModel] === "ignore"
   }
 )
@@ -324,6 +330,7 @@ export const writeRawConfigAtom = atom(
     const allVerifiedList = get(modelVerifyListAtom)
     const activeConfig = configs[activeProvider as string]
     const verifiedModel = allVerifiedList[activeConfig?.apiKey ?? activeConfig?.baseURL]?.[activeConfig.model ?? ""]
+    const ifSuccessInPrompt = getVerifyStatus(verifiedModel) === "successInPrompt"
     const ifUnSupportTools = getVerifyStatus(verifiedModel) === "unSupportTool" || getVerifyStatus(verifiedModel) === "unSupportModel"
     const enableTools = ifUnSupportTools ? ("enableTools" in activeConfig ? activeConfig.enableTools : true) : true
 
@@ -339,6 +346,7 @@ export const writeRawConfigAtom = atom(
         body: JSON.stringify({
           configs,
           enableTools,
+          toolsInPrompt: ifSuccessInPrompt,
           activeProvider: provider,
           disableDiveSystemPrompt: disableDiveSystemPrompt ?? get(disableDiveSystemPromptAtom)
         }),

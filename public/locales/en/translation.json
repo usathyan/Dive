@@ -129,7 +129,10 @@
     "envValue": "Enter variable value (Value)...",
     "inputKeyError": "{{ name }} variable name duplicate",
     "urlPlaceholder": "Enter URL...",
-    "transportPlaceholder": "Select Transport..."
+    "transportPlaceholder": "Select Transport...",
+    "toogleTool.alt": "Enable MCP Tools",
+    "logTitle": "Execute UVX Command",
+    "logProcessing": "Processing..."
   },
   "modelConfig": {
     "title": "Model Settings",
@@ -145,7 +148,9 @@
   "common": {
     "close": "Close",
     "confirm": "Confirm",
-    "cancel": "Cancel"
+    "cancel": "Cancel",
+    "copy": "Copy",
+    "copySuccess": "Copied successfully"
   },
   "models": {
     "title": "Model Settings",
@@ -228,7 +233,12 @@
     "reasoningLevelDescription": "Set the depth of model thinking",
     "reasoningLevelTooltip": "Low represents a quick response, focusing on conclusions and without additional details, with a direct and simple reasoning. Medium provides a response with sufficient logical explanation, covering key information. High offers a deep response with a structured and detailed analysis and explanation.",
     "tokenBudgetDescription": "Set reasoning value ({{min}}~{{max}})",
-    "parameterVerify": "Parameter Verification"
+    "parameterVerify": "Parameter Verification",
+    "verifyErrorInfo": "Verification Error Details",
+    "verifyErrorMsg": "The model did not use any tools during verification, which may be due to its lack of support or not being triggered. Therefore, it is not possible to confirm whether it supports tools.",
+    "verifyStatusSuccess": "Model verification successful, enabled with the original configuration",
+    "verifyStatusSuccessInPrompt": "Model verification successful, enabled with MCP Prompts",
+    "verifyUnexpectedFailed": "Model verification failed, an unknown error occurred, please try again later"
   },
   "system": {
     "title": "System Settings",
@@ -242,8 +252,8 @@
     "autoDownloadDescription": "Automatically download the new version of DIVE when the user restarts or clicks the \"Upgrade\" button on the menu page, the new version will be enabled",
     "autoLaunch": "Auto Launch",
     "autoLaunchDescription": "Automatically start Dive AI when the system starts",
-    "minimalToTray": "Minimize",
-    "minimalToTrayDescription": "When the window is closed, the program will not be closed, but will be minimized to an icon",
+    "minimalToTray": "Minimize to tray",
+    "minimalToTrayDescription": "When closing the window, the program will minimize to the system tray instead of exiting completely",
     "defaultSystemPrompt": "Dive Default System Prompt",
     "defaultSystemPromptDescription": "Dive Default System Prompt is used as the default system prompt for chat. It tells the LLM that Dive chat supports KaTeX / Markdown / Mermaid, etc. This feature consumes certain tokens, which may make the response slower than the prompt without a system prompt. On the other hand, if it is disabled, the quality of the LLM's response may decrease"
   },

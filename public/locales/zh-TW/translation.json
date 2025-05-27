@@ -129,7 +129,12 @@
     "envValue": "輸入變數值（Value）...",
     "inputKeyError": "{{ name }} 變數名稱重複",
     "urlPlaceholder": "輸入URL...",
-    "transportPlaceholder": "選擇Transport..."
+    "transportPlaceholder": "選擇Transport...",
+    "providerSearchPlaceholder": "輸入搜尋 Provider...",
+    "noProviderSearchResult": "搜尋不到相關Provider",
+    "toogleTool.alt": "啟用 MCP Tools",
+    "logTitle": "執行 UVX 命令",
+    "logProcessing": "處理中..."
   },
   "modelConfig": {
     "title": "模型設定",
@@ -145,7 +150,9 @@
   "common": {
     "close": "關閉",
     "confirm": "確認",
-    "cancel": "取消"
+    "cancel": "取消",
+    "copy": "複製",
+    "copySuccess": "已複製"
   },
   "models": {
     "title": "模型設定",
@@ -228,7 +235,12 @@
     "reasoningLevelDescription": "設置模型思考的深度",
     "reasoningLevelTooltip": "用來控制模型思考與推理的深度。Low代表快速回應，偏重結論、沒有過多細節，推理簡單直接；Medium代表回應適度說明邏輯、涵蓋關鍵資訊；High代表回應深度推理，條理清晰、有結構的分析與說明。",
     "tokenBudgetDescription": "設置推理數值 ({{min}}~{{max}})",
-    "parameterVerify": "參數設定驗證"
+    "parameterVerify": "參數設定驗證",
+    "verifyErrorInfo": "驗證錯誤詳細資訊",
+    "verifyErrorMsg": "驗證過程中模型未使用任何工具，可能因其不支援或未觸發工具，因此無法確認是否具備 tool 支援能力。",
+    "verifyStatusSuccess": "模型驗證成功，已透過原生方式啟用工具",
+    "verifyStatusSuccessInPrompt": "模型驗證成功，已透過MCP Prompts方式啟用工具",
+    "verifyUnexpectedFailed": "模型驗證失敗，發生未知錯誤，請稍後再試"
   },
   "system": {
     "title": "系統設定",
@@ -242,8 +254,8 @@
     "autoDownloadDescription": "自動在背景下載新版本 DIVE，用戶下一次重啟後或點擊選單頁的「新版本升級」按鈕，即會啟用新版本",
     "autoLaunch": "自動啟動",
     "autoLaunchDescription": "開機時自動啟動 Dive AI",
-    "minimalToTray": "最小化",
-    "minimalToTrayDescription": "關閉視窗時不會將程式關閉，而是縮放成最小化 icon",
+    "minimalToTray": "最小化至工具列",
+    "minimalToTrayDescription": "關閉視窗時不會將程式關閉，而是縮放成最小化icon至工具列",
     "defaultSystemPrompt": "Dive Default System Prompt",
     "defaultSystemPromptDescription": "Dive Default System Prompt 用來作為 chat 預設的系統提示詞。跟 LLM 說明對於 Dive chat 的內容支援 KaTeX / Markdown / Mermaid 等輸出的提示。這個功能會花費一定的 Token 數，某些情況下會使得回應相對沒有系統提示詞的 Prompt 來的更慢。另一方面，若是關閉 LLM 回應的品質可能下降"
   },

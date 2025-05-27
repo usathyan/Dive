@@ -1,6 +1,6 @@
 import "katex/dist/katex.min.css"
 
-import React, { useMemo, useRef, useState } from "react"
+import React, { useEffect, useMemo, useRef, useState } from "react"
 import ReactMarkdown from "react-markdown"
 import remarkGfm from "remark-gfm"
 import remarkMath from "remark-math"
@@ -23,10 +23,17 @@ declare global {
       "tool-call": {
         children: any
         name: string
+        toolkey: string
       };
       "think": {
         children: any
       };
+      "none": {
+        children: any
+      }
+      "thread-query-error": {
+        children: any
+      }
     }
   }
 }
@@ -53,6 +60,7 @@ const Message = ({ messageId, text, isSent, files, isError, isLoading, onRetry, 
   const [content, setContent] = useState(text)
   const [editedText, setEditedText] = useState(text)
   const isChatStreaming = useAtomValue(isChatStreamingAtom)
+  const [openToolPanels, setOpenToolPanels] = useState<Record<string, boolean>>({})
   const copyToClipboard = async (text: string) => {
     try {
       await navigator.clipboard.writeText(text)
@@ -60,6 +68,10 @@ const Message = ({ messageId, text, isSent, files, isError, isLoading, onRetry, 
       console.error("Failed to copy text: ", err)
     }
   }
+
+  useEffect(() => {
+    setContent(text)
+  }, [messageId])
 
   const onCopy = (messageId: string, text: string) => {
     copyToClipboard(text)
@@ -145,10 +157,23 @@ const Message = ({ messageId, text, isSent, files, isError, isLoading, onRetry, 
           allowDangerousHtml: true
         }}
         components={{
-          "think"({ children }) {
+          think({ children }) {
             return <div className="think">{children}</div>
           },
-          "tool-call"({children, name}) {
+          none() {
+            return null
+          },
+          "thread-query-error"({ children }) {
+            return (
+              <details>
+                <summary style={{ color: "var(--text-inverted-weak)", cursor: "pointer" }}>Error occurred click to show details:</summary>
+                <div style={{ maxHeight: "100px", overflow: "auto" }}>
+                  {children}
+                </div>
+              </details>
+            )
+          },
+          "tool-call"({children, name, toolkey}) {
             let content = children
             if (typeof children !== "string") {
               if (!Array.isArray(children) || children.length === 0 || typeof children[0] !== "string") {
@@ -158,10 +183,20 @@ const Message = ({ messageId, text, isSent, files, isError, isLoading, onRetry, 
               content = children[0]
             }
 
+            const isOpen = openToolPanels[toolkey] || false
+
             return (
               <ToolPanel
+                key={toolkey}
                 content={content}
                 name={name}
+                isOpen={isOpen}
+                onToggle={(open) => {
+                  setOpenToolPanels(prev => ({
+                    ...prev,
+                    [toolkey]: open
+                  }))
+                }}
               />
             )
           },
@@ -198,7 +233,7 @@ const Message = ({ messageId, text, isSent, files, isError, isLoading, onRetry, 
             const isLongCode = lines.length > 10
 
             if (isLongCode) {
-              const cleanText = _text.replace(/\s+(?=```)/gm, "")
+              const cleanText = _text.replace(/[\s\S\n]+(?=```)/gm, "")
               const isBlockComplete = cleanText.includes(code.trim() + "```")
               code = code.endsWith("``") ? code.slice(0, -2) : code
               code = code.endsWith("`") ? code.slice(0, -1) : code
@@ -252,10 +287,17 @@ const Message = ({ messageId, text, isSent, files, isError, isLoading, onRetry, 
           }
         }}
       >
-        {_text.replaceAll("file://", "https://localfile").replaceAll("</think>\n\n", "\n\n</think>\n\n")}
+        {
+        _text
+          .replaceAll("file://", "https://localfile")
+          .replaceAll("</think>\n\n", "\n\n</think>\n\n")
+          // prompt tool call from host
+          .replaceAll("<tool_call>", "<none>")
+          .replaceAll("</tool_call>", "</none>")
+        }
       </ReactMarkdown>
     )
-  }, [content, text, isSent, isLoading])
+  }, [content, text, isSent, isLoading, openToolPanels])
 
   if (isEditing) {
     return (
