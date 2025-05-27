@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState } from "react"
+import React, { useEffect, useRef, useState } from "react"
 import Message from "./Message"
 import { isChatStreamingAtom } from "../../atoms/chatState"
 import { useAtomValue } from "jotai"
@@ -25,11 +25,26 @@ const ChatMessages = ({ messages, isLoading, onRetry, onEdit }: Props) => {
   const mouseWheelRef = useRef(false)
   const scrollContainerRef = useRef<HTMLDivElement>(null)
   const isChatStreaming = useAtomValue(isChatStreamingAtom)
+  const hoverTimeOutRef = useRef<NodeJS.Timeout | null>(null)
+  const [isHovering, setIsHovering] = useState(false)
+  const [positionLeft, setPositionLeft] = useState(0)
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView()
     setShowScrollButton(false)
   }
+
+  useEffect(() => {
+    const resetPositionLeft = () => {
+      setPositionLeft(messagesEndRef.current?.getBoundingClientRect().right ?? 0)
+    }
+
+    resetPositionLeft()
+    window.addEventListener("resize", resetPositionLeft)
+    return () => {
+      window.removeEventListener("resize", resetPositionLeft)
+    }
+  }, [])
 
   useEffect(() => {
     !mouseWheelRef.current && scrollToBottom()
@@ -57,10 +72,70 @@ const ChatMessages = ({ messages, isLoading, onRetry, onEdit }: Props) => {
   const handleScroll = (_: React.WheelEvent<HTMLDivElement>) => {
     mouseWheelRef.current = !checkIfAtBottom()
     setShowScrollButton(!checkIfAtBottom())
+    if (hoverTimeOutRef.current) {
+      clearTimeout(hoverTimeOutRef.current)
+    }
+    setIsHovering(!checkIfAtBottom())
+  }
+
+  const handleMouseMove = () => {
+    if (hoverTimeOutRef.current) {
+      clearTimeout(hoverTimeOutRef.current)
+    }
+    setIsHovering(true)
+    hoverTimeOutRef.current = setTimeout(() => {
+      setIsHovering(false)
+    }, 5000)
+  }
+
+  const handleMouseEnter = () => {
+    if (hoverTimeOutRef.current) {
+      clearTimeout(hoverTimeOutRef.current)
+    }
+    setIsHovering(true)
+  }
+
+  const handleMouseLeave = () => {
+    if (hoverTimeOutRef.current) {
+      clearTimeout(hoverTimeOutRef.current)
+    }
+    hoverTimeOutRef.current = setTimeout(() => {
+      setIsHovering(false)
+    }, 5000)
+  }
+
+  const handleBtnEnter = (e: React.MouseEvent<HTMLButtonElement>) => {
+    console.log("btn enter")
+    e.preventDefault()
+    e.stopPropagation()
+    if (hoverTimeOutRef.current) {
+      clearTimeout(hoverTimeOutRef.current)
+    }
+    setIsHovering(true)
+  }
+
+  const handleBtnMove = (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault()
+    e.stopPropagation()
+    if (hoverTimeOutRef.current) {
+      clearTimeout(hoverTimeOutRef.current)
+    }
+    setIsHovering(true)
+  }
+
+  const handleBtnLeave = (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault()
+    e.stopPropagation()
+    if (hoverTimeOutRef.current) {
+      clearTimeout(hoverTimeOutRef.current)
+    }
+    hoverTimeOutRef.current = setTimeout(() => {
+      setIsHovering(false)
+    }, 5000)
   }
 
   return (
-    <div className="chat-messages-container" onWheel={handleScroll}>
+    <div className="chat-messages-container" onWheel={handleScroll} onMouseMove={handleMouseMove} onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave}>
       <div className="chat-messages" ref={scrollContainerRef}>
         {messages.map((message, index) => (
           <Message
@@ -76,10 +151,10 @@ const ChatMessages = ({ messages, isLoading, onRetry, onEdit }: Props) => {
             onEdit={(newText: string) => onEdit(message.id, newText)}
           />
         ))}
-        <div ref={messagesEndRef} />
+        <div className="chat-messages-end" ref={messagesEndRef} />
       </div>
-      <button className={`scroll-to-bottom-btn ${showScrollButton ? 'show' : ''}`} onClick={scrollToBottom}>
-        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 22 22" fill="none">
+      <button style={{ left: positionLeft }} className={`scroll-to-bottom-btn ${showScrollButton && isHovering ? 'show' : ''}`} onClick={scrollToBottom} onMouseEnter={handleBtnEnter} onMouseLeave={handleBtnLeave} onMouseMove={handleBtnMove}>
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 22 22" fill="none">
           <path d="M4 12L11 19L18 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
           <path d="M11 18L11 3" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
         </svg>
