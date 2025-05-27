@@ -246,13 +246,13 @@
   }
 
   .non-streaming-alert {
-    display: none;
+    display: flex;
     align-items: flex-start;
     gap: 8px;
     padding: 12px;
-    background-color: var(--bg-alert);
+    background-color: var(--bg-op-dark-ultraweak);
     border-radius: 6px;
-    color: var(--text-alert);
+    color: var(--text-weak);
 
     svg {
       flex-shrink: 0;
@@ -262,10 +262,6 @@
     .alert-content {
       font-size: 14px;
       line-height: 1.4;
-    }
-
-    &.visible {
-      display: flex;
     }
   }
 }
@@ -333,6 +329,18 @@
     flex-direction: column;
     align-items: center;
     justify-content: space-between;
+
+    &.token-budget-body {
+      flex-direction: row;
+      justify-content: flex-end;
+      gap: 30px;
+
+      .token-budget-input {
+        .token-budget-value {
+          margin: 0 10px;
+        }
+      }
+    }
   }
 }
 

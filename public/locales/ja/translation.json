@@ -211,10 +211,11 @@
     "hide": "非表示",
     "display": "表示",
     "copy": "コピー",
+    "streamingModeTooltip": "ストリーミングモードは、モデルが応答するときに、一度にすべて表示するのではなく、徐々にコンテンツを表示するモードです。ボタンをオフにすると、非ストリーミングモードになり、モデルがコンテンツを完全に生成するのを待ってから一度に表示するため、モデルでのツール呼び出しとの互換性の問題を回避できます。",
+    "streamingModeDescription": "モデルの応答表示方法を制御します",
+    "streamingModeAlert": "注意：一部のモデルは、ストリーミングモードまたは非ストリーミングモードでのみツール呼び出しをサポートしています。ニーズを十分に理解した上で、このパラメータを調整することをお勧めします。",
+    "parameterVerify": "パラメータ設定検証",
     "modelSetting": "{{name}} モデル設定",
-    "streamingModeTooltip": "Streaming Modeは、AIの応答をリアルタイムで段階的に出力するモードです。ボタンをオフにすると、Non-Streaming Modeとなり、モデルが完全に生成されるまで待ってから応答を表示します。これにより、モデルでのツール呼び出しの互換性の問題を回避できます。",
-    "streamingModeDescription": "モデルの応答表示方法を制御",
-    "streamingModeAlert": "注意：一部のモデルはStreaming ModeまたはNon-Streaming Modeでのみツール呼び出しに対応しています。このパラメータを調整する前に、要件を十分に理解することをお勧めします。",
     "customInput": "カスタムパラメータ",
     "addCustomParameter": "カスタムパラメータを追加",
     "parameterName": "パラメータ名",
@@ -237,7 +238,7 @@
     "verifyErrorMsg": "検証過程中モデルがツールを使用しなかった可能性があります。モデルがツールをサポートしていないか、ツールがトリガーされていないため、ツールのサポート能力を確認できません。",
     "verifyStatusSuccess": "モデル検証成功，原生方式でツールを有効化",
     "verifyStatusSuccessInPrompt": "モデル検証成功，MCP Prompts方式でツールを有効化",
-    "verifyUnexpectedFailed": "モデル検証失敗，発生未知錯誤，請稍後再試"
+    "verifyUnexpectedFailed": "モデル検証失敗"
   },
   "system": {
     "title": "システム設定",

@@ -226,7 +226,7 @@ const AdvancedSettingPopup = ({ modelName, onClose, onSave }: AdvancedSettingPop
       const _detail = detail.find((item) => item.name == modelName)
       if (_detail) {
         setVerifyStatus(
-          _detail.status === "success"
+          (_detail.status === "success" || _detail.status === "unSupportTool")
             ? t("setup.verifySuccess")
             : _detail.status === "error"
             ? t("setup.verifyError")
@@ -275,12 +275,12 @@ const AdvancedSettingPopup = ({ modelName, onClose, onSave }: AdvancedSettingPop
       onCancel={handleClose}
       onClickOutside={handleClose}
       noBorder={false}
-      disabled={parameters.some((p) => p.isDuplicate)}
+      disabled={parameters.some((p) => p.isDuplicate) || !isVerifySuccess}
       footerHint={<FooterHint onVerifyConfirm={onVerifyConfirm} isVerifying={isVerifying} />}
     >
       <div className="models-key-popup parameters">
         <div className="models-key-form-group">
-          <div className="header">{t("models.modelSetting", { name: modelName })}</div>
+          <div className="header">{t("models.modelSetting")}</div>
 
           <div className="body" ref={bodyRef}>
             {/* Streaming Mode Area */}
@@ -548,7 +548,7 @@ const FooterHint = ({
         }}
         disabled={isVerifying.current ?? false}
       >
-        {t("models.verify")}
+        {t("models.parameterVerify")}
       </button>
     </div>
   )

@@ -6,6 +6,7 @@ export interface Parameter {
   value: string | number | boolean
   isSpecific?: boolean // if true, the parameter is a special parameter, to avoid removing it when duplicate
   isDuplicate?: boolean // if true, the parameter is a duplicate parameter
+  isTokenBudget?: boolean // if true, allow setting token budget parameter
 }
 
 /**
@@ -34,6 +35,7 @@ export function initializeAdvancedParameters(
             type: 'int',
             value: thinking.budget_tokens,
             isSpecific: true,
+            isTokenBudget: thinking.isTokenBudget,
           })
         }
         return
@@ -69,13 +71,13 @@ export function initializeAdvancedParameters(
   }
 
   // Add default reasoning_effort for o3-mini if needed
-  if (
-    modelName.includes('o3-mini') &&
-    provider === 'openai' &&
-    !modelParams.some((p) => p.name === 'reasoning_effort')
-  ) {
-    modelParams.push({ name: 'reasoning_effort', type: 'string', value: 'low', isSpecific: true })
-  }
+  // if (
+  //   modelName.includes('o3-mini') &&
+  //   provider === 'openai' &&
+  //   !modelParams.some((p) => p.name === 'reasoning_effort')
+  // ) {
+  //   modelParams.push({ name: 'reasoning_effort', type: 'string', value: 'low', isSpecific: true })
+  // }
 
   // Add default budget_tokens for claude-3-7 if needed
   if (
@@ -83,7 +85,7 @@ export function initializeAdvancedParameters(
     (provider === 'anthropic' || provider === 'bedrock') &&
     !modelParams.some((p) => p.name === 'budget_tokens')
   ) {
-    modelParams.push({ name: 'budget_tokens', type: 'int', value: 1024, isSpecific: true })
+    modelParams.push({ name: 'budget_tokens', type: 'int', value: 1024, isSpecific: true, isTokenBudget: false })
   }
 
   // Ensure disable_streaming parameter exists
@@ -133,12 +135,13 @@ export function formatParametersForSave(parameters: Parameter[]): Record<string,
     }
 
     // Special handling for budget_tokens -> thinking object
-    if (param.name === 'budget_tokens') {
+    if (param.name === 'budget_tokens' && param.isTokenBudget) {
       name = 'thinking'
       const value_ = value as number
       value = {
         type: 'enabled',
         budget_tokens: value_,
+        isTokenBudget: true,
       } as any
     }
 

@@ -10,7 +10,7 @@ import Tooltip from "./Tooltip"
 import { closeAllOverlaysAtom, openOverlayAtom, OverlayType } from "../atoms/layerState"
 import { useSidebarLayer } from "../hooks/useLayer"
 import useHotkeyEvent from "../hooks/useHotkeyEvent"
-import { currentChatIdAtom } from "../atoms/chatState"
+import { currentChatIdAtom, isChatStreamingAtom } from "../atoms/chatState"
 import PopupConfirm from "./PopupConfirm"
 import { newVersionAtom } from "../atoms/globalState"
 import UpdateButton from "./UpdateButton"
@@ -62,6 +62,7 @@ const HistorySidebar = ({ onNewChat }: Props) => {
   const [isVisible, setVisible] = useSidebarLayer(sidebarVisibleAtom)
   const [currentChatId, setCurrentChatId] = useAtom(currentChatIdAtom)
   const containerRef = useRef<HTMLDivElement>(null)
+  const isChatStreaming = useAtomValue(isChatStreamingAtom)
 
   const openOverlay = useCallback((overlay: OverlayType) => {
     _openOverlay(overlay)
@@ -87,6 +88,10 @@ const HistorySidebar = ({ onNewChat }: Props) => {
   const handleDelete = async () => {
     if (!deletingChatId)
       return
+
+    if (isChatStreaming) {
+      return
+    }
 
     try {
       const response = await fetch(`/api/chat/${deletingChatId}`, {
@@ -182,15 +187,17 @@ const HistorySidebar = ({ onNewChat }: Props) => {
                   {new Date(chat.createdAt).toLocaleString()}
                 </div>
               </div>
-              <button
-                className="delete-btn"
-                onClick={(e) => confirmDelete(e, chat.id)}
-                title={t("chat.deleteChat")}
-              >
-                <svg width="16" height="16" viewBox="0 0 24 24">
-                  <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>
-                </svg>
-              </button>
+              {!isChatStreaming && (
+                <button
+                  className="delete-btn"
+                  onClick={(e) => confirmDelete(e, chat.id)}
+                  title={t("chat.deleteChat")}
+                >
+                  <svg width="16" height="16" viewBox="0 0 24 24">
+                    <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>
+                  </svg>
+                </button>
+              )}
             </div>
           ))}
         </div>
