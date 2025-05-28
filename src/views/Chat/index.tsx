@@ -184,10 +184,24 @@ const ChatWindow = () => {
 
   useEffect(() => {
     if (chatId && chatId !== currentChatId.current) {
+      if(currentChatId.current && isChatStreaming) {
+        abortChat(currentChatId.current)
+      }
       loadChat(chatId)
       setCurrentChatId(chatId)
     }
   }, [chatId, loadChat, setCurrentChatId])
+
+
+  const abortChat = async (_chatId: string) => {
+    try {
+      await fetch(`/api/chat/${_chatId}/abort`, {
+        method: "POST",
+      })
+    } catch (error) {
+      console.error("Failed abort:", error)
+    }
+  }
 
   const scrollToBottom = useCallback(() => {
     if (chatContainerRef.current) {
