@@ -138,7 +138,7 @@
   },
   "modelConfig": {
     "title": "模型設定",
-    "customInstructions": "系統提示詞",
+    "customInstructions": "自訂提示詞",
     "customInstructionsPlaceholder": "輸入自訂的系統提示詞...",
     "customInstructionsDescription": "這些提示詞會添加到每次請求的系統提示末端",
     "saveInstructions": "儲存指令",
@@ -257,7 +257,9 @@
     "minimalToTray": "最小化至工具列",
     "minimalToTrayDescription": "關閉視窗時不會將程式關閉，而是縮放成最小化icon至工具列",
     "defaultSystemPrompt": "Dive Default System Prompt",
-    "defaultSystemPromptDescription": "Dive Default System Prompt 用來作為 chat 預設的系統提示詞。跟 LLM 說明對於 Dive chat 的內容支援 KaTeX / Markdown / Mermaid 等輸出的提示。這個功能會花費一定的 Token 數，某些情況下會使得回應相對沒有系統提示詞的 Prompt 來的更慢。另一方面，若是關閉 LLM 回應的品質可能下降"
+    "defaultSystemPromptDescription": "Dive Default System Prompt 用來作為 chat 官方提供的預設系統提示詞，可讓 LLM 對於 Dive chat 的內容支援 KaTeX、Markdown、Mermaid 等輸出的提示。啟用此功能會花費較多的 Token 數，可能讓回應速度稍慢，但能確保回應品質；若關閉則回應可能較快，但品質可能下降。",
+    "customPromptDescription": "若您需要額外自訂指令，請點選下方「自訂提示詞」功能前往設定。",
+    "customPromptButton": "自訂提示詞"
   },
   "toast": {
     "copiedToClipboard": "已複製到剪貼簿"

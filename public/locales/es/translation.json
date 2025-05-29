@@ -136,7 +136,7 @@
   },
   "modelConfig": {
     "title": "Configuración del Modelo",
-    "customInstructions": "Instrucciones del Sistema",
+    "customInstructions": "Instrucciones personalizadas",
     "customInstructionsPlaceholder": "Ingrese instrucciones personalizadas...",
     "customInstructionsDescription": "Estas instrucciones se agregarán al final de cada solicitud de sistema",
     "saveInstructions": "Guardar Instrucciones",
@@ -255,7 +255,9 @@
     "minimalToTray": "Minimizar a la barra de tareas",
     "minimalToTrayDescription": "Cuando se cierra la ventana, el programa no se cerrará, sino que se minimizará a un icono",
     "defaultSystemPrompt": "Dive Default System Prompt",
-    "defaultSystemPromptDescription": "Dive Default System Prompt se utiliza como el sistema predeterminado de chat. Le dice al LLM que Dive chat soporta KaTeX / Markdown / Mermaid, etc. Este uso consume ciertos tokens, lo que puede hacer que la respuesta sea más lenta que la de un prompt sin sistema predeterminado. Por otro lado, si se desactiva, la calidad de la respuesta del LLM puede disminuir"
+    "defaultSystemPromptDescription": "El Prompt del Sistema Predeterminado de Dive se utiliza como el prompt del sistema predeterminado oficial para el chat, permitiendo que el LLM soporte KaTeX, Markdown, Mermaid y otros formatos de salida en el contenido del chat de Dive. Habilitar esta función consumirá más tokens, lo que puede hacer que las respuestas sean un poco más lentas, pero garantiza la calidad de las respuestas; si se desactiva, las respuestas pueden ser más rápidas pero la calidad puede disminuir.",
+    "customPromptDescription": "Si necesita instrucciones adicionales, haga clic en la función \"Prompt personalizado\" a continuación para configurarlo.",
+    "customPromptButton": "Prompt personalizado"
   },
   "toast": {
     "copiedToClipboard": "Copiado al portapapeles"

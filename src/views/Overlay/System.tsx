@@ -1,13 +1,14 @@
 import { useAtom, useAtomValue } from "jotai"
 import { useTranslation } from "react-i18next"
 import Select from "../../components/Select"
-import { closeOverlayAtom } from "../../atoms/layerState"
+import { closeOverlayAtom, openOverlayAtom } from "../../atoms/layerState"
 import React, { useState, useEffect } from "react"
 
 import ThemeSwitch from "../../components/ThemeSwitch"
 import Switch from "../../components/Switch"
 import { getAutoDownload, setAutoDownload as _setAutoDownload } from "../../updater"
 import { disableDiveSystemPromptAtom, updateDisableDiveSystemPromptAtom } from "../../atoms/configState"
+import { commonFlashAtom } from "../../atoms/globalState"
 
 const System = () => {
   const { t, i18n } = useTranslation()
@@ -18,6 +19,8 @@ const System = () => {
   const [minimalToTray, setMinimalToTray] = useState(false)
   const disableDiveSystemPrompt = useAtomValue(disableDiveSystemPromptAtom)
   const [, updateDisableDiveSystemPrompt] = useAtom(updateDisableDiveSystemPromptAtom)
+  const [, openOverlay] = useAtom(openOverlayAtom)
+  const [, setCommonFlash] = useAtom(commonFlashAtom)
 
   useEffect(() => {
     window.ipcRenderer.getAutoLaunch().then(setAutoLaunch)
@@ -77,6 +80,11 @@ const System = () => {
 
   const handleDefaultSystemPromptChange = async (value: boolean) => {
     await updateDisableDiveSystemPrompt({ value })
+  }
+
+  const openPromtSetting = () => {
+    openOverlay("Model")
+    setCommonFlash("openPromtSetting")
   }
 
   return (
@@ -182,6 +190,10 @@ const System = () => {
               </div>
             </div>
             <span className="system-list-description">{t("system.defaultSystemPromptDescription")}</span>
+            <div className="custom-prompt-container">
+              <span className="custom-prompt-description">{t("system.customPromptDescription")}</span>
+              <button className="custom-prompt-button" onClick={openPromtSetting}>{t("system.customPromptButton")}</button>
+            </div>
           </div>
         </div>
       </div>
