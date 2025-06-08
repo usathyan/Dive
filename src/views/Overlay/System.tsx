@@ -36,6 +36,7 @@ const System = () => {
     { label: "English", value: "en" },
     { label: "Español", value: "es" },
     { label: "日本語", value: "ja" },
+    { label: "한국어", value: "ko" },
   ]
 
   useEffect(() => {

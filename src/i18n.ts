@@ -12,7 +12,7 @@ i18n
       loadPath: window.ipcRenderer && await window.ipcRenderer.getResourcesPath("locales/{{lng}}/{{ns}}.json"),
     },
     fallbackLng: "en",
-    supportedLngs: ["zh-TW", "zh-CN", "en", "es", "ja"],
+    supportedLngs: ["zh-TW", "zh-CN", "en", "es", "ja", "ko"],
     interpolation: {
       escapeValue: false
     }
