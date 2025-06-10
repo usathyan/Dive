@@ -94,7 +94,7 @@ function App() {
   }, [])
 
   useEffect(() => {
-    const langCode = i18n.language?.split("-")[0] || "en"
+    const langCode = i18n.language || "en"
     document.documentElement.lang = langCode
   }, [i18n.language])
 
