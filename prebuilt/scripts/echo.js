@@ -84,9 +84,7 @@ function setupServerHandlers(server) {
         // If delay is specified, wait for the specified time
         // This simulates a long-running operation
         if (delayMs > 0) {
-          console.log(`Delaying response for ${delayMs}ms...`);
           await delay(delayMs);
-          console.log("Delay completed, sending response");
         }
 
         const response = `[MCP-ECHO] Received message: ${message}`;
@@ -122,10 +120,6 @@ async function runServer() {
   // Get default delay time if specified
   const delayArg = args.find((arg) => arg.startsWith("--delay="));
   const defaultDelay = delayArg ? parseInt(delayArg.split("=")[1], 10) : 0;
-
-  if (defaultDelay > 0) {
-    console.log(`Default delay set to ${defaultDelay}ms`);
-  }
 
   if (useSSE) {
     // Set up Express server for SSE
@@ -175,15 +169,11 @@ async function runServer() {
         // This allows us to retrieve it later when handling POST requests
         activeConnections.set(sessionId, { transport, server: serverInstance });
 
-        console.log(`New SSE connection established with session ID: ${sessionId}`);
-        console.log(`Active connections: ${activeConnections.size}`);
-
         // Send the session ID to the client
         // This allows the client to include this ID in subsequent POST requests
         // The format "data: {...}\n\n" is required for SSE events
         res.write(`data: ${JSON.stringify({ type: "connection", sessionId })}\n\n`);
       } catch (error) {
-        console.error("Error connecting SSE transport:", error);
         res.end();
         return;
       }
@@ -194,27 +184,20 @@ async function runServer() {
       req.on("close", () => {
         try {
           const sessionId = transport.sessionId;
-          console.log(`Client disconnected from SSE, session ID: ${sessionId}`);
 
           if (activeConnections.has(sessionId)) {
             const connection = activeConnections.get(sessionId);
             // Close the transport to free up resources
-            connection.transport.close().catch((err) => {
-              console.error("Error closing SSE transport:", err);
-            });
+            connection.transport.close().catch(() => {});
             // Remove the connection from our Map
             activeConnections.delete(sessionId);
-            console.log(`Active connections: ${activeConnections.size}`);
           }
-        } catch (error) {
-          console.error("Error during cleanup:", error);
-        }
+        } catch (error) {}
       });
     });
 
     // Handle POST requests
     app.post("/messages", express.json(), async (req, res) => {
-      console.error(`[MCP-Server][Echo] Received - ${JSON.stringify(req.body)}`);
       // Get session ID from request headers
       // Clients can specify which connection to use by including the X-Session-ID header
       const sessionId = req.headers["x-session-id"];
@@ -255,7 +238,6 @@ async function runServer() {
             req.body
           );
         } catch (error) {
-          console.error("Error handling POST message:", error);
           if (!res.headersSent) {
             res.status(500).json({ error: "Internal server error" });
           }
@@ -279,7 +261,6 @@ async function runServer() {
           req.body
         );
       } catch (error) {
-        console.error("Error handling POST message:", error);
         if (!res.headersSent) {
           res.status(500).json({ error: "Internal server error" });
         }
@@ -287,14 +268,7 @@ async function runServer() {
     });
 
     // Start the Express server
-    app.listen(PORT, () => {
-      console.log(`MCP Echo Server with SSE is running on http://localhost:${PORT}/sse`);
-      console.log(`POST messages to http://localhost:${PORT}/messages`);
-      console.log(`You can specify a session ID with the X-Session-ID header`);
-      if (defaultDelay > 0) {
-        console.log(`Default delay for all responses: ${defaultDelay}ms`);
-      }
-    });
+    app.listen(PORT, () => {});
   }
 
   // Use standard stdio transport
@@ -302,13 +276,8 @@ async function runServer() {
   setupServerHandlers(mainServer);
   const transport = new StdioServerTransport();
   await mainServer.connect(transport);
-  console.log("MCP Echo Server is running with stdio transport");
-  if (defaultDelay > 0) {
-    console.log(`Default delay for all responses: ${defaultDelay}ms`);
-  }
 }
 
 runServer().catch((error) => {
-  console.error("Fatal error running server:", error);
   process.exit(1);
 });
