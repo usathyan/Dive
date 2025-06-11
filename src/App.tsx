@@ -8,6 +8,7 @@ import { handleWindowResizeAtom } from "./atoms/sidebarState"
 import { systemThemeAtom } from "./atoms/themeState"
 import Updater from "./updater"
 import { NewVerifyStatus, OldVerifyStatus } from "./atoms/configState"
+import { useTranslation } from "react-i18next"
 
 function App() {
   const [loading, setLoading] = useState(true)
@@ -16,6 +17,7 @@ function App() {
   const setSystemTheme = useSetAtom(systemThemeAtom)
   const handleWindowResize = useSetAtom(handleWindowResizeAtom)
   const setAllVerifiedList = useSetAtom(modelVerifyListAtom)
+  const { i18n } = useTranslation()
 
   // init app
   useEffect(() => {
@@ -90,6 +92,11 @@ function App() {
     }
     setAllVerifiedList(result)
   }, [])
+
+  useEffect(() => {
+    const langCode = i18n.language || "en"
+    document.documentElement.lang = langCode
+  }, [i18n.language])
 
   if (loading) {
     return <></>
