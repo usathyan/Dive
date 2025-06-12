@@ -786,7 +786,7 @@ const FieldType = {
   },
   "transport": {
     type: "select",
-    options: ["stdio", "sse"] as const,
+    options: ["stdio", "sse", "streamable"] as const,
     error: "tools.jsonFormatError9"
   }
 }
