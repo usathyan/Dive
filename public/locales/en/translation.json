@@ -279,5 +279,11 @@
     "downloading": "Downloading",
     "readyToInstall": "Ready to Install",
     "clickToInstall": "Click to Install Update"
+  },
+  "InstallHostDependencies": {
+    "title": "Downloading Host Dependencies...",
+    "retry": "Retry",
+    "stop": "Stop",
+    "tip": "If an error occurs during download, please close this window first and restart the application to re-download."
   }
 }

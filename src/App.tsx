@@ -1,9 +1,9 @@
 import { RouterProvider } from "react-router-dom"
 import { router } from "./router"
 import { useSetAtom } from "jotai"
-import { loadConfigAtom, modelVerifyListAtom } from "./atoms/configState"
-import { useEffect, useState } from "react"
-import { handleGlobalHotkey, loadHotkeyMapAtom } from "./atoms/hotkeyState"
+import { modelVerifyListAtom } from "./atoms/configState"
+import { useEffect } from "react"
+import { handleGlobalHotkey } from "./atoms/hotkeyState"
 import { handleWindowResizeAtom } from "./atoms/sidebarState"
 import { systemThemeAtom } from "./atoms/themeState"
 import Updater from "./updater"
@@ -11,9 +11,6 @@ import { NewVerifyStatus, OldVerifyStatus } from "./atoms/configState"
 import { useTranslation } from "react-i18next"
 
 function App() {
-  const [loading, setLoading] = useState(true)
-  const loadConfig = useSetAtom(loadConfigAtom)
-  const loadHotkeyMap = useSetAtom(loadHotkeyMapAtom)
   const setSystemTheme = useSetAtom(systemThemeAtom)
   const handleWindowResize = useSetAtom(handleWindowResizeAtom)
   const setAllVerifiedList = useSetAtom(modelVerifyListAtom)
@@ -21,12 +18,7 @@ function App() {
 
   // init app
   useEffect(() => {
-    loadHotkeyMap()
-    loadConfig().finally(() => {
-      setLoading(false)
-      window.postMessage({ payload: "removeLoading" }, "*")
-    })
-
+    window.postMessage({ payload: "removeLoading" }, "*")
     window.addEventListener("resize", handleWindowResize)
     window.addEventListener("keydown", handleGlobalHotkey)
     return () => {
@@ -47,7 +39,6 @@ function App() {
       mediaQuery.removeEventListener("change", handleChange)
     }
   }, [])
-
 
   // convert old model verify status to new model verify status
   //TODO: remove this after all verified list is converted in future version
@@ -97,10 +88,6 @@ function App() {
     const langCode = i18n.language || "en"
     document.documentElement.lang = langCode
   }, [i18n.language])
-
-  if (loading) {
-    return <></>
-  }
 
   return (
     <>

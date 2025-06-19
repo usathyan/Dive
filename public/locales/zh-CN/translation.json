@@ -279,5 +279,11 @@
     "downloading": "下载中",
     "readyToInstall": "下载完成",
     "clickToInstall": "点击安装更新"
+  },
+  "InstallHostDependencies": {
+    "title": "正在下载模组套件...",
+    "retry": "重新尝试",
+    "stop": "停止",
+    "tip": "下载发生错误时，请先关闭此窗口，重新启动应用程序即可重新下载。"
   }
 }

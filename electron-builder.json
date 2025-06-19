@@ -5,6 +5,7 @@
   "copyright": "Copyright © 2025 Open Agent Platform",
   "asar": true,
   "artifactName": "${productName}-${version}-${os}-${arch}.${ext}",
+  "electronLanguages": ["en", "es", "zh-TW", "zh-CN", "ja", "ko"],
   "publish": [
     {
       "provider": "github",
@@ -105,6 +106,23 @@
         "from": "bin/python/win-x64/",
         "to": "python/",
         "filter": ["**/*"]
+      },
+      {
+        "from": "mcp-host",
+        "to": "mcp-host",
+        "filter": [
+          "**/*",
+          "!.venv/**/*",
+          "!logs/**/*",
+          "!tests/**/*",
+          "!.github/**/*",
+          "!.vscode/**/*",
+          "!*.env",
+          "!command_alias.json",
+          "!dive_httpd.json",
+          "!mcp_config.json",
+          "!model_config.json"
+        ]
       }
     ]
   },
@@ -122,14 +140,29 @@
         ]
       },
       {
-        "from": "bin/node/linux-x64/",
-        "to": "node/",
-        "filter": ["**/*"]
-      },
-      {
         "from": "bin/python/linux-x64",
         "to": "python",
-        "filter": ["**/*"]
+        "filter": [
+          "**/*",
+          "!lib/libpython3.12.so"
+        ]
+      },
+      {
+        "from": "mcp-host",
+        "to": "mcp-host",
+        "filter": [
+          "**/*",
+          "!.venv/**/*",
+          "!logs/**/*",
+          "!tests/**/*",
+          "!.github/**/*",
+          "!.vscode/**/*",
+          "!*.env",
+          "!command_alias.json",
+          "!dive_httpd.json",
+          "!mcp_config.json",
+          "!model_config.json"
+        ]
       }
     ]
   },

@@ -2,8 +2,9 @@ import { ipcMain, BrowserWindow } from "electron"
 import fse from "fs-extra"
 import path from "node:path"
 import { scriptsDir } from "../constant"
+import { getInstallHostDependenciesLog } from "../service"
 
-export function ipcUtilHandler(win: BrowserWindow) {
+export function ipcUtilHandler(_win: BrowserWindow) {
   ipcMain.handle("util:fillPathToConfig", async (_, _config: string) => {
     try {
       const { mcpServers: servers } = JSON.parse(_config) as {mcpServers: Record<string, {enabled: boolean, command?: string, args?: string[]}>}
@@ -40,8 +41,12 @@ export function ipcUtilHandler(win: BrowserWindow) {
       }, servers)
 
       return JSON.stringify({ mcpServers })
-    } catch (error) {
+    } catch (_error) {
       return _config
     }
+  })
+
+  ipcMain.handle("util:getInstallHostDependenciesLog", async () => {
+    return getInstallHostDependenciesLog()
   })
 }

@@ -1,6 +1,6 @@
 import { app, BrowserWindow } from "electron"
 import path from "node:path"
-import fse from "fs-extra"
+import fse, { mkdirp } from "fs-extra"
 import { compareFilesAndReplace, npmInstall } from "./util.js"
 import {
   scriptsDir,
@@ -16,9 +16,11 @@ import {
   VITE_DEV_SERVER_URL,
 } from "./constant.js"
 import spawn from "cross-spawn"
-import { ChildProcess, SpawnOptions } from "node:child_process"
+import { ChildProcess, SpawnOptions, StdioOptions } from "node:child_process"
 import { EventEmitter } from "node:events"
 import { Writable } from "node:stream"
+import crypto from "node:crypto"
+import { hostCache } from "./store.js"
 
 const baseConfigDir = app.isPackaged ? configDir : path.join(__dirname, "..", "..", ".config")
 
@@ -28,6 +30,11 @@ export const serviceStatus = {
 
 let hostProcess: ChildProcess | null = null
 const ipcEventEmitter = new EventEmitter()
+
+const spawned: Set<ChildProcess> = new Set()
+
+let installHostDependenciesLog: string[] = []
+export const getInstallHostDependenciesLog = () => installHostDependenciesLog
 
 async function initApp() {
   // create dirs
@@ -78,12 +85,21 @@ export async function initMCPClient(win: BrowserWindow) {
   }
   ipcEventEmitter.on("ipc", handler)
 
-  await initApp()
-  await startHostService()
+  await initApp().catch(console.error)
+  await installHostDependencies(win).catch(console.error)
+  await startHostService().catch(console.error)
 }
 
 export async function cleanup() {
   console.log("cleanup")
+
+  for (const child of spawned) {
+    if (!child.killed) {
+      child.kill("SIGTERM")
+    }
+  }
+  spawned.clear()
+
   if (hostProcess) {
     console.log("killing host process")
     hostProcess.kill("SIGTERM")
@@ -176,13 +192,17 @@ async function startHostService() {
   const resourcePath = app.isPackaged ? process.resourcesPath : cwd
   const pyBinPath = path.join(resourcePath, "python", "bin")
   const pyPath = isWindows ? path.join(resourcePath, "python", "python.exe") : path.join(pyBinPath, "python3")
+  const hostDepsPath = path.join(hostCacheDir, "deps")
+  const hostSrcPath = path.join(resourcePath, "mcp-host")
 
   const httpdExec = app.isPackaged ? pyPath : "uv"
   const httpdParam = app.isPackaged
+    ? process.platform === "darwin"
       ? ["-I", path.join(pyBinPath, "dive_httpd")]
-      : ["run", "dive_httpd"]
+      : ["-I", "-c", `import sys; sys.path.extend(['${hostSrcPath.replace(/\\/g, "\\\\")}', '${hostDepsPath.replace(/\\/g, "\\\\")}']); from dive_mcp_host.httpd._main import main; main()`]
+    : ["run", "dive_httpd"]
 
-  const httpdEnv = {
+  const httpdEnv: any = {
     ...process.env,
     DIVE_CONFIG_DIR: baseConfigDir,
     RESOURCE_DIR: hostCacheDir,
@@ -283,5 +303,94 @@ async function startHostService() {
 
   hostProcess!.on("spawn", () => {
     console.log("host process spawned")
+  })
+}
+
+async function installHostDependencies(win: BrowserWindow) {
+  const done = () => {
+    win.webContents.send("install-host-dependencies-log", "finish")
+    installHostDependenciesLog = ["finish"]
+  }
+
+  if (!app.isPackaged || process.platform === "darwin") {
+    return done()
+  }
+
+  console.log("installing host dependencies")
+  const isWindows = process.platform === "win32"
+  const pyBinPath = path.join(process.resourcesPath, "python", "bin")
+  const pyPath = isWindows ? path.join(process.resourcesPath, "python", "python.exe") : path.join(pyBinPath, "python3")
+  const uvPath = path.join(process.resourcesPath, "uv", isWindows ? "uv.exe" : "uv")
+  const requirementsPath = path.join(hostCacheDir, "requirements.txt")
+  const hostPath = path.join(process.resourcesPath, "mcp-host")
+
+  if (!(await fse.pathExists(path.join(hostPath, "uv.lock")))) {
+    return done()
+  }
+
+  const depsTargetPath = path.join(hostCacheDir, "deps")
+  const lockHash = await createMD5(path.join(hostPath, "uv.lock"))
+  if (lockHash === hostCache.get("lockHash") && await fse.pathExists(depsTargetPath)) {
+    return done()
+  }
+
+  await mkdirp(depsTargetPath)
+
+  const pipParam = ["pip", "install", "-r", requirementsPath, "--target", depsTargetPath, "--python", pyPath]
+
+  return promiseSpawn(uvPath, ["export", "-o", requirementsPath], hostPath, "ignore")
+    .then(() => promiseSpawn(uvPath, pipParam, hostPath, "pipe", 60 * 1000 * 10, data => {
+      installHostDependenciesLog.push(data)
+      win.webContents.send("install-host-dependencies-log", data)
+      hostCache.set("lockHash", lockHash)
+    }))
+    .finally(done)
+}
+
+function promiseSpawn(command: string, args: any[], cwd: string, stdio: StdioOptions = "inherit", timeout = 60 * 1000 * 5, stdout?: (data: string) => void) {
+  return new Promise((resolve, reject) => {
+    // timeout after 5 minutes
+    setTimeout(reject, timeout)
+
+    const child = spawn(command, args, { cwd, stdio })
+    spawned.add(child)
+    child.on("close", () => {
+      spawned.delete(child)
+      resolve(1)
+    })
+
+    child.on("error", e => {
+      console.error(e)
+      spawned.delete(child)
+      reject(e)
+    })
+
+    child?.stdout?.pipe(new Writable({
+      write(chunk, encoding, callback) {
+        stdout?.(chunk.toString())
+        callback()
+      }
+    }))
+
+    child?.stderr?.pipe(new Writable({
+      write(chunk, encoding, callback) {
+        stdout?.(chunk.toString())
+        callback()
+      }
+    }))
+  })
+}
+
+function createMD5(filePath: string) {
+  return new Promise((res, _rej) => {
+    const hash = crypto.createHash("md5")
+
+    const rStream = fse.createReadStream(filePath)
+    rStream.on("data", (data) => {
+      hash.update(data)
+    })
+    rStream.on("end", () => {
+      res(hash.digest("hex"))
+    })
   })
 }

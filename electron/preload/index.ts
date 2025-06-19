@@ -20,10 +20,20 @@ contextBridge.exposeInMainWorld("ipcRenderer", {
   },
 
   // listener
-  onReceivePort: (callback: (port: number) => void) => ipcRenderer.on("app-port", (_event, value) => callback(value)),
+  onReceivePort: (callback: (port: number) => void) => {
+    const listener = (_event: Electron.IpcMainInvokeEvent, value: number) => callback(value)
+    ipcRenderer.on("app-port", listener as any)
+    return () => ipcRenderer.off("app-port", listener as any)
+  },
+  onReceiveInstallHostDependenciesLog: (callback: (data: string) => void) => {
+    const listener = (_event: Electron.IpcMainInvokeEvent, value: string) => callback(value)
+    ipcRenderer.on("install-host-dependencies-log", listener as any)
+    return () => ipcRenderer.off("install-host-dependencies-log", listener as any)
+  },
 
   // util
   fillPathToConfig: (config: string) => ipcRenderer.invoke("util:fillPathToConfig", config),
+  getInstallHostDependenciesLog: () => ipcRenderer.invoke("util:getInstallHostDependenciesLog"),
 
   // system
   openScriptsDir: () => ipcRenderer.invoke("system:openScriptsDir"),
