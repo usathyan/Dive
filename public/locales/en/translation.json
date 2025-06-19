@@ -136,7 +136,7 @@
   },
   "modelConfig": {
     "title": "Model Settings",
-    "customInstructions": "System Prompt",
+    "customInstructions": "Custom Prompt",
     "customInstructionsPlaceholder": "Enter custom system prompt...",
     "customInstructionsDescription": "These prompts will be added to the end of each request's system prompt",
     "saveInstructions": "Save Instructions",
@@ -255,7 +255,9 @@
     "minimalToTray": "Minimize to tray",
     "minimalToTrayDescription": "When closing the window, the program will minimize to the system tray instead of exiting completely",
     "defaultSystemPrompt": "Dive Default System Prompt",
-    "defaultSystemPromptDescription": "Dive Default System Prompt is used as the default system prompt for chat. It tells the LLM that Dive chat supports KaTeX / Markdown / Mermaid, etc. This feature consumes certain tokens, which may make the response slower than the prompt without a system prompt. On the other hand, if it is disabled, the quality of the LLM's response may decrease"
+    "defaultSystemPromptDescription": "Dive Default System Prompt serves as the official preset system prompt for chat, enabling LLM to support KaTeX, Markdown, Mermaid and other output formats in Dive chat. Enabling this feature will consume more tokens, which may slightly slow down response time but ensures response quality; disabling it may result in faster responses but potentially lower quality.",
+    "customPromptDescription": "If you need additional custom instructions, please click the \"Custom Prompt\" function below to set it up.",
+    "customPromptButton": "Custom Prompt"
   },
   "toast": {
     "copiedToClipboard": "Copied to clipboard"

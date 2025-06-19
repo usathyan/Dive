@@ -1,5 +1,5 @@
 import { useAtom, useAtomValue, useSetAtom } from "jotai"
-import React, { useState } from "react"
+import React, { useEffect, useState } from "react"
 import { useTranslation } from "react-i18next"
 import Switch from "../../../components/Switch"
 import { closeOverlayAtom } from "../../../atoms/layerState"
@@ -16,6 +16,7 @@ import Dropdown from "../../../components/DropDown"
 import Tooltip from "../../../components/Tooltip"
 import KeyPopupEdit from "./KeyPopupEdit"
 import { systemThemeAtom, userThemeAtom } from "../../../atoms/themeState"
+import { commonFlashAtom } from "../../../atoms/globalState"
 
 const PageLayout = () => {
   const { t } = useTranslation()
@@ -32,11 +33,18 @@ const PageLayout = () => {
   const systemTheme = useAtomValue(systemThemeAtom)
   const userTheme = useAtomValue(userThemeAtom)
   const [allVerifiedList, setAllVerifiedList] = useAtom(modelVerifyListAtom)
+  const [commonFlash, setCommonFlash] = useAtom(commonFlashAtom)
 
   const { multiModelConfigList, setMultiModelConfigList,
           currentIndex, setCurrentIndex, saveConfig
         } = useModelsProvider()
 
+  useEffect(() => {
+    if(commonFlash === "openPromtSetting") {
+      setShowParameterPopup(true)
+      setCommonFlash(null)
+    }
+  }, [])
 
   const onClose = () => {
     closeOverlay("Model")

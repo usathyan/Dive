@@ -136,7 +136,7 @@
   },
   "modelConfig": {
     "title": "モデル設定",
-    "customInstructions": "システムプロンプト",
+    "customInstructions": "カスタムプロンプト",
     "customInstructionsPlaceholder": "カスタムシステムプロンプトを入力...",
     "customInstructionsDescription": "これらのプロンプトは、各リクエストのシステムプロンプトの末尾に追加されます",
     "saveInstructions": "指示を保存",
@@ -255,7 +255,9 @@
     "minimalToTray": "最小化時にトレイに格納",
     "minimalToTrayDescription": "ウィンドウを閉じると、プログラムはシステムトレイに最小化される代わりに完全に終了しません",
     "defaultSystemPrompt": "Diveデフォルトシステムプロンプト",
-    "defaultSystemPromptDescription": "Diveデフォルトシステムプロンプトはチャットのデフォルトのシステムプロンプトとして使用されます。LLMにDiveチャットがKaTeX/Markdown/Mermaidなどの出力をサポートすることを説明します。この機能は一定のトークンを消費しますが、システムプロンプトなしのプロンプトよりも応答が遅くなる場合があります。一方、LLMの応答の品質が向上する可能性があります"
+    "defaultSystemPromptDescription": "Diveのデフォルトシステムプロンプトは、チャットで公式に提供されるデフォルトのシステムプロンプトとして使用され、LLMがDiveチャットの内容でKaTeX、Markdown、Mermaidなどの出力をサポートできるようにします。この機能を有効にすると、より多くのトークン数が消費され、応答速度が若干遅くなる可能性がありますが、応答品質が保証されます。無効にすると応答が速くなる可能性がありますが、品質が低下する可能性があります。",
+    "customPromptDescription": "カスタムシステムプロンプトが必要な場合は、下の「カスタムプロンプト」機能をクリックして設定してください。",
+    "customPromptButton": "カスタムプロンプト"
   },
   "toast": {
     "copiedToClipboard": "クリップボードにコピーしました"
