@@ -7,3 +7,10 @@ export const preferencesStore = new Store({
     minimalToTray: false,
   }
 })
+
+export const hostCache = new Store({
+  name: "host-cache",
+  defaults: {
+    lockHash: "",
+  }
+})

@@ -283,5 +283,11 @@
     "downloading": "下載中",
     "readyToInstall": "下載完成",
     "clickToInstall": "點擊安裝更新"
+  },
+  "InstallHostDependencies": {
+    "title": "正在下載模組套件...",
+    "retry": "重新嘗試",
+    "stop": "停止",
+    "tip": "下載發生錯誤時，請先關閉此視窗，重新啟動應用程式即可重新下載。"
   }
 }
