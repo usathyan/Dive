@@ -1,6 +1,6 @@
 // @ts-ignore
 import jsonlint from "jsonlint-mod"
-import React, { useEffect, useState, useRef, useMemo, useCallback } from "react"
+import React, { useEffect, useState, useRef, useMemo, useCallback, memo } from "react"
 import { useTranslation } from "react-i18next"
 import { useAtomValue, useSetAtom } from "jotai"
 import { showToastAtom } from "../../atoms/toastState"
@@ -26,6 +26,16 @@ interface ToolsCache {
     disabled: boolean
   }
 }
+
+const ToolLog = memo(({ toolLog }: { toolLog: string }) => {
+  return (
+    <div>
+      {toolLog.split("\n").map((line: string, index: number) => (
+        <div key={index}>{line}</div>
+      ))}
+    </div>
+  )
+})
 
 const Tools = () => {
   const { t } = useTranslation()
@@ -620,7 +630,7 @@ const Tools = () => {
                 </div>
                 <span className="tool-toggle">▼</span>
               </div>
-              <div className="tool-content">
+              <div className="tool-content" onClick={(e) => e.stopPropagation()}>
                 {tool.error ? (
                   <div className="sub-tool-error">
                     <svg width="18px" height="18px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -630,7 +640,9 @@ const Tools = () => {
                     </svg>
                     <div className="sub-tool-error-text">
                       <div className="sub-tool-error-text-title">Error Message</div>
-                      <div className="sub-tool-error-text-content">{tool.error}</div>
+                      <div className="sub-tool-error-text-content">
+                        <ToolLog toolLog={tool.error} />
+                      </div>
                     </div>
                   </div>
                 ) : (
