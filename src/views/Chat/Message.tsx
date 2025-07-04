@@ -74,7 +74,10 @@ const Message = ({ messageId, text, isSent, files, isError, isLoading, onRetry, 
   }, [messageId])
 
   const onCopy = (messageId: string, text: string) => {
-    copyToClipboard(text)
+    const _text = text.replace(/<tool-call[\s\S]*?<\/tool-call>/g, "")
+                      .replace(/<thinking>/g, "")
+                      .replace(/<\/thinking>/g, "")
+    copyToClipboard(_text)
     clearTimeout(isCopied[messageId])
     const timeout = setTimeout(() => {
       setIsCopied(prev => {
