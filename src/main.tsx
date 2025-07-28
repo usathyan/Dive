@@ -34,6 +34,7 @@ window.onunhandledrejection = (event) => {
 }
 
 window.PLATFORM = await window.ipcRenderer.getPlatform() as any
+window.isDev = await window.ipcRenderer.isDev()
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>

@@ -2,8 +2,9 @@ import { app, ipcMain, BrowserWindow } from "electron"
 import config from "../../config"
 import { serviceStatus } from "../service"
 import path from "node:path"
+import { VITE_DEV_SERVER_URL } from "../constant"
 
-export function ipcEnvHandler(win: BrowserWindow) {
+export function ipcEnvHandler(_win: BrowserWindow) {
   ipcMain.handle("env:getHotkeyMap", async () => {
     return config.keymap
   })
@@ -18,6 +19,10 @@ export function ipcEnvHandler(win: BrowserWindow) {
 
   ipcMain.handle("env:getResourcesPath", async (_, p: string) => {
     return app.isPackaged ? path.join(process.resourcesPath, p) : p
+  })
+
+  ipcMain.handle("env:isDev", async () => {
+    return !!VITE_DEV_SERVER_URL
   })
 }
 

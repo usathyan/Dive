@@ -33,7 +33,7 @@ export function initProtocol() {
 
   protocol.handle("img", (req) => {
     // Remove 'img://'
-    const url = req.url.substring(6);
+    const url = req.url.substring(6)
     const assetPath = path.join(process.env.VITE_PUBLIC, "image", url)
     return net.fetch(`file://${assetPath}`)
   })

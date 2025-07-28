@@ -8,6 +8,15 @@ export const preferencesStore = new Store({
   }
 })
 
+export const oapStore = new Store({
+  name: "oap",
+  defaults: {
+    oap: {
+      token: "",
+    }
+  }
+})
+
 export const hostCache = new Store({
   name: "host-cache",
   defaults: {

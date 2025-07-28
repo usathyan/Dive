@@ -1,6 +1,9 @@
 @use "../_variables" as *;
 
 .outlet-container {
+  container-type: inline-size;
+  container-name: outlet-container;
+
   > .app-header {
     position: absolute;
     left: 0;
@@ -11,7 +14,7 @@
       width: calc(100% + $sidebar-width);
       left: -$sidebar-width;
 
-      @media (max-width: $breakpoint-m) {
+      @media (max-width: $breakpoint-l) {
         width: 100%;
         left: 0;
       }
@@ -93,6 +96,18 @@
 
     &:hover {
       color: var(--text);
+    }
+  }
+}
+
+@container outlet-container (max-width: #{$breakpoint-s}) {
+  .outlet-container {
+    .app-header {
+      .header-content {
+        .right-side {
+          display: none;
+        }
+      }
     }
   }
 }

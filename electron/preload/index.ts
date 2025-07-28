@@ -1,5 +1,8 @@
 import { ipcRenderer, contextBridge } from "electron"
 
+import type { OAPModelDescriptionParam, MCPServerSearchParam } from "../../types/oap"
+import type { ModelGroupSetting } from "../../types/model"
+
 // --------- Expose some API to the Renderer process ---------
 contextBridge.exposeInMainWorld("ipcRenderer", {
   on(...args: Parameters<typeof ipcRenderer.on>) {
@@ -33,6 +36,11 @@ contextBridge.exposeInMainWorld("ipcRenderer", {
 
   // util
   fillPathToConfig: (config: string) => ipcRenderer.invoke("util:fillPathToConfig", config),
+  download: (url: string) => ipcRenderer.invoke("util:download", { url }),
+  copyImage: (url: string) => ipcRenderer.invoke("util:copyimage", url),
+  getModelSettings: () => ipcRenderer.invoke("util:getModelSettings"),
+  setModelSettings: (settings: ModelGroupSetting) => ipcRenderer.invoke("util:setModelSettings", settings),
+  refreshConfig: () => ipcRenderer.invoke("util:refreshConfig"),
   getInstallHostDependenciesLog: () => ipcRenderer.invoke("util:getInstallHostDependenciesLog"),
 
   // system
@@ -60,6 +68,28 @@ contextBridge.exposeInMainWorld("ipcRenderer", {
   getPlatform: () => ipcRenderer.invoke("env:getPlatform"),
   port: () => ipcRenderer.invoke("env:port"),
   getResourcesPath: (p: string) => ipcRenderer.invoke("env:getResourcesPath", p),
+  isDev: () => ipcRenderer.invoke("env:isDev"),
+
+  // oap
+  oapLogin: (regist: boolean) => ipcRenderer.invoke("oap:login", regist),
+  oapLogout: () => ipcRenderer.invoke("oap:logout"),
+  oapGetToken: () => ipcRenderer.invoke("oap:getToken"),
+  oapSearchMCPServer: (params: MCPServerSearchParam) => ipcRenderer.invoke("oap:searchMCPServer", params),
+  oapModelDescription: (params?: OAPModelDescriptionParam) => ipcRenderer.invoke("oap:modelDescription", params),
+  oapApplyMCPServer: (ids: string[]) => ipcRenderer.invoke("oap:applyMCPServer", ids),
+  oapGetMCPServers: () => ipcRenderer.invoke("oap:getMCPServers"),
+  oapGetMe: () => ipcRenderer.invoke("oap:getMe"),
+  oapGetUsage: () => ipcRenderer.invoke("oap:getUsage"),
+  oapRegistEvent: (event: "login" | "logout", callback: () => void) => {
+    ipcRenderer.on(`oap:${event}`, callback)
+    return () => ipcRenderer.off(`oap:${event}`, callback)
+  },
+
+  // deep link
+  listenRefresh: (cb: () => void) => {
+    ipcRenderer.on("refresh", cb)
+    return () => ipcRenderer.off("refresh", cb)
+  },
 })
 
 // --------- Preload scripts loading ---------
@@ -97,7 +127,7 @@ const safeDOM = {
  * https://matejkustec.github.io/SpinThatShit
  */
 function useLoading() {
-  const className = `loaders-css__square-spin`
+  const className = "loaders-css__square-spin"
   const styleContent = `
 @keyframes square-spin {
   25% { transform: perspective(100px) rotateX(180deg) rotateY(0); }
@@ -147,6 +177,7 @@ function useLoading() {
 
 // ----------------------------------------------------------------------
 
+// eslint-disable-next-line react-hooks/rules-of-hooks
 const { appendLoading, removeLoading } = useLoading()
 domReady().then(appendLoading)
 

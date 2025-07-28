@@ -21,6 +21,7 @@
     "retry": "Retry",
     "noModelAlert": "No models available",
     "noModelBanner": "No models available, please select a model first",
+    "onLimit": "You have reached the {{plan}} plan usage limit, oap models cannot be used",
     "modelSettings": "Model Settings",
     "copy": "Copy",
     "copied": "Copied",
@@ -65,7 +66,10 @@
     "settings": "Model Settings",
     "update": "Update available",
     "models": "Model Settings",
-    "system": "System Settings"
+    "system": "System Settings",
+    "manageAndSettings": "Manage and Settings",
+    "OAPhub": "OAPhub",
+    "signOut": "Sign Out"
   },
   "tools": {
     "title": "Tools Management(MCP)",
@@ -98,6 +102,7 @@
     "toolMenu1": "Delete",
     "toolMenu2": "Edit",
     "toolMenu3": "Reload",
+    "toolMenu4": "View Details",
     "delete": "Delete",
     "jsonCopy": "Copy",
     "jsonCopied": "Copied",
@@ -132,7 +137,29 @@
     "transportPlaceholder": "Select Transport...",
     "toogleTool.alt": "Enable MCP Tools",
     "logTitle": "Execute UVX Command",
-    "logProcessing": "Processing..."
+    "logProcessing": "Processing...",
+    "no_tool_title": "No MCP Servers Available",
+    "no_oap_tool_message.all": "Please select an OAP MCP Server to use, or add a custom MCP Server.",
+    "no_oap_tool_message.oap": "Please select an OAP MCP Server to use.",
+    "no_oap_tool_message.local": "Please add a custom MCP Server.",
+    "no_tool_message": "Please add an MCP Server.",
+    "addOapMcp.alt": "Add & View OAP MCP Tools",
+    "oap.type.all": "All Tools",
+    "oap.type.base": "Base Only",
+    "oap.type.pro": "Pro Only",
+    "oap.sort": "Sort",
+    "oap.sort.popular": "Popular",
+    "oap.sort.new": "Latest",
+    "oap.tag": "Tags",
+    "oap.no_search_data_title": "No MCP Tools Found",
+    "oap.no_search_data": "No search results found. Please clear keywords or adjust filters.",
+    "oap.clear_filter": "Clear Filters",
+    "oap.hint": "Advanced MCP Servers require Pro version upgrade to install",
+    "tabAll": "All Tools",
+    "tabOap": "OAP Tools",
+    "tabLocal": "Custom Tools",
+    "oap.pro_only": "Pro plan users only",
+    "oapStoreLink.alt": "View Details"
   },
   "modelConfig": {
     "title": "Model Settings",
@@ -150,7 +177,13 @@
     "confirm": "Confirm",
     "cancel": "Cancel",
     "copy": "Copy",
-    "copySuccess": "Copied successfully"
+    "copySuccess": "Copied",
+    "zoomInImage": "Zoom In Image",
+    "copyImage": "Copy Image",
+    "copyImageUrl": "Copy Image URL",
+    "downloadImage": "Download Image",
+    "login": "Login",
+    "signup": "Sign Up"
   },
   "models": {
     "title": "Model Settings",
@@ -238,7 +271,8 @@
     "verifyErrorMsg": "The model did not use any tools during verification, which may be due to its lack of support or not being triggered. Therefore, it is not possible to confirm whether it supports tools.",
     "verifyStatusSuccess": "Model verification successful, enabled with the original configuration",
     "verifyStatusSuccessInPrompt": "Model verification successful, enabled with MCP Prompts",
-    "verifyUnexpectedFailed": "Model verification failed, an unknown error occurred, please try again later"
+    "verifyUnexpectedFailed": "Model verification failed, an unknown error occurred, please try again later",
+    "oapUsageLimit": "Usage limit reached, temporarily unavailable"
   },
   "system": {
     "title": "System Settings",
@@ -252,15 +286,38 @@
     "autoDownloadDescription": "Automatically download the new version of DIVE when the user restarts or clicks the \"Upgrade\" button on the menu page, the new version will be enabled",
     "autoLaunch": "Auto Launch",
     "autoLaunchDescription": "Automatically start Dive AI when the system starts",
-    "minimalToTray": "Minimize to tray",
-    "minimalToTrayDescription": "When closing the window, the program will minimize to the system tray instead of exiting completely",
+    "loginTitle": "OAP Login",
+    "loginDescription": "Use OpenAgentPlatform to login, no technical background is required to easily connect LLMs, AI Agents and MCP Servers — Experience smart solutions now!",
+    "personalInformationTitle": "Personal Information",
+    "minimalToTray": "Minimize",
+    "minimalToTrayDescription": "When the window is closed, the program will not be closed, but will be minimized to an icon",
     "defaultSystemPrompt": "Dive Default System Prompt",
-    "defaultSystemPromptDescription": "Dive Default System Prompt serves as the official preset system prompt for chat, enabling LLM to support KaTeX, Markdown, Mermaid and other output formats in Dive chat. Enabling this feature will consume more tokens, which may slightly slow down response time but ensures response quality; disabling it may result in faster responses but potentially lower quality.",
+    "defaultSystemPromptDescription": "Dive Default System Prompt is used as the default system prompt for chat. It tells the LLM that Dive chat supports KaTeX / Markdown / Mermaid, etc. This feature consumes certain tokens, which may make the response slower than the prompt without a system prompt. On the other hand, if it is disabled, the quality of the LLM's response may decrease",
+    "usageAnalytics": "Go to the Dashboard page in OAP Hub to view",
+    "usageAnalyticsTitle": "Usage Analytics",
+    "userEdit": "Go to the Account page in OAP Hub to make changes",
+    "planSectionTitle": "Current plan usage",
+    "subscriptionDate": "Subscription date",
+    "remainingUsage": "Remaining usage",
+    "usageWarningTitle": "Token usage limit reached.",
+    "usageWarning": "Pro plan quota resets next month, or purchase token packages for more usage. Basic Models and MCP still available.",
+    "usageWarningHint": "Basic models and basic MCP are excluded from usage limits.",
+    "BaseSubscriptionDate": "Never expire",
+    "BaseRemainingUsage": "No limit",
+    "BaseUsageWarning": "The Base plan includes access to Basic Models and Basic MCPs. To use other models and MCPs, please upgrade your plan from the <planLink>Plan Page</planLink>.",
     "customPromptDescription": "If you need additional custom instructions, please click the \"Custom Prompt\" function below to set it up.",
-    "customPromptButton": "Custom Prompt"
+    "customPromptButton": "Custom Prompt",
+    "tokenPackageTitle": "Token package usage",
+    "tokenPackageHint": "Token packages have no expiration date and will only be used after the monthly plan quota is exhausted.",
+    "tokenPackageRemainingUsage": "Remaining usage",
+    "tokenPackageWarningTitle": "Token quota used up.",
+    "tokenPackageWarning": "You can replenish more token usage at the OAPhub <planLink>Dashboard page</planLink>."
   },
   "toast": {
-    "copiedToClipboard": "Copied to clipboard"
+    "copiedToClipboard": "Copied to clipboard",
+    "copyFailed": "Copy failed",
+    "copiedImage": "Copied Image",
+    "downloadedImage": "Image Downloaded"
   },
   "keymap": {
     "title": "Keyboard Shortcuts",
@@ -281,6 +338,16 @@
     "downloading": "Downloading",
     "readyToInstall": "Ready to Install",
     "clickToInstall": "Click to Install Update"
+  },
+  "login": {
+    "subtitle": "Dive AI is an open-source desktop application that seamlessly integrates various large language models supporting function calls. Through its clean and intuitive interface, you can easily converse with cutting-edge AI, from daily Q&A to professional tasks, getting precise responses and making it your intelligent assistant.",
+    "title1": "Use Your Own Prepared Models",
+    "description1": "Suitable for advanced AI experts. If you already have your own configuration ready, whether it's local Ollama, llama.cpp, or remote Openrouter, OpenAI, Anthropic, or other AI companies' LLM APIs, please use this option.",
+    "button1": "Go to Model Settings",
+    "title2": "Use OpenAgentPlatform",
+    "description2": "OAP makes it easy for everyone to use the most advanced AI services, connecting LLMs, AI Agents, and MCP Servers without requiring technical expertise. Explore the unlimited possibilities of AI and experience intelligent solutions now.",
+    "button2": "Register for OAP",
+    "button3": "Login to OAP"
   },
   "InstallHostDependencies": {
     "title": "Downloading Host Dependencies...",

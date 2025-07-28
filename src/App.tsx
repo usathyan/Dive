@@ -1,20 +1,46 @@
 import { RouterProvider } from "react-router-dom"
 import { router } from "./router"
-import { useSetAtom } from "jotai"
-import { modelVerifyListAtom } from "./atoms/configState"
+import { useAtom, useAtomValue, useSetAtom } from "jotai"
+import { modelVerifyListAtom, removeOapConfigAtom, writeOapConfigAtom } from "./atoms/configState"
 import { useEffect } from "react"
 import { handleGlobalHotkey } from "./atoms/hotkeyState"
 import { handleWindowResizeAtom } from "./atoms/sidebarState"
 import { systemThemeAtom } from "./atoms/themeState"
 import Updater from "./updater"
 import { NewVerifyStatus, OldVerifyStatus } from "./atoms/configState"
+import { loadOapToolsAtom, oapUsageAtom, oapUserAtom, updateOAPUsageAtom } from "./atoms/oapState"
+import { queryGroup } from "./helper/model"
+import { modelGroupsAtom, modelSettingsAtom } from "./atoms/modelState"
+import { loadMcpConfigAtom, loadToolsAtom } from "./atoms/toolState"
 import { useTranslation } from "react-i18next"
 
 function App() {
   const setSystemTheme = useSetAtom(systemThemeAtom)
   const handleWindowResize = useSetAtom(handleWindowResizeAtom)
   const setAllVerifiedList = useSetAtom(modelVerifyListAtom)
+  const setOAPUser = useSetAtom(oapUserAtom)
+  const setOAPUsage = useSetAtom(oapUsageAtom)
+  const updateOAPUsage = useSetAtom(updateOAPUsageAtom)
+  const writeOapConfig = useSetAtom(writeOapConfigAtom)
+  const removeOapConfig = useSetAtom(removeOapConfigAtom)
+  const [modelSetting] = useAtom(modelSettingsAtom)
+  const modelGroups = useAtomValue(modelGroupsAtom)
+  const loadTools = useSetAtom(loadToolsAtom)
   const { i18n } = useTranslation()
+  const loadMcpConfig = useSetAtom(loadMcpConfigAtom)
+  const loadOapTools = useSetAtom(loadOapToolsAtom)
+
+  useEffect(() => {
+    console.log("set model setting", modelSetting)
+    if (modelSetting) {
+      window.ipcRenderer.setModelSettings(modelSetting)
+    }
+  }, [modelSetting])
+
+  useEffect(() => {
+    loadTools()
+    loadMcpConfig()
+  }, [])
 
   // init app
   useEffect(() => {
@@ -24,6 +50,53 @@ function App() {
     return () => {
       window.removeEventListener("resize", handleWindowResize)
       window.removeEventListener("keydown", handleGlobalHotkey)
+    }
+  }, [])
+
+  const updateOAPUser = async () => {
+    const token = await window.ipcRenderer.oapGetToken()
+    if (token) {
+      const user = await window.ipcRenderer.oapGetMe()
+      setOAPUser(user)
+      await updateOAPUsage()
+      console.log("oap user", user)
+    }
+  }
+
+  // handle oap event
+  useEffect(() => {
+    const unregistLogin = window.ipcRenderer.oapRegistEvent("login", () => {
+      console.info("oap login")
+      updateOAPUser()
+        .catch(console.error)
+        .then(removeOapConfig)
+        .catch(console.error)
+        .then(writeOapConfig)
+        .catch(console.error)
+    })
+
+    const unregistLogout = window.ipcRenderer.oapRegistEvent("logout", () => {
+      console.info("oap logout")
+      removeOapConfig()
+      setOAPUser(null)
+      setOAPUsage(null)
+    })
+
+    updateOAPUser().then(() => {
+      setOAPUser(user => {
+        if (user && queryGroup({ modelProvider: "oap" }, modelGroups).length === 0) {
+          writeOapConfig().catch(console.error)
+        }
+
+        return user
+      })
+    })
+    .then(loadOapTools)
+    .catch(console.error)
+
+    return () => {
+      unregistLogin()
+      unregistLogout()
     }
   }, [])
 
@@ -82,6 +155,24 @@ function App() {
       }
     }
     setAllVerifiedList(result)
+  }, [])
+
+  useEffect(() => {
+    const unlistenRefresh = window.ipcRenderer.listenRefresh(() => {
+      window.ipcRenderer.refreshConfig()
+        .then(loadTools)
+        .catch(console.error)
+
+      updateOAPUser()
+        .catch(console.error)
+        .then(removeOapConfig)
+        .then(writeOapConfig)
+        .catch(console.error)
+    })
+
+    return () => {
+      unlistenRefresh()
+    }
   }, [])
 
   useEffect(() => {

@@ -4,12 +4,13 @@ import {ReactNode, forwardRef} from "react";
 type Props = {
   children: ReactNode;
   content: string | ReactNode;
+  className?: string;
   maxWidth?: number;
   side?: "top" | "right" | "bottom" | "left";
 };
 
 /** info hint tooltip */
-const InfoTooltip = forwardRef<HTMLButtonElement | null, Props>(({children, content, side = "top", maxWidth, ...rest}, ref) => {
+const InfoTooltip = forwardRef<HTMLButtonElement | null, Props>(({children, content, side = "top", maxWidth, className, ...rest}, ref) => {
 
   return (
     <RadixTooltip.Provider delayDuration={300}>
@@ -24,7 +25,7 @@ const InfoTooltip = forwardRef<HTMLButtonElement | null, Props>(({children, cont
         </RadixTooltip.Trigger>
         <RadixTooltip.Portal>
           <RadixTooltip.Content
-            className="infotooltip-content"
+            className={`infotooltip-content ${className}`}
             sideOffset={4}
             side={side}
             style={maxWidth ? {maxWidth: maxWidth + "px"} : {}}

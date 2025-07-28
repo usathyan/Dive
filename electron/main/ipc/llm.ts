@@ -8,7 +8,7 @@ import {
   ListFoundationModelsCommand,
 } from "@aws-sdk/client-bedrock"
 
-export function ipcLlmHandler(win: BrowserWindow) {
+export function ipcLlmHandler(_win: BrowserWindow) {
   ipcMain.handle("llm:openaiModelList", async (_, apiKey: string) => {
     try {
       const client = new OpenAI({ apiKey })

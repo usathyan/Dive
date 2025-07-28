@@ -1,32 +1,84 @@
-
-import { useAtom } from "jotai"
-import React, { useEffect, useMemo, useRef, useState } from "react"
+import { useAtom, useSetAtom } from "jotai"
+import React, { memo, useEffect, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
-import { InterfaceModelConfig, modelVerifyListAtom, MultiModelConfig } from "../../../../atoms/configState"
-import { defaultInterface } from "../../../../atoms/interfaceState"
+import { modelVerifyListAtom } from "../../../../atoms/configState"
 import { showToastAtom } from "../../../../atoms/toastState"
 import CheckBox from "../../../../components/CheckBox"
 import Dropdown from "../../../../components/DropDown"
 import PopupConfirm from "../../../../components/PopupConfirm"
 import Tooltip from "../../../../components/Tooltip"
 import WrappedInput from "../../../../components/WrappedInput"
-import { ListOption, useModelsProvider } from "../ModelsProvider"
-import { ModelVerifyDetail, ModelVerifyStatus, useModelVerify } from "../ModelVerify"
+import { useModelsProvider } from "../ModelsProvider"
+import { getVerifyStatus, ModelVerifyDetail, useModelVerify } from "../ModelVerify"
 import AdvancedSettingPopup from "./AdvancedSetting"
 import CustomIdPopup from "./CustomId"
+import { BaseModel, ModelVerifyStatus } from "../../../../../types/model"
+import { isDefaultModelGroup } from "../../../../helper/model"
+import InfoTooltip from "../../../../components/InfoTooltip"
+import { OAP_ROOT_URL } from "../../../../../shared/oap"
+import { OAPModelDescription } from "../../../../../types/oap"
 
-const ModelPopup = ({
-  defaultModel,
-  onClose,
-  onSuccess,
-}: {
-  defaultModel: string
+type Props = {
   onClose: () => void
   onSuccess: () => void
-}) => {
+}
+
+const ModelDescription = memo(({ data }: { data?: OAPModelDescription }) => {
+  if (!data) {
+    return null
+  }
+
+  return (
+    <div className="model-option-description">
+      <div className="model-option-description-header">
+        <div className="header-row">
+          <div className="title-section">
+            <div className="model-option-description-name-wrapper">
+              <img
+                src={`${OAP_ROOT_URL}/${data.icon}`}
+                alt={data.provider}
+                className="oap-model-icon"
+              />
+              <div className="model-option-description-name">
+                {data.name}
+              </div>
+            </div>
+            <button className="oap-store-link" onClick={() => window.open(`${OAP_ROOT_URL}/llm/${data.id}`, "_blank")}>
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 17 16" fill="none">
+                <path d="M3.83333 14C3.46667 14 3.15278 13.8694 2.89167 13.6083C2.63056 13.3472 2.5 13.0333 2.5 12.6667V3.33333C2.5 2.96667 2.63056 2.65278 2.89167 2.39167C3.15278 2.13056 3.46667 2 3.83333 2H7.83333C8.02222 2 8.18056 2.06389 8.30833 2.19167C8.43611 2.31944 8.5 2.47778 8.5 2.66667C8.5 2.85556 8.43611 3.01389 8.30833 3.14167C8.18056 3.26944 8.02222 3.33333 7.83333 3.33333H3.83333V12.6667H13.1667V8.66667C13.1667 8.47778 13.2306 8.31944 13.3583 8.19167C13.4861 8.06389 13.6444 8 13.8333 8C14.0222 8 14.1806 8.06389 14.3083 8.19167C14.4361 8.31944 14.5 8.47778 14.5 8.66667V12.6667C14.5 13.0333 14.3694 13.3472 14.1083 13.6083C13.8472 13.8694 13.5333 14 13.1667 14H3.83333ZM13.1667 4.26667L7.43333 10C7.31111 10.1222 7.15556 10.1833 6.96667 10.1833C6.77778 10.1833 6.62222 10.1222 6.5 10C6.37778 9.87778 6.31667 9.72222 6.31667 9.53333C6.31667 9.34444 6.37778 9.18889 6.5 9.06667L12.2333 3.33333H10.5C10.3111 3.33333 10.1528 3.26944 10.025 3.14167C9.89722 3.01389 9.83333 2.85556 9.83333 2.66667C9.83333 2.47778 9.89722 2.31944 10.025 2.19167C10.1528 2.06389 10.3111 2 10.5 2H13.8333C14.0222 2 14.1806 2.06389 14.3083 2.19167C14.4361 2.31944 14.5 2.47778 14.5 2.66667V6C14.5 6.18889 14.4361 6.34722 14.3083 6.475C14.1806 6.60278 14.0222 6.66667 13.8333 6.66667C13.6444 6.66667 13.4861 6.60278 13.3583 6.475C13.2306 6.34722 13.1667 6.18889 13.1667 6V4.26667Z" fill="currentColor"/>
+              </svg>
+            </button>
+          </div>
+          <div className="model-option-description-cost">
+            {data.token_cost} / million token
+          </div>
+          {data.extra?.feature && (
+            <div className="model-option-description-feature">
+              {data.extra?.feature}
+            </div>
+          )}
+        </div>
+      </div>
+      {data.extra?.special && (
+        <div className="model-option-description-special">
+          <ul>
+            {data.extra?.special.map((item: any, index: number) => {
+              return (
+                <li key={index}>
+                  {item}
+                </li>
+              )
+            })}
+          </ul>
+        </div>
+      )}
+    </div>
+  )
+})
+
+const ModelPopup = ({ onClose, onSuccess }: Props) => {
   const { t } = useTranslation()
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [, showToast] = useAtom(showToastAtom)
   const [checkboxState, setCheckboxState] = useState<"" | "all" | "-">("")
   const [searchText, setSearchText] = useState("")
   const [isFetching, setIsFetching] = useState(false)
@@ -38,107 +90,105 @@ const ModelPopup = ({
   const [showConfirmVerify, setShowConfirmVerify] = useState(false)
   const [allVerifiedList, setAllVerifiedList] = useAtom(modelVerifyListAtom)
   const { verify, abort } = useModelVerify()
+  const showToast = useSetAtom(showToastAtom)
+  const [descriptionList, setDescriptionList] = useState<OAPModelDescription[]>([])
 
-  const [showAdvancedSetting, setShowAdvancedSetting] = useState(false);
-  const [selectedModel, setSelectedModel] = useState("");
+  const [selectedModel, setSelectedModel] = useState<BaseModel | null>(null)
 
-  const { fetchListOptions, listOptions, setListOptions,
-          multiModelConfigList, setMultiModelConfigList,
-          currentIndex, saveConfig
-        } = useModelsProvider()
+  const { verifyKey, fetchModels, modelToBaseModel, flush, writeModelsBuffer, getLatestBuffer, isGroupExist } = useModelsProvider()
 
-  const multiModelConfig = (multiModelConfigList?.[currentIndex] ?? {}) as MultiModelConfig
-  const currentVerifyList = multiModelConfig ? (allVerifiedList ?? {})[multiModelConfig?.apiKey || multiModelConfig?.baseURL] ?? {} : {}
-
-  const searchListOptions = useMemo(() => {
-    let result = listOptions
-    if(searchText.length > 0) {
-      result = result?.filter(option => option.name.includes(searchText))
+  const getDescriptionList = async (models: BaseModel[]) => {
+    const params = {
+      models: models.map((model: any) => model.model),
     }
-    let state = "-"
-    if(listOptions?.filter(option => option.checked).length === 0)
-      state = ""
-    else if(result?.length > 0 && result?.every(option => option.checked))
-      state = "all"
-    setCheckboxState(state as "" | "all" | "-")
-    return result
-  }, [listOptions, searchText])
+    const res = await window.ipcRenderer.oapModelDescription(params)
+    if (res && res.status === "success" && res.data && res.data.length > 0) {
+      setDescriptionList(res.data)
+    }
+  }
+
+  const latestModelsWithVerifyStatus = useMemo(() => {
+    const models = getLatestBuffer().models
+    return models.map(model => {
+      return { ...model, verifyStatus: getVerifyStatus(allVerifiedList[verifyKey()]?.[model.model]) ?? model.verifyStatus ?? "unVerified" }
+    })
+  }, [])
+  const [innerModelBuffer, setInnerModelBuffer] = useState<BaseModel[]>(latestModelsWithVerifyStatus)
 
   useEffect(() => {
-    ;(async () => {
-      await reloadModelList(defaultModel)
-    })()
-
-    return () => {
-      setIsFetching(false)
-      setShowConfirmVerify(false)
-      setVerifiedCnt(0)
-      isVerifying.current = false
-    }
-  }, [multiModelConfig])
-
-  const reloadModelList = async (_defaultModel?: string) => {
-    try {
-      if(!multiModelConfig)
-        return
-      setListOptions([])
+    const fetchDescriptionList = async () => {
       setIsFetching(true)
-      let options = await fetchListOptions(multiModelConfig, defaultInterface[multiModelConfig.name])
-      options = options.map(option => ({
-        ...option,
-        checked: _defaultModel ? option.name === _defaultModel : multiModelConfig.models.includes(option.name),
-        verifyStatus: option.verifyStatus ?? "unVerified"
-      })).sort((a, b) => {
-        if (a.checked === b.checked) {
-          return (a as any).originalIndex - (b as any).originalIndex
-        }
-        return a.checked ? -1 : 1
-      })
-      setListOptions(options)
-      setCheckboxState(options.every(option => option.checked) ? "all" : options.some(option => option.checked) ? "-" : "")
-      setIsFetching(false)
-    } catch (error) {
-      showToast({
-        message: (error as Error).message,
-        type: "error"
-      })
-      setListOptions([])
+      await getDescriptionList(innerModelBuffer)
       setIsFetching(false)
     }
+    if(getLatestBuffer().group?.modelProvider === "oap") {
+      fetchDescriptionList()
+    }
+  }, [innerModelBuffer])
+
+  const currentVerifyList = (allVerifiedList ?? {})[verifyKey()] ?? {}
+
+  const updateCheckboxState = (result: BaseModel[]) => {
+    const checkedCnt = result.filter(option => option.active).length
+    const state: "" | "all" | "-" = checkedCnt === 0 ? "" : checkedCnt === result.length ? "all" : "-"
+    setCheckboxState(state)
+  }
+
+  const searchListOptions = useMemo(() => {
+    const result = searchText
+      ? innerModelBuffer.filter(option => option.model.includes(searchText))
+      : innerModelBuffer
+
+    updateCheckboxState(result)
+    return result
+  }, [innerModelBuffer, searchText])
+
+  const reloadModelList = async () => {
+    const customModels = innerModelBuffer.filter(option => option.isCustomModel)
+
+    setIsFetching(true)
+    const reloadModels = await fetchModels()
+    setIsFetching(false)
+    if (!reloadModels.length) {
+      return
+    }
+
+    setInnerModelBuffer(models => {
+      const ms = [
+        ...customModels,
+        ...reloadModels.map(m => {
+          const existModel = models.find(model => model.model === m.model)
+          return {
+            ...m,
+            active: existModel?.active ?? false,
+            verifyStatus: existModel?.verifyStatus ?? "unVerified"
+          }
+        }),
+      ]
+
+      updateCheckboxState(ms)
+      return ms
+    })
   }
 
   const handleGroupClick = () => {
-    let State: "" | "all" | "-" = ""
-    if (checkboxState == "") {
-      State = "all"
-    } else {
-      State = ""
-    }
-    setCheckboxState(State)
-
-    const _newModelList = listOptions?.map((model: ListOption) => {
-      if(searchText.length > 0 && !model.name.includes(searchText))
-        return { ...model, "checked": false }
-      return { ...model, "checked": !!State }
+    const state: "" | "all" | "-" = checkboxState == "" ? "all" : ""
+    setCheckboxState(state)
+    setInnerModelBuffer(ms => {
+      return ms.map(m => {
+        return { ...m, active: state == "all" }
+      })
     })
-    setListOptions(_newModelList)
   }
 
-  const handleModelChange = (name: string, key: string, value: any) => {
-    const newModelList = listOptions?.map((model: ListOption) => {
-      if (model.name === name) {
-        return { ...model, [key]: value }
-      }
-      return model
+  const checkedModel = (modelName: string) => {
+    setInnerModelBuffer(model => {
+      const ms = model.map(m => {
+        return { ...m, active: m.model === modelName ? !m.active : m.active }
+      })
+      updateCheckboxState(ms)
+      return ms
     })
-    if (newModelList.every((model: ListOption) => model.checked)) {
-      setCheckboxState("all");
-    } else if (newModelList.some((model: ListOption) => model.checked)) {
-      setCheckboxState("-");
-    } else {
-      setCheckboxState("");
-    }
-    setListOptions(newModelList)
   }
 
   const handleSubmit = async (data: Record<string, any>) => {
@@ -159,25 +209,32 @@ const ModelPopup = ({
     }
   }
 
-  const saveModel = async () => {
-    const _multiModelConfigList = JSON.parse(JSON.stringify(multiModelConfigList))
-    if(!multiModelConfigList){
-      handleSubmit({ success: true })
-      return
-    }
+  const onAddCustomModelID = (name: string) => {
+    setInnerModelBuffer(model => {
+      return [
+        modelToBaseModel(name, true),
+        ...model
+      ]
+    })
+  }
 
+  const saveModel = async () => {
     try {
       setIsSubmitting(true)
-      const newModelConfigList = multiModelConfigList
-      newModelConfigList[currentIndex].models = listOptions.filter(option => option.checked).map(option => option.name)
-      setMultiModelConfigList([...newModelConfigList])
-      const data = await saveConfig()
+      const newInnerModelBuffer = await new Promise<BaseModel[]>(resolve => {
+        setInnerModelBuffer(innerModelBuffer => {
+          resolve(innerModelBuffer)
+          return innerModelBuffer
+        })
+      })
+      writeModelsBuffer(newInnerModelBuffer)
+      const data = await flush().then(() => ({ success: true })).catch(() => ({ success: false }))
 
       // save custom model list to local storage
-      const key = `${multiModelConfig.apiKey || multiModelConfig.baseURL || multiModelConfig.accessKeyId}`
+      const key = verifyKey()
       const customModelList = localStorage.getItem("customModelList")
       const allCustomModelList = customModelList ? JSON.parse(customModelList) : {}
-      const newCustomModelList = listOptions.filter(option => option.isCustom).map(option => option.name)
+      const newCustomModelList = newInnerModelBuffer.filter(option => option.isCustomModel).map(option => option.model)
       if(newCustomModelList.length > 0){
         localStorage.setItem("customModelList", JSON.stringify({
           ...allCustomModelList,
@@ -192,7 +249,7 @@ const ModelPopup = ({
       const verifiedList = allVerifiedList[key] ?? {}
       const cleanedVerifiedList = {} as Record<string, ModelVerifyStatus>
       Object.keys(verifiedList).forEach(modelName => {
-        if (listOptions.some(option => option.name === modelName)) {
+        if (newInnerModelBuffer.some(model => model.model === modelName)) {
           cleanedVerifiedList[modelName] = verifiedList[modelName]
         }
       })
@@ -203,7 +260,8 @@ const ModelPopup = ({
 
       await handleSubmit(data)
     } catch (error) {
-      setMultiModelConfigList(_multiModelConfigList)
+      console.error("Failed to save config:", error)
+      setInnerModelBuffer(getLatestBuffer().models)
     } finally {
       setIsSubmitting(false)
     }
@@ -211,88 +269,72 @@ const ModelPopup = ({
 
   const onConfirm = async () => {
     // If there are unverified models, show the verification confirmation popup
-    if(listOptions?.filter(option => option.checked).some(option => option.verifyStatus == "unVerified")){
-      setShowConfirmVerify(true)
-    } else {
-      await saveModel()
+    const hasUnVerifiedInChecked = innerModelBuffer
+      .filter(model => model.active)
+      .some(model => model.verifyStatus == "unVerified")
+
+    if(hasUnVerifiedInChecked){
+      return setShowConfirmVerify(true)
     }
+
+    await saveModel()
   }
 
-  const handleDeleteCustomModelID = (name: string) => {
-    setListOptions((prev: ListOption[]) => {
-      return prev.filter(option => option.name !== name)
-    })
+  const deleteModel = (modelName: string) => {
+    setInnerModelBuffer(model => model.filter(m => m.model !== modelName))
   }
 
-  const onVerifyConfirm = (needVerifyList?: Record<string, InterfaceModelConfig>, ifSave: boolean = true) => {
+  const onVerifyConfirm = (models?: BaseModel[]) => {
     setShowConfirmVerify(false)
     setVerifiedCnt(0)
     isVerifying.current = true
-    const _listOptions = JSON.parse(JSON.stringify(listOptions))
-    const _needVerifyList = needVerifyList ? needVerifyList : _listOptions.filter((option: ListOption) => {
-      return multiModelConfig && option.checked && option.verifyStatus === "unVerified"
-    }).reduce((acc: Record<string, InterfaceModelConfig>, value: ListOption) => {
-      acc[value.name] = {
-        apiKey: multiModelConfig?.apiKey,
-        baseURL: multiModelConfig?.baseURL,
-        model: value.name,
-        modelProvider: multiModelConfig?.name
-      } as InterfaceModelConfig
-      return acc
-    }, {} as Record<string, InterfaceModelConfig>)
-    setVerifyingCnt(needVerifyList ? Object.keys(needVerifyList).length : _listOptions.filter((option: ListOption) => option.checked).length)
+
+    const _models = models ?? innerModelBuffer
+    const needVerifyList = _models.length == 1 ? _models : _models.filter(model =>
+        model.verifyStatus === "unVerified" ||
+        model.verifyStatus === "error" ||
+        !model.verifyStatus
+      )
+    setVerifyingCnt(needVerifyList.length)
 
     const onComplete = async () => {
-      if(ifSave){
-        await saveModel()
-      }
       isVerifying.current = false
     }
 
     const onUpdate = (detail: ModelVerifyDetail[]) => {
-      listOptions.forEach((option: ListOption) => {
-        const _detail = detail.find(item => item.name == option.name)
-        if(_detail){
-          option.verifyStatus = _detail.status
-        }
-      })
-      setListOptions(listOptions)
       setVerifiedCnt(detail.filter(item => item.status !== "verifying").length)
+      setInnerModelBuffer(model => {
+        return model.map(m => {
+          const _detail = detail.find(item => item.name == m.model)
+          return _detail ? { ...m, verifyStatus: _detail.status } : m
+        })
+      })
     }
 
     const onAbort = () => {
-      setListOptions((prev: ListOption[]) => {
-        const _prev = JSON.parse(JSON.stringify(prev))
-        return _prev.map((option: ListOption) => {
-          if (option.verifyStatus === "verifying") {
-            return _listOptions.find((item: ListOption) => item.name == option.name)
-          }
-          return {
-            ...option
-          }
+      setInnerModelBuffer(model => {
+        return model.map(m => {
+          return m.verifyStatus === "verifying" ? { ...m, verifyStatus: "unVerified" } : m
         })
       })
       isVerifying.current = false
     }
-    verify(_needVerifyList, onComplete, onUpdate, onAbort)
+    verify(getLatestBuffer().group, needVerifyList, onComplete, onUpdate, onAbort)
   }
 
-  const onVerifyIgnore = async (ignoreVerifyList?: ListOption[], ifSave: boolean = true) => {
-    const _listOptions = JSON.parse(JSON.stringify(listOptions))
-    const _ignoreVerifyList = ignoreVerifyList ? ignoreVerifyList : _listOptions.filter((option: ListOption) => option.checked && option.verifyStatus == "unVerified")
-    _ignoreVerifyList.forEach((option: ListOption) => {
-      currentVerifyList[option.name] = "ignore"
-      if (_listOptions.find((item: ListOption) => item.name == option.name)) {
-        _listOptions.find((item: ListOption) => item.name == option.name).verifyStatus = "ignore"
-      }
+  const onVerifyIgnore = async (ignoreVerifyList?: BaseModel[]) => {
+    const ignoredModels = ignoreVerifyList ?? innerModelBuffer.filter((model: BaseModel) => model.active && model.verifyStatus == "unVerified")
+    ignoredModels.forEach((model: BaseModel) => {
+      currentVerifyList[model.model] = "ignore"
+      setInnerModelBuffer(ms => {
+        return ms.map(m => {
+          return m.model == model.model ? { ...m, verifyStatus: "ignore" } : m
+        })
+      })
     })
-    setListOptions(_listOptions)
-    allVerifiedList[multiModelConfig?.apiKey || multiModelConfig?.baseURL] = currentVerifyList
+    allVerifiedList[verifyKey()] = currentVerifyList
     setAllVerifiedList({...allVerifiedList})
     setShowConfirmVerify(false)
-    if(ifSave){
-      await saveModel()
-    }
   }
 
   const onVerifyNextTime = () => {
@@ -300,8 +342,8 @@ const ModelPopup = ({
     saveModel()
   }
 
-  const verifyStatusNode = (option: ListOption) => {
-    switch(option.verifyStatus) {
+  const verifyStatusNode = (model: BaseModel) => {
+    switch(model.verifyStatus) {
       case "unSupportModel":
       case "unSupportTool":
         return (
@@ -312,7 +354,7 @@ const ModelPopup = ({
                 onClick={(e) => {
                   e.preventDefault()
                   setShowUnSupportInfo(true)
-                  const current = currentVerifyList[option.name]
+                  const current = currentVerifyList[model.model]
                   let error_msg = ""
                   if(current.success) {
                     const key = !current?.connecting?.success ? "connecting" : "supportToolsInPrompt"
@@ -345,6 +387,7 @@ const ModelPopup = ({
         return (
           <Tooltip
             content={t("models.verifyStatusSuccess")}
+            disabled={getLatestBuffer().group?.modelProvider === "oap"}
           >
             <div className="verify-status-icon-wrapper">
               <svg className="correct-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 22 22" width="20" height="20">
@@ -376,10 +419,11 @@ const ModelPopup = ({
     }
   }
 
-  const verifyMenu = (option: ListOption) => {
-    const status = option.verifyStatus ?? "unVerified"
+  const ModelMenu = (model: BaseModel) => {
+    const status = model.verifyStatus ?? "unVerified"
     const menu = []
 
+    // advanced setting
     menu.push({
       label: (
         <div className="model-option-verify-menu-item">
@@ -409,19 +453,15 @@ const ModelPopup = ({
         </div>
       ),
       onClick: () => {
-        setSelectedModel(option.name)
-        setShowAdvancedSetting(true)
+        setSelectedModel(model)
       },
     })
 
+    if(getLatestBuffer().group?.modelProvider === "oap") {
+      return menu
+    }
+
     // verify model
-    const _option: Record<string, InterfaceModelConfig> = {}
-    _option[option.name] = {
-      apiKey: multiModelConfig?.apiKey,
-      baseURL: multiModelConfig?.baseURL,
-      model: option.name,
-      modelProvider: multiModelConfig?.name
-    } as InterfaceModelConfig
     menu.push({
       label:
         <div className="model-option-verify-menu-item">
@@ -436,7 +476,7 @@ const ModelPopup = ({
           {t("models.verifyMenu1")}
         </div>,
       onClick: () => {
-        onVerifyConfirm(_option, false)
+        onVerifyConfirm([model])
       }
     })
 
@@ -456,18 +496,13 @@ const ModelPopup = ({
             {t("models.verifyMenu2")}
           </div>,
         onClick: () => {
-          onVerifyIgnore([{
-            ...option,
-            apiKey: multiModelConfig?.apiKey,
-            baseURL: multiModelConfig?.baseURL,
-            model: option.name
-          } as ListOption], false)
+          onVerifyIgnore([model])
         }
       })
     }
 
     // delete custom model id
-    if(option.isCustom){
+    if(model.isCustomModel){
       menu.push({
         label:
           <div className="model-option-verify-menu-item">
@@ -480,7 +515,7 @@ const ModelPopup = ({
             </svg>
             {t("models.verifyMenu3")}
           </div>,
-        onClick: () => handleDeleteCustomModelID(option.name)
+        onClick: () => deleteModel(model.model)
       })
     }
 
@@ -499,7 +534,26 @@ const ModelPopup = ({
     if(isVerifying.current){
       abort()
     }
+
+    const group = getLatestBuffer().group
+    if(!isGroupExist(group) && !isDefaultModelGroup(group)){
+      flush()
+    }
+
     onClose()
+  }
+
+  const handleAdvancedSettingSave = (model: BaseModel) => {
+    model.disableStreaming = model.custom?.disable_streaming ?? model.disableStreaming
+    delete model.custom?.disable_streaming
+
+    setInnerModelBuffer(ms => {
+      return ms.map(m => {
+        return m.model == model.model ? model : m
+      })
+    })
+
+    setSelectedModel(null)
   }
 
   return (
@@ -540,17 +594,11 @@ const ModelPopup = ({
         )
       }
     >
-      {showAdvancedSetting && (
+      {selectedModel && (
         <AdvancedSettingPopup
-          modelName={selectedModel}
-          onClose={() => {
-            setShowAdvancedSetting(false)
-            setSelectedModel("")
-          }}
-          onSave={() => {
-            setShowAdvancedSetting(false)
-            setSelectedModel("")
-          }}
+          model={selectedModel}
+          onClose={() => setSelectedModel(null)}
+          onSave={handleAdvancedSettingSave}
         />
       )}
       <div className="model-popup-content">
@@ -590,16 +638,19 @@ const ModelPopup = ({
                 </path>
               </svg>
             </div>
-            <div
-              className="models-reload-btn"
-              onClick={() => reloadModelList()}
-            >
-              {t("models.reloadModelList")}
-            </div>
-            <CustomIdPopup
-              listOptions={listOptions}
-              setListOptions={setListOptions}
-            />
+            {
+              getLatestBuffer().group?.modelProvider !== "oap" && (
+                <>
+                  <div
+                    className="models-reload-btn"
+                    onClick={() => reloadModelList()}
+                  >
+                    {t("models.reloadModelList")}
+                  </div>
+                  <CustomIdPopup onAddCustomModelID={onAddCustomModelID} />
+                </>
+              )
+            }
           </div>
         </div>
         <div className="model-list">
@@ -613,9 +664,9 @@ const ModelPopup = ({
                   {t("models.noResult")}
                 </div> :
                 <>
-                  {searchListOptions?.map((option: ListOption) => (
+                  {searchListOptions?.map((model: BaseModel) => (
                     <label
-                      key={option.name}
+                      key={model.model}
                       onClick={(e) => {
                         e.stopPropagation()
                         if(isVerifying.current){
@@ -623,21 +674,44 @@ const ModelPopup = ({
                         }
                       }}
                     >
-                      <div className={`model-option ${option.verifyStatus}`}>
+                      <div className={`model-option ${model.verifyStatus}`}>
                         <CheckBox
-                          checked={option.checked}
-                          onChange={() => handleModelChange(option.name, "checked", !option.checked)}
+                          checked={model.active}
+                          onChange={() => checkedModel(model.model)}
                         />
-                        <div className="model-option-name">
-                          {option.name}
+                        <div className="model-option-name-wrapper">
+                          <div className="model-option-name">
+                            {model.model}
+                          </div>
+                          {getLatestBuffer().group?.modelProvider === "oap" && descriptionList.find(d => d.model_id === model.model) && (
+                            <InfoTooltip
+                              side="bottom"
+                              className="model-option-description-tooltip"
+                              content={<ModelDescription data={descriptionList.find(d => d.model_id === model.model)} />}
+                            >
+                              <div className="model-option-name-hint">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 23 22" width="18" height="18">
+                                  <g clipPath="url(#ic_information_svg__a)">
+                                    <circle cx="11.5" cy="11" r="10.25" stroke="currentColor" strokeWidth="1.5"></circle>
+                                    <path fill="currentColor" d="M9.928 13.596h3.181c-.126-2.062 2.516-2.63 2.516-5.173 0-2.01-1.6-3.677-4.223-3.608-2.229.051-4.08 1.288-4.026 3.9h2.714c0-.824.593-1.168 1.222-1.185.593 0 1.258.326 1.222.962-.144 1.942-2.911 2.389-2.606 5.104Zm1.582 3.591c.988 0 1.779-.618 1.779-1.563 0-.963-.791-1.581-1.78-1.581-.97 0-1.76.618-1.76 1.58 0 .946.79 1.565 1.76 1.565Z"></path>
+                                  </g>
+                                  <defs>
+                                    <clipPath id="ic_information_svg__a">
+                                      <path fill="currentColor" d="M.5 0h22v22H.5z"></path>
+                                    </clipPath>
+                                  </defs>
+                                </svg>
+                              </div>
+                            </InfoTooltip>
+                          )}
                         </div>
                         <div className="model-option-hint">
-                          {verifyStatusNode(option)}
-                          {verifyMenu(option)?.length > 0 && option.verifyStatus !== "verifying" &&
+                          {verifyStatusNode(model)}
+                          {ModelMenu(model)?.length > 0 && model.verifyStatus !== "verifying" &&
                             <div className="model-option-verify-menu-wrapper">
                               {!isVerifying.current &&
                                 <Dropdown
-                                  options={verifyMenu(option)}
+                                  options={ModelMenu(model)}
                                 >
                                   <div className="model-option-verify-menu">
                                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 22 22" width="18" height="18">
@@ -659,7 +733,7 @@ const ModelPopup = ({
             <PopupConfirm
               zIndex={900}
               className="model-list-verify-popup"
-              onConfirm={() => onVerifyConfirm()}
+              onConfirm={() => onVerifyConfirm(searchListOptions?.filter(model => model.active && model.verifyStatus == "unVerified"))}
               confirmText={t("models.verify")}
               onCancel={() => onVerifyIgnore()}
               cancelText={t("models.verifyIgnore")}
@@ -678,15 +752,15 @@ const ModelPopup = ({
               }
             >
               <h4 className="model-list-verify-title">
-                {t("models.verifyTitle", { count: listOptions?.filter(option => option.checked && option.verifyStatus == "unVerified").length })}
+                {t("models.verifyTitle", { count: searchListOptions?.filter(model => model.active && model.verifyStatus == "unVerified").length })}
               </h4>
               <div className="model-list-verify-desc">
                 <div className="model-list-unverify-list">
                   <span>{t("models.verifyDesc")}</span>
                   <div className="model-list-unverify-ul-wrapper">
                     <ul>
-                      {listOptions?.filter(option => option.checked && option.verifyStatus == "unVerified").map(option => (
-                        <li key={option.name}>{option.name}</li>
+                      {searchListOptions?.filter(model => model.active && model.verifyStatus == "unVerified").map(model => (
+                        <li key={model.model}>{model.model}</li>
                       ))}
                     </ul>
                   </div>

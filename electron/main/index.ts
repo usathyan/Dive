@@ -1,5 +1,4 @@
 import { app, BrowserWindow, shell, ipcMain } from "electron"
-import { createRequire } from "node:module"
 import path from "node:path"
 import os from "node:os"
 import AppState from "./state"
@@ -12,12 +11,15 @@ import { initTray } from "./tray"
 import { preferencesStore } from "./store"
 import { initProtocol } from "./protocol"
 import log from "electron-log/main"
+import { deeplinkHandler, setOAPTokenToHost, setupAppImageDeepLink } from "./deeplink"
+import { oapClient } from "./oap"
+import electronDl from "electron-dl"
 
 log.initialize()
 log.transports.file.resolvePathFn = () => path.join(envPath.log, "main.log")
 Object.assign(console, log.functions)
 
-const require = createRequire(import.meta.url)
+electronDl()
 
 // Disable GPU Acceleration for Windows 7
 if (os.release().startsWith("6.1"))
@@ -27,9 +29,34 @@ if (os.release().startsWith("6.1"))
 if (process.platform === "win32")
   app.setAppUserModelId(app.getName())
 
+// Check if the app is already running
 if (!app.requestSingleInstanceLock()) {
   app.quit()
   process.exit(0)
+} else {
+  app.on("second-instance", (event, commandLine) => {
+    if (win) {
+      if (win.isMinimized()) {
+        win.restore()
+      }
+      win.focus()
+    }
+
+    deeplinkHandler(win, commandLine.pop() ?? "")
+  })
+}
+
+app.on("open-url", (event, url) => {
+  deeplinkHandler(win, url)
+})
+
+// Settings deeplink scheme
+if (process.defaultApp) {
+  if (process.argv.length >= 2) {
+    app.setAsDefaultProtocolClient("dive", process.execPath, [path.resolve(process.argv[1])])
+  }
+} else {
+  app.setAsDefaultProtocolClient("dive")
 }
 
 let win: BrowserWindow | null = null
@@ -47,12 +74,26 @@ async function onReady() {
     darwinPathList.forEach(modifyPath)
   }
 
+  setupAppImageDeepLink()
   initProtocol()
   createWindow()
   initMCPClient(win!)
+
+  if (import.meta.env.VITE_OAP_TOKEN && !app.isPackaged) {
+    console.info("set oap token from env")
+    setOAPTokenToHost(import.meta.env.VITE_OAP_TOKEN)
+  }
+
+  oapClient.registEvent("login", () => {
+    win!.webContents.send("oap:login")
+  })
+
+  oapClient.registEvent("logout", () => {
+    win!.webContents.send("oap:logout")
+  })
 }
 
-async function createWindow() {
+export async function createWindow() {
   win = new BrowserWindow({
     title: "Dive AI",
     icon: path.join(process.env.VITE_PUBLIC, "favicon.ico"),

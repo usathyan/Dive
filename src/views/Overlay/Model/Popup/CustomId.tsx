@@ -1,69 +1,59 @@
-import { Dispatch, SetStateAction, useEffect, useRef, useState } from "react";
-import { useTranslation } from "react-i18next";
-import PopupConfirm from "../../../../components/PopupConfirm";
-import WrappedInput from "../../../../components/WrappedInput";
-import { ListOption } from "../ModelsProvider";
+import { useEffect, useRef, useState } from "react"
+import { useTranslation } from "react-i18next"
+import PopupConfirm from "../../../../components/PopupConfirm"
+import WrappedInput from "../../../../components/WrappedInput"
+import { useModelsProvider } from "../ModelsProvider"
 
-const CustomIdPopup = ({
-  listOptions,
-  setListOptions,
-}: {
-  listOptions: ListOption[];
-  setListOptions: Dispatch<SetStateAction<ListOption[]>>;
-}) => {
-  const { t } = useTranslation();
-  const [showCustomModelID, setShowCustomModelID] = useState(false);
-  const [customModelID, setCustomModelID] = useState("");
-  const [customModelIDError, setCustomModelIDError] = useState("");
-  const inputRef = useRef<HTMLInputElement>(null);
+type Props = {
+  onAddCustomModelID: (name: string) => void
+}
+
+const CustomIdPopup = ({ onAddCustomModelID }: Props) => {
+  const { t } = useTranslation()
+  const [showCustomModelID, setShowCustomModelID] = useState(false)
+  const [customModelID, setCustomModelID] = useState("")
+  const [customModelIDError, setCustomModelIDError] = useState("")
+  const inputRef = useRef<HTMLInputElement>(null)
+  const { buffer } = useModelsProvider()
+  const { models } = buffer
 
   useEffect(() => {
-    autoFocus();
-  }, [showCustomModelID]);
+    autoFocus()
+  }, [showCustomModelID])
 
   const autoFocus = async () => {
-    await new Promise((resolve) => setTimeout(resolve, 0));
-    inputRef.current?.focus();
-  };
+    await new Promise((resolve) => setTimeout(resolve, 0))
+    inputRef.current?.focus()
+  }
 
   const addCustomModelID = (name: string) => {
-    setCustomModelIDError("");
+    setCustomModelIDError("")
     if (name.length == 0) {
       // check if the model id is empty
-      setCustomModelIDError(t("models.customModelIDError1"));
-      return;
-    } else if (listOptions.find((option) => option.name === name)) {
+      setCustomModelIDError(t("models.customModelIDError1"))
+      return
+    } else if (models.find((model) => model.model === name)) {
       // check if the model id is already in the list
-      setCustomModelIDError(t("models.customModelIDError2"));
-      return;
+      setCustomModelIDError(t("models.customModelIDError2"))
+      return
     }
 
-    setListOptions((prev: ListOption[]) => {
-      return [
-        {
-          name,
-          checked: true,
-          verifyStatus: "unVerified",
-          isCustom: true,
-        },
-        ...prev,
-      ];
-    });
-    setShowCustomModelID(false);
-    setCustomModelID("");
-    setCustomModelIDError("");
-  };
+    setShowCustomModelID(false)
+    setCustomModelID("")
+    setCustomModelIDError("")
+    onAddCustomModelID(name)
+  }
 
   const handleCustomModelIDChange = (name: string) => {
-    setCustomModelID(name);
-    setCustomModelIDError("");
-  };
+    setCustomModelID(name)
+    setCustomModelIDError("")
+  }
 
   const handleCustomModelIDClose = () => {
-    setShowCustomModelID(false);
-    setCustomModelID("");
-    setCustomModelIDError("");
-  };
+    setShowCustomModelID(false)
+    setCustomModelID("")
+    setCustomModelIDError("")
+  }
   return (
     <>
       <button
@@ -107,7 +97,7 @@ const CustomIdPopup = ({
         </PopupConfirm>
       )}
     </>
-  );
-};
+  )
+}
 
-export default CustomIdPopup;
+export default CustomIdPopup

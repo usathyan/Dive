@@ -1,4 +1,6 @@
 import React from "react"
+import Zoom from "../../components/Zoom"
+import "@/styles/components/_Zoom.scss"
 
 interface FilePreviewProps {
   files: (File | string)[]
@@ -34,12 +36,16 @@ const FilePreview: React.FC<FilePreviewProps> = ({ files }) => {
     <div className="message-files">
       {files.map((file, index) => (
         isImageFile(file) ? (
-          <img 
+          <Zoom
             key={index}
-            src={getImageSrc(file)}
-            alt={`Uploaded ${index + 1}`}
-            className="message-image"
-          />
+            allowCopy={true}
+            allowDownload={true}
+          >
+            <img
+              src={getImageSrc(file)}
+              className="message-image"
+            />
+          </Zoom>
         ) : (
           <div key={index} className="file-item">
             <svg width="16" height="16" viewBox="0 0 24 24">
@@ -53,4 +59,4 @@ const FilePreview: React.FC<FilePreviewProps> = ({ files }) => {
   )
 }
 
-export default React.memo(FilePreview) 
+export default React.memo(FilePreview)

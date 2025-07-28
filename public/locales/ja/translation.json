@@ -21,6 +21,7 @@
     "retry": "再試行",
     "noModelAlert": "利用可能なモデルがありません",
     "noModelBanner": "利用可能なモデルがありません。まずモデルを選択してください",
+    "onLimit": "あなたは {{plan}} プランの使用制限に達しました。oapモデルは使用できません",
     "modelSettings": "モデル設定",
     "copy": "コピー",
     "copied": "コピーしました",
@@ -65,7 +66,10 @@
     "settings": "設定",
     "update": "アップデートがあります",
     "models": "モデル設定",
-    "system": "システム設定"
+    "system": "システム設定",
+    "manageAndSettings": "管理と設定",
+    "OAPhub": "OAPhub",
+    "signOut": "ログアウト"
   },
   "tools": {
     "title": "ツール管理(MCP)",
@@ -98,6 +102,7 @@
     "toolMenu1": "削除",
     "toolMenu2": "編集",
     "toolMenu3": "再読み込み",
+    "toolMenu4": "詳細を見る",
     "delete": "削除",
     "jsonCopy": "コピー",
     "jsonCopied": "コピーしました",
@@ -132,7 +137,29 @@
     "transportPlaceholder": "トランスポートを選択...",
     "toogleTool.alt": "MCPツールを有効化",
     "logTitle": "UVXコマンドの実行",
-    "logProcessing": "処理中..."
+    "logProcessing": "処理中...",
+    "no_tool_title": "MCPサーバーがありません",
+    "no_oap_tool_message.all": "使用するOAP MCPサーバーを選択するか、カスタムMCPサーバーを追加してください。",
+    "no_oap_tool_message.oap": "使用するOAP MCPサーバーを選択してください。",
+    "no_oap_tool_message.local": "カスタムMCPサーバーを追加してください。",
+    "no_tool_message": "MCPサーバーを追加してください。",
+    "addOapMcp.alt": "OAP MCPツールを追加・表示",
+    "oap.type.all": "すべてのツール",
+    "oap.type.base": "Baseのみ表示",
+    "oap.type.pro": "Proのみ表示",
+    "oap.sort": "並び替え",
+    "oap.sort.popular": "人気順",
+    "oap.sort.new": "新着順",
+    "oap.tag": "タグ",
+    "oap.no_search_data_title": "MCPツールが見つかりません",
+    "oap.no_search_data": "検索結果が見つかりません。キーワードをクリアするか、フィルター条件を調整してください。",
+    "oap.clear_filter": "フィルター条件をクリア",
+    "oap.hint": "高度なMCPサーバーはProバージョンへのアップグレードが必要です",
+    "tabAll": "すべてのツール",
+    "tabOap": "OAPツール",
+    "tabLocal": "カスタムツール",
+    "oap.pro_only": "Proプランのユーザーのみインストール可能",
+    "oapStoreLink.alt": "詳細を見る"
   },
   "modelConfig": {
     "title": "モデル設定",
@@ -150,7 +177,13 @@
     "confirm": "確認",
     "cancel": "キャンセル",
     "copy": "コピー",
-    "copySuccess": "コピーしました"
+    "copySuccess": "コピーしました",
+    "zoomInImage": "画像を拡大",
+    "copyImage": "画像をコピー",
+    "copyImageUrl": "画像URLをコピー",
+    "downloadImage": "画像をダウンロード",
+    "login": "ログイン",
+    "signup": "サインアップ"
   },
   "models": {
     "title": "モデル設定",
@@ -238,7 +271,8 @@
     "verifyErrorMsg": "検証過程中モデルがツールを使用しなかった可能性があります。モデルがツールをサポートしていないか、ツールがトリガーされていないため、ツールのサポート能力を確認できません。",
     "verifyStatusSuccess": "モデル検証成功，原生方式でツールを有効化",
     "verifyStatusSuccessInPrompt": "モデル検証成功，MCP Prompts方式でツールを有効化",
-    "verifyUnexpectedFailed": "モデル検証失敗"
+    "verifyUnexpectedFailed": "モデル検証失敗",
+    "oapUsageLimit": "使用量が上限に達しました"
   },
   "system": {
     "title": "システム設定",
@@ -250,17 +284,40 @@
     "defaultInstructions": "英語で話す",
     "autoDownload": "アップデートを自動ダウンロード",
     "autoDownloadDescription": "新バージョンのDIVEを自動的にバックグラウンドでダウンロードします。ユーザーが次回起動時、またはメニューページの「新バージョンアップデート」ボタンをクリックすると、新バージョンが有効になります",
+    "loginTitle": "OAP ログイン",
+    "loginDescription": "OpenAgentPlatformを使用してログインします。LLMs、AI Agents、MCP Serversを簡単に接続できます。すぐにスマートなソリューションを体験してください！",
+    "personalInformationTitle": "個人情報",
     "autoLaunch": "自動起動",
     "autoLaunchDescription": "PC起動時に自動的にDive AIを起動します",
     "minimalToTray": "最小化時にトレイに格納",
     "minimalToTrayDescription": "ウィンドウを閉じると、プログラムはシステムトレイに最小化される代わりに完全に終了しません",
     "defaultSystemPrompt": "Diveデフォルトシステムプロンプト",
-    "defaultSystemPromptDescription": "Diveのデフォルトシステムプロンプトは、チャットで公式に提供されるデフォルトのシステムプロンプトとして使用され、LLMがDiveチャットの内容でKaTeX、Markdown、Mermaidなどの出力をサポートできるようにします。この機能を有効にすると、より多くのトークン数が消費され、応答速度が若干遅くなる可能性がありますが、応答品質が保証されます。無効にすると応答が速くなる可能性がありますが、品質が低下する可能性があります。",
+    "defaultSystemPromptDescription": "Diveデフォルトシステムプロンプトはチャットのデフォルトのシステムプロンプトとして使用されます。LLMにDiveチャットがKaTeX/Markdown/Mermaidなどの出力をサポートすることを説明します。この機能は一定のトークンを消費しますが、システムプロンプトなしのプロンプトよりも応答が遅くなる場合があります。一方、LLMの応答の品質が向上する可能性があります",
+    "usageAnalytics": "OAPダッシュボードページで確認",
+    "usageAnalyticsTitle": "使用分析",
+    "userEdit": "OAPダッシュボードページで確認",
+    "planSectionTitle": "現在のプラン使用量",
+    "subscriptionDate": "サブスクリプション日",
+    "remainingUsage": "残り使用量",
+    "usageWarningTitle": "トークン使用量の制限に達しました。",
+    "usageWarning": "Proプランのクォータは来月にリセットされます。または、トークンパッケージを購入して使用量を増やすことができます。ベーシックモデルとベーシックMCPは引き続き利用可能です。",
+    "usageWarningHint": "ベーシックモデルとベーシックMCPは使用制限から除外されます。",
+    "BaseSubscriptionDate": "期限なし",
+    "BaseRemainingUsage": "無制限",
+    "BaseUsageWarning": "Baseプランには、Basic ModelsとBasic MCPsへのアクセスが含まれています。他のモデルやMCPを使用する場合は、<planLink>プランページ</planLink>からプランをアップグレードしてください。",
     "customPromptDescription": "カスタムシステムプロンプトが必要な場合は、下の「カスタムプロンプト」機能をクリックして設定してください。",
-    "customPromptButton": "カスタムプロンプト"
+    "customPromptButton": "カスタムプロンプト",
+    "tokenPackageTitle": "Token パッケージ使用量",
+    "tokenPackageHint": "Token パッケージには有効期限がありません。月次プランのクォータが不足した場合にのみ使用されます。",
+    "tokenPackageRemainingUsage": "残り使用量",
+    "tokenPackageWarningTitle": "Token 使用量の制限に達しました。",
+    "tokenPackageWarning": "Token 使用量を増やすには、OAPhubの<planLink>ダッシュボードページ</planLink>にアクセスしてください。"
   },
   "toast": {
-    "copiedToClipboard": "クリップボードにコピーしました"
+    "copiedToClipboard": "クリップボードにコピーしました",
+    "copyFailed": "コピーに失敗しました",
+    "copiedImage": "画像をコピーしました",
+    "downloadedImage": "画像をダウンロードしました"
   },
   "keymap": {
     "title": "キーボードショートカット",
@@ -281,6 +338,16 @@
     "downloading": "ダウンロード中",
     "readyToInstall": "インストール準備完了",
     "clickToInstall": "クリックしてアップデートをインストール"
+  },
+  "login": {
+    "subtitle": "Dive AIは、機能呼び出しをサポートする様々な大規模言語モデルをシームレスに統合したオープンソースのデスクトップアプリケーションです。シンプルで直感的なインターフェースを通じて、日常の質問から専門的なタスクまで、トップクラスのAIと簡単に対話し、正確な応答を得ることができ、あなたのスマートアシスタントとなります。",
+    "title1": "自分で準備したモデルを使用",
+    "description1": "高度なAI専門家に適しています。ローカルのOllama、llama.cpp、またはリモートのOpenrouter、OpenAI、anthropic、その他のAI企業が提供するLLM APIなど、すでに独自の設定を準備している場合は、このオプションを使用してください。",
+    "button1": "モデル設定へ",
+    "title2": "OpenAgentPlatformを使用",
+    "description2": "OAPは、専門知識がなくても、LLM、AI Agent、MCP Serversを簡単に接続できる最先端のAIサービスを提供します。AIの無限の可能性を探索し、すぐにスマートなソリューションを体験できます。",
+    "button2": "OAPに登録",
+    "button3": "OAPにログイン"
   },
   "InstallHostDependencies": {
     "title": "モジュールセットをダウンロード中...",

@@ -21,6 +21,7 @@
     "retry": "重试",
     "noModelAlert": "无可用模型",
     "noModelBanner": "无模型可用，请先选择模型",
+    "onLimit": "您已达到 {{plan}} 方案用量限制，oap模型无法使用",
     "modelSettings": "模型设置",
     "copy": "复制",
     "copied": "已复制",
@@ -65,7 +66,10 @@
     "settings": "模型设置",
     "update": "新版本升级",
     "models": "模型设置",
-    "system": "系统设置"
+    "system": "系统设置",
+    "manageAndSettings": "管理与设置",
+    "OAPhub": "OAPhub",
+    "signOut": "登出"
   },
   "tools": {
     "title": "工具管理(MCP)",
@@ -98,6 +102,7 @@
     "toolMenu1": "删除",
     "toolMenu2": "编辑",
     "toolMenu3": "重新加载",
+    "toolMenu4": "查看详情",
     "delete": "删除",
     "jsonCopy": "复制",
     "jsonCopied": "已复制",
@@ -132,7 +137,29 @@
     "transportPlaceholder": "选择Transport...",
     "toogleTool.alt": "启用 MCP Tools",
     "logTitle": "执行 UVX 命令",
-    "logProcessing": "处理中..."
+    "logProcessing": "处理中...",
+    "no_tool_title": "目前没有任何的 MCP Server",
+    "no_oap_tool_message.all": "请选择要使用的 OAP MCP Server，或新增自定义的 MCP Server。",
+    "no_oap_tool_message.oap": "请选择要使用的 OAP MCP Server。",
+    "no_oap_tool_message.local": "请新增自定义的 MCP Server。",
+    "no_tool_message": "请新增 MCP Server。",
+    "addOapMcp.alt": "新增&查看 OAP MCP 工具",
+    "oap.type.all": "所有工具",
+    "oap.type.base": "仅显示 Base",
+    "oap.type.pro": "仅显示 Pro",
+    "oap.sort": "排序",
+    "oap.sort.popular": "热门",
+    "oap.sort.new": "最新",
+    "oap.tag": "标签",
+    "oap.no_search_data_title": "搜索不到任何的 MCP Tools",
+    "oap.no_search_data": "没有找到搜索结果，请清除关键字或调整筛选条件。",
+    "oap.clear_filter": "清除筛选条件",
+    "oap.hint": "高阶 MCP Server 需要升级 Pro 版本方能安装",
+    "tabAll": "所有工具",
+    "tabOap": "OAP工具",
+    "tabLocal": "自定义工具",
+    "oap.pro_only": "Pro 方案用户才能安装",
+    "oapStoreLink.alt": "在 OAP Hub 查看详情"
   },
   "modelConfig": {
     "title": "模型设置",
@@ -150,7 +177,13 @@
     "confirm": "确认",
     "cancel": "取消",
     "copy": "复制",
-    "copySuccess": "已复制"
+    "copySuccess": "已复制",
+    "zoomInImage": "图片放大",
+    "copyImage": "复制图片",
+    "copyImageUrl": "复制图片URL",
+    "downloadImage": "下载图片",
+    "login": "登录",
+    "signup": "註冊"
   },
   "models": {
     "title": "模型设置",
@@ -238,7 +271,8 @@
     "verifyErrorMsg": "验证过程中模型未使用任何工具，可能因其不支持或未触发工具，因此无法确认是否具备工具支持能力。",
     "verifyStatusSuccess": "模型验证成功，已通过原生方式启用工具",
     "verifyStatusSuccessInPrompt": "模型验证成功，已通过MCP Prompts方式启用工具",
-    "verifyUnexpectedFailed": "模型验证失败，发生未知错误，请稍后重试"
+    "verifyUnexpectedFailed": "模型验证失败，发生未知错误，请稍后重试",
+    "oapUsageLimit": "用量已满，暂时无法使用"
   },
   "system": {
     "title": "系统设置",
@@ -252,15 +286,38 @@
     "autoDownloadDescription": "自动在后台下载新版本 DIVE，用户下次重启后或点击菜单页的「新版本升级」按钮，即会启用新版本",
     "autoLaunch": "自动启动",
     "autoLaunchDescription": "开机时自动启动 Dive AI",
-    "minimalToTray": "最小化到系统托盘",
-    "minimalToTrayDescription": "关闭视窗时不会将程式关闭，而是缩放成最小化icon至工具列",
+    "loginTitle": "OAP 登录",
+    "loginDescription": "使用 OpenAgentPlatform 登录，无需技术背景即可轻松连接 LLMs、AI Agents 和 MCP Servers — 立即体验智慧解决方案！",
+    "personalInformationTitle": "个人信息",
+    "minimalToTray": "最小化",
+    "minimalToTrayDescription": "关闭窗口时不会将程序关闭，而是缩放成最小化 icon",
     "defaultSystemPrompt": "Dive Default System Prompt",
-    "defaultSystemPromptDescription": "Dive 默认系统提示词作为官方提供的预设系统提示词，可以让 LLM 支持 Dive chat 中的 KaTeX、Markdown、Mermaid 等输出格式。启用此功能会消耗较多的 Token 数量，可能会使响应速度稍慢，但能确保响应质量；若关闭则响应可能较快，但质量可能下降。",
+    "defaultSystemPromptDescription": "Dive Default System Prompt 用来作为 chat 预设的系统提示词。跟 LLM 说明对于 Dive chat 的内容支持 KaTeX / Markdown / Mermaid 等输出的提示。这个功能会花费一定的 Token 数，某些情况下会使得回应相对没有系统提示词的 Prompt 来得更慢。另一方面，若是关闭 LLM 回应的品质可能下降",
+    "usageAnalytics": "前往 OAP Hub 的 Dashboard 页面查看",
+    "usageAnalyticsTitle": "使用分析",
+    "userEdit": "前往 OAP Hub 的 Account 页面查看",
+    "planSectionTitle": "当前计划用量",
+    "subscriptionDate": "订阅日期",
+    "remainingUsage": "剩余使用量",
+    "usageWarningTitle": "Token 使用量已达上限",
+    "usageWarning": "Pro 计划将于下个月重置，或购买 Token 包装包以获取更多使用量。基础模型和基础 MCP 仍可使用。",
+    "usageWarningHint": "基础模型和基础 MCP 不受使用限制。",
+    "BaseSubscriptionDate": "期限无限制",
+    "BaseRemainingUsage": "无限制",
+    "BaseUsageWarning": "基础计划包括基础模型和基础 MCP 的访问权限。要使用其他模型和 MCP，请从<planLink>计划页面</planLink>升级您的计划。",
     "customPromptDescription": "若您需要额外自定义指令，请点选下方「自定义提示词」功能前往设置。",
-    "customPromptButton": "自定义提示词"
+    "customPromptButton": "自定义提示词",
+    "tokenPackageTitle": "Token 包装包使用量",
+    "tokenPackageHint": "Token 包装包没有到期日，将在每月计划配额耗尽后使用。",
+    "tokenPackageRemainingUsage": "剩余使用量",
+    "tokenPackageWarningTitle": "Token 使用量已达到上限。",
+    "tokenPackageWarning": "您可以前往 OAPhub <planLink>Dashboard 页面</planLink>补充更多 Token 使用量。"
   },
   "toast": {
-    "copiedToClipboard": "已复制到剪贴板"
+    "copiedToClipboard": "已复制到剪贴板",
+    "copyFailed": "复制失败",
+    "copiedImage": "已复制图片",
+    "downloadedImage": "图片下载完成"
   },
   "keymap": {
     "title": "键盘快捷键",
@@ -281,6 +338,16 @@
     "downloading": "下载中",
     "readyToInstall": "下载完成",
     "clickToInstall": "点击安装更新"
+  },
+  "login": {
+    "subtitle": "Dive AI 是一款开源的桌面应用程序，无缝整合各种支持功能调用的大型语言模型。通过简洁直观的界面，让您轻松与顶尖 AI 进行对话，从日常问答到专业任务，都能获得精准回应，成为您的智能助手。",
+    "title1": "使用你自己准备好的模型",
+    "description1": "适合进阶的 AI 专家，如果您已经准备好自己的配置，不论是本地的 Ollama、llama.cpp 或是远程的 Openrouter、OpenAI、anthropic 或是其他 AI 公司自己提供的 LLM API。请使用这个选项",
+    "button1": "前往设置模型",
+    "title2": "使用 OpenAgentPlatform 平台",
+    "description2": "OAP 让每个人都能轻松使用最先进的 AI 服务，无需专业知识即可连接 LLM、AI Agent 与 MCP Servers。探索 AI 的无限可能，是立即体验智能化的解决方案",
+    "button2": "注册 OAP",
+    "button3": "登录 OAP"
   },
   "InstallHostDependencies": {
     "title": "正在下载模组套件...",

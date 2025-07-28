@@ -4,9 +4,10 @@ import { useSetAtom, useAtomValue } from "jotai"
 import { codeStreamingAtom } from "../atoms/codeStreaming"
 import { useTranslation } from "react-i18next"
 import { historiesAtom, loadHistoriesAtom } from "../atoms/historyState"
-import { isConfigNotInitializedAtom } from "../atoms/configState"
-import Setup from "./Setup"
+import { modelVerifyListAtom } from "../atoms/configState"
 import ChatInput from "../components/ChatInput"
+import Login from "./Login"
+import { isLoggedInOAPAtom } from "../atoms/oapState"
 
 const Welcome = () => {
   const { t } = useTranslation()
@@ -14,7 +15,9 @@ const Welcome = () => {
   const updateStreamingCode = useSetAtom(codeStreamingAtom)
   const histories = useAtomValue(historiesAtom)
   const loadHistories = useSetAtom(loadHistoriesAtom)
-  const isConfigNotInitialized = useAtomValue(isConfigNotInitializedAtom)
+  const modelVerifyList = useAtomValue(modelVerifyListAtom)
+  const isInitialized = localStorage.getItem("isInitialized") === "true"
+  const isLoggedInOAP = useAtomValue(isLoggedInOAPAtom)
 
   useEffect(() => {
     document.title = t("header.title")
@@ -28,8 +31,8 @@ const Welcome = () => {
     loadHistories()
   }, [loadHistories])
 
-  if (isConfigNotInitialized) {
-    return <Setup />
+  if (!isInitialized && Object.keys(modelVerifyList).length === 0 && !isLoggedInOAP) {
+    return <Login />
   }
 
   return (

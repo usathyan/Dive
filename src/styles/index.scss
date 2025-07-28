@@ -60,8 +60,9 @@ body {
 
 .outlet-container {
   display: flex;
-  flex: 1;
+  flex: calc(100% - var(--code-modal-width));
   position: relative;
+  min-width: $outlet-container-width;
 }
 
 .main-container {

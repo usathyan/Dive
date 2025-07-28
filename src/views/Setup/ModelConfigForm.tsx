@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react"
 import { useTranslation } from "react-i18next"
 import { FieldDefinition, InterfaceProvider, PROVIDER_LABELS, PROVIDERS } from "../../atoms/interfaceState"
-import { InterfaceModelConfig, ModelConfig, prepareModelConfig, saveFirstConfigAtom, verifyModelWithConfig, writeEmptyConfigAtom } from "../../atoms/configState"
+import { ModelConfig, verifyModelWithConfig, writeEmptyConfigAtom, writeRawConfigAtom } from "../../atoms/configState"
 import { useSetAtom } from "jotai"
 import { loadConfigAtom } from "../../atoms/configState"
 import useDebounce from "../../hooks/useDebounce"
@@ -10,11 +10,15 @@ import Input from "../../components/WrappedInput"
 import Tooltip from "../../components/Tooltip"
 import SelectSearch from "../../components/SelectSearch"
 import { getVerifyStatus } from "../../views/Overlay/Model/ModelVerify"
+import { useNavigate } from "react-router-dom"
+import { ModelProvider } from "../../../types/model"
+import { defaultBaseModel, fieldsToLLMGroup, intoModelConfig } from "../../helper/model"
+import { modelSettingsAtom } from "../../atoms/modelState"
 
 interface ModelConfigFormProps {
-  provider: InterfaceProvider
+  provider: ModelProvider
   fields: Record<string, FieldDefinition>
-  onProviderChange?: (provider: InterfaceProvider) => void
+  onProviderChange?: (provider: ModelProvider) => void
   onSubmit: (data: any) => void
   submitLabel?: string
 }
@@ -27,7 +31,8 @@ const ModelConfigForm: React.FC<ModelConfigFormProps> = ({
   submitLabel = "setup.submit",
 }) => {
   const { t } = useTranslation()
-  const [formData, setFormData] = useState<InterfaceModelConfig>({} as InterfaceModelConfig)
+  const navigate = useNavigate()
+  const [formData, setFormData] = useState<Record<string, any>>({})
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [verifyError, setVerifyError] = useState<string>("")
   const [isVerifying, setIsVerifying] = useState(false)
@@ -37,9 +42,10 @@ const ModelConfigForm: React.FC<ModelConfigFormProps> = ({
   const [listOptions, setListOptions] = useState<Record<string, string[]>>({} as Record<string, string[]>)
   const initProvider = useRef(provider)
   const loadConfig = useSetAtom(loadConfigAtom)
-  const saveConfig = useSetAtom(saveFirstConfigAtom)
+  const saveConfig = useSetAtom(writeRawConfigAtom)
   const writeEmptyConfig = useSetAtom(writeEmptyConfigAtom)
   const showToast = useSetAtom(showToastAtom)
+  const setSettings = useSetAtom(modelSettingsAtom)
 
   const [fetchListOptions, cancelFetch] = useDebounce(async (key: string, field: FieldDefinition, deps: Record<string, string>) => {
     try {
@@ -70,7 +76,7 @@ const ModelConfigForm: React.FC<ModelConfigFormProps> = ({
       if (field.type === "list" && field.listCallback && field.listDependencies) {
         const deps = field.listDependencies.reduce((acc, dep) => ({
           ...acc,
-          [dep]: formData[dep as keyof InterfaceModelConfig] || ""
+          [dep]: formData[dep] || ""
         }), {})
 
         const allDepsHaveValue = field.listDependencies.every(dep => !!formData[dep as keyof ModelConfig])
@@ -92,7 +98,7 @@ const ModelConfigForm: React.FC<ModelConfigFormProps> = ({
         ...acc,
         [key]: fields[key].default
       }
-    }, {} as InterfaceModelConfig)
+    }, {})
   }
 
   const handleProviderChange = (value: unknown) => {
@@ -101,10 +107,18 @@ const ModelConfigForm: React.FC<ModelConfigFormProps> = ({
     setIsVerified(false)
   }
 
+  const getLLMGroupAndModel = () => {
+    const group = fieldsToLLMGroup(provider, formData)
+    const model = defaultBaseModel()
+    model.model = formData.model
+    return { group, model }
+  }
+
   const verifyModel = async () => {
     try {
       setIsVerifying(true)
-      const data = await verifyModelWithConfig(formData)
+      const { group, model } = getLLMGroupAndModel()
+      const data = await verifyModelWithConfig(intoModelConfig(group, model))
       if (data.success) {
         setIsVerified(true)
         const status = getVerifyStatus(data)
@@ -149,15 +163,26 @@ const ModelConfigForm: React.FC<ModelConfigFormProps> = ({
     if (!validateForm())
       return
 
-    const _formData = prepareModelConfig(formData, provider)
+    setIsSubmitting(true)
 
-    try {
-      setIsSubmitting(true)
-      await onSubmit(await saveConfig({ data: _formData, provider }))
-      loadConfig()
-    } finally {
-      setIsSubmitting(false)
-    }
+    const { group, model } = getLLMGroupAndModel()
+    group.models = [model]
+    setSettings(prev => ({
+      ...prev,
+      disableDiveSystemPrompt: false,
+      enableTools: true,
+      groups: [group]
+    }))
+    onSubmit(await saveConfig({
+      activeProvider: "act",
+      disableDiveSystemPrompt: false,
+      enableTools: true,
+      configs: {
+        act: intoModelConfig(group, model)
+      },
+    }).catch(() => ({ success: false })))
+    loadConfig().catch(console.error)
+    setIsSubmitting(false)
   }
 
   const handleChange = (key: string, value: any) => {
@@ -191,6 +216,7 @@ const ModelConfigForm: React.FC<ModelConfigFormProps> = ({
 
   const handleSkip = () => {
     writeEmptyConfig()
+    navigate("/")
   }
 
   const handleCopiedError = async (text: string) => {

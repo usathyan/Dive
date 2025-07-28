@@ -1,43 +1,53 @@
 import { useAtom, useAtomValue, useSetAtom } from "jotai"
 import React, { useEffect, useState } from "react"
 import { useTranslation } from "react-i18next"
-import Switch from "../../../components/Switch"
 import { closeOverlayAtom } from "../../../atoms/layerState"
 import PopupConfirm from "../../../components/PopupConfirm"
-import { modelVerifyListAtom, MultiModelConfig } from "../../../atoms/configState"
-import KeyPopup from "./KeyPopup"
-import ModelPopup from "./Popup"
+import { configAtom, modelVerifyListAtom, writeEmptyConfigAtom } from "../../../atoms/configState"
+import GroupCreator from "./Popup/GroupCreator"
+import ModelsEditor from "./Popup/ModelsEditor"
 import ParameterPopup from "./ParameterPopup"
-import { useModelsProvider } from "./ModelsProvider"
 import { showToastAtom } from "../../../atoms/toastState"
-import { InterfaceProvider, PROVIDER_ICONS, PROVIDER_LABELS } from "../../../atoms/interfaceState"
+import GroupEditor from "./Popup/GroupEditor"
+import { modelGroupsAtom, modelSettingsAtom } from "../../../atoms/modelState"
+import { LLMGroup, ModelGroupSetting } from "../../../../types/model"
+import GroupItem from "./GroupItem"
+import { useModelsProvider } from "./ModelsProvider"
+import clone from "lodash/cloneDeep"
+import { getGroupAndModel, getGroupTerm, getTermFromRawModelConfig, removeGroup } from "../../../helper/model"
+import isMatch from "lodash/isMatch"
+import { getVerifyKey } from "../../../helper/verify"
 import { getVerifyStatus } from "./ModelVerify"
-import Dropdown from "../../../components/DropDown"
-import Tooltip from "../../../components/Tooltip"
-import KeyPopupEdit from "./KeyPopupEdit"
-import { systemThemeAtom, userThemeAtom } from "../../../atoms/themeState"
 import { commonFlashAtom } from "../../../atoms/globalState"
+import { isOAPUsageLimitAtom } from "../../../atoms/oapState"
 
 const PageLayout = () => {
   const { t } = useTranslation()
   const closeOverlay = useSetAtom(closeOverlayAtom)
-  const [showDelete, setShowDelete] = useState(false)
-  const [showClose, setShowClose] = useState(false)
-  const [showKeyPopup, setShowKeyPopup] = useState(false)
-  const [showKeyPopupEdit, setShowKeyPopupEdit] = useState(false)
-  const [defaultModel, setDefaultModel] = useState("")
+  const [showDeleteGroupConfirm, setShowDeleteGroupConfirm] = useState(false)
+  const [showNoModelAvailable, setShowNoModelAvailable] = useState(false)
+  const [showGroupCreator, setShowGroupCreator] = useState(false)
+  const [showGrupEditor, setShowGroupEditor] = useState(false)
   const [showModelPopup, setShowModelPopup] = useState(false)
   const [showNoModelAlert, setShowNoModelAlert] = useState(false)
   const [showParameterPopup, setShowParameterPopup] = useState(false)
   const showToast = useSetAtom(showToastAtom)
-  const systemTheme = useAtomValue(systemThemeAtom)
-  const userTheme = useAtomValue(userThemeAtom)
-  const [allVerifiedList, setAllVerifiedList] = useAtom(modelVerifyListAtom)
+  const allVerifiedList = useAtomValue(modelVerifyListAtom)
+  const modelGroups = useAtomValue(modelGroupsAtom)
+  const rawConfig = useAtomValue(configAtom)
+  const writeEmptyConfig = useSetAtom(writeEmptyConfigAtom)
+  const isOAPUsageLimit = useAtomValue(isOAPUsageLimitAtom)
+
+  const [settings, setSettings] = useAtom(modelSettingsAtom)
+  const { writeGroupBuffer, writeModelsBuffer, getLatestBuffer, pushModelBufferWithModelNames, flush } = useModelsProvider()
   const [commonFlash, setCommonFlash] = useAtom(commonFlashAtom)
 
-  const { multiModelConfigList, setMultiModelConfigList,
-          currentIndex, setCurrentIndex, saveConfig
-        } = useModelsProvider()
+  const getSettings = () => new Promise<ModelGroupSetting>((resolve) => {
+    setSettings(prev => {
+      resolve(prev)
+      return prev
+    })
+  })
 
   useEffect(() => {
     if(commonFlash === "openPromtSetting") {
@@ -50,157 +60,131 @@ const PageLayout = () => {
     closeOverlay("Model")
   }
 
-  const saveMultiModelConfigChanges = async (newMultiModelConfigList: MultiModelConfig[]) => {
-    const _multiModelConfigList = JSON.parse(JSON.stringify(multiModelConfigList))
-    try {
-      const _activeProvider = newMultiModelConfigList.filter((config: MultiModelConfig) => config.active && config.models.length > 0).length === 0 ? "none" : undefined
-      setMultiModelConfigList(newMultiModelConfigList)
-      const data = await saveConfig(_activeProvider as InterfaceProvider)
-      if (data.success) {
-        showToast({
-          message: t("setup.saveSuccess"),
-          type: "success"
-        })
-      } else {
-        showToast({
-          message: data.error ?? t("setup.saveFailed"),
-          type: "error"
-        })
-        setMultiModelConfigList(_multiModelConfigList)
-      }
-    } catch (error) {
-      console.error("Failed to save config:", error)
-      setMultiModelConfigList(_multiModelConfigList)
-    }
-  }
-
-  const handleMultiModelConfigChange = async (index: number, key: keyof MultiModelConfig, value: MultiModelConfig[keyof MultiModelConfig]) => {
-    const newMultiModelConfigList = JSON.parse(JSON.stringify(multiModelConfigList)) ?? []
-    setCurrentIndex(index)
-
-    if(!value && isNoModelAlert(index)) {
-      // If turning off, and no other models are active, show close confirmation
-      setShowClose(true)
-    } else {
-      newMultiModelConfigList[index][key] = value
-      //save changes
-      await saveMultiModelConfigChanges(newMultiModelConfigList)
-    }
-  }
-
-  const handleNewKeySubmit = (defaultModel?: string) => {
-    setShowKeyPopup(false)
+  const handleNewGroupSubmit = () => {
+    setShowGroupCreator(false)
     setShowModelPopup(true)
-    setDefaultModel(defaultModel || "")
   }
 
-  const handleKeyPopupEditSubmit = (defaultModel?: string) => {
-    setShowKeyPopupEdit(false)
-    setShowModelPopup(true)
-    setDefaultModel(defaultModel || "")
+  const handleKeyPopupEditSubmit = (customModel?: string) => {
+    setShowGroupEditor(false)
+    if (customModel) {
+      pushModelBufferWithModelNames([customModel])
+    }
+    flush()
+
+    showToast({
+      message: t("setup.saveSuccess"),
+      type: "success"
+    })
   }
 
-  const getModelCount = (config: MultiModelConfig, ifSupport: boolean = true) => {
-    const currentVerifyList = allVerifiedList[config.apiKey || config.baseURL] ?? {}
-    return config.models.filter(model => ifSupport ? getVerifyStatus(currentVerifyList[model]) !== "unSupportModel" : getVerifyStatus(currentVerifyList[model]) === "unSupportModel").length
+  const isNoModelAlert = () => {
+    // alert when closing or deleting provider cause no model available
+    return modelGroups.every(isNoModelAlertWithGroup)
   }
 
-  const isNoModelAlert = (targetIndex?: number) => {
-    //alert when closing or deleting provider cause no model available
-    return multiModelConfigList?.filter((config, index) => index !== (targetIndex ?? currentIndex)
-                                                            && config.active
-                                                            && getModelCount(config, true) > 0)?.length === 0
-      && multiModelConfigList?.[(targetIndex ?? currentIndex)]
-      && multiModelConfigList?.[(targetIndex ?? currentIndex)]?.active
-      && getModelCount(multiModelConfigList?.[(targetIndex ?? currentIndex)], true) > 0
+  const isNoModelAlertWithGroup = (group: LLMGroup) => {
+    return group.active && getAvailableModelCount(group) === 0
   }
 
-  const openModelPopup = async (index: number) => {
-    setCurrentIndex(index)
+  const openModelPopup = async (group: LLMGroup) => {
+    writeGroupBuffer(group)
+    writeModelsBuffer(group.models)
     setShowModelPopup(true)
   }
 
   const handleModelSubmit = () => {
-    setDefaultModel("")
+    handleActiveConfigNotInSettings()
     setShowModelPopup(false)
-    if(multiModelConfigList?.[currentIndex]
-      && multiModelConfigList?.[currentIndex]?.active
-      && multiModelConfigList?.[currentIndex]?.models.length > 0
-      && getModelCount(multiModelConfigList?.[currentIndex], true) === 0) {
-      setShowNoModelAlert(true)
+  }
+
+  const handleActiveConfigNotInSettings = async () => {
+    const settings = await getSettings()
+    const term = getTermFromRawModelConfig(rawConfig)
+    if (!term) {
+      return
     }
+
+    const result = getGroupAndModel({ ...term.group, active: true }, { ...term.model, active: true }, settings.groups)
+    if (result) {
+      return
+    }
+
+    writeEmptyConfig()
+  }
+
+  const handleConfirmDelete = async () => {
+    setShowDeleteGroupConfirm(false)
+    const group = clone(getLatestBuffer().group)
+    setSettings(settings => {
+      settings.groups = removeGroup(getGroupTerm(group), settings.groups)
+      return clone(settings)
+    })
+
+    showToast({
+      message: t("models.deleteToast", { name: group.modelProvider }),
+      type: "success"
+    })
+
+    handleActiveConfigNotInSettings()
+  }
+
+  const handleConfirmClose = async () => {
+    setShowNoModelAvailable(false)
+    const group = clone(getLatestBuffer().group)
+    handleGroupToggle(group, false)
+
+    showToast({
+      message: t("setup.saveSuccess"),
+      type: "success"
+    })
+
+    handleActiveConfigNotInSettings()
   }
 
   const handleConfirm = async (type: "delete" | "close") => {
-    const _multiModelConfigList = JSON.parse(JSON.stringify(multiModelConfigList)) ?? []
-    try {
-      const targetConfig = multiModelConfigList?.[currentIndex]
-      let newMultiModelConfigList = JSON.parse(JSON.stringify(multiModelConfigList)) ?? []
-      let successMsg = "", errorMsg = ""
-
-      if(type === "delete"){
-        newMultiModelConfigList = multiModelConfigList?.filter((config, index) => index !== currentIndex) ?? []
-        successMsg = t("models.deleteToast", { name: targetConfig?.name ?? "" })
-        errorMsg = t("models.deleteFailed")
-      } else {
-        newMultiModelConfigList.map((multiModelConfig: MultiModelConfig, index: number) => {
-          if(currentIndex > -1 && index == currentIndex) {
-            newMultiModelConfigList[index].active = false
-          }
-        })
-        successMsg = t("setup.saveSuccess")
-        errorMsg = t("models.saveFailed")
-      }
-
-      const _activeProvider = newMultiModelConfigList.filter((config: MultiModelConfig) => config.active && config.models.length > 0).length === 0 ? "none" : undefined
-      setMultiModelConfigList(newMultiModelConfigList)
-      const data = await saveConfig(_activeProvider as InterfaceProvider)
-      if (data.success) {
-        showToast({
-          message: successMsg,
-          type: "success"
-        })
-        if(type === "delete"){
-          // delete custom model list from local storage
-          const key = `${targetConfig?.accessKeyId || targetConfig?.apiKey || targetConfig?.baseURL}`
-          const customModelList = localStorage.getItem("customModelList")
-          const allCustomModelList = customModelList ? JSON.parse(customModelList) : {}
-          delete allCustomModelList[key]
-          localStorage.setItem("customModelList", JSON.stringify(allCustomModelList))
-
-          // delete verifiedList from local storage
-          delete allVerifiedList[key]
-          setAllVerifiedList({...allVerifiedList})
-        }
-      } else {
-        showToast({
-          message: data.error ?? errorMsg,
-          type: "error"
-        })
-        setMultiModelConfigList(_multiModelConfigList)
-      }
-    } catch (error) {
-      console.error("Failed to save config:", error)
-      setMultiModelConfigList(_multiModelConfigList)
+    if(type === "delete") {
+      await handleConfirmDelete()
+    } else {
+      await handleConfirmClose()
     }
-
-    setShowDelete(false)
-    setShowClose(false)
   }
 
-  const isProviderIconNoFilter = (model: string) => {
-    const isLightMode = userTheme === "system" ? systemTheme === "light" : userTheme === "light"
-    switch (model) {
-      case "ollama":
-      case "openai_compatible":
-      case "bedrock":
-      case "google_genai":
-        return true
-      case "mistralai":
-        return isLightMode
-      default:
-        return model.startsWith("google") && isLightMode
-    }
+  const getAvailableModelCount = (group: LLMGroup) => {
+    const currentVerifyList = allVerifiedList[getVerifyKey(group)] ?? {}
+    return group.models.filter(model => getVerifyStatus(currentVerifyList[model.model]) !== "unSupportModel").length
+  }
+
+  const handleDeleteGroup = (group: LLMGroup) => {
+    writeGroupBuffer(group)
+    setShowDeleteGroupConfirm(true)
+  }
+
+  const handleGroupToggle = (group: LLMGroup, active?: boolean) => {
+    setSettings(settings => {
+      const groups = settings.groups.map(g => {
+        if(isMatch(getGroupTerm(g), getGroupTerm(group))) {
+          return {
+            ...g,
+            active: active ?? !g.active
+          }
+        }
+        return g
+      })
+
+      return {
+        ...settings,
+        groups
+      }
+    })
+
+    handleActiveConfigNotInSettings()
+  }
+
+  const handleEditGroup = (group: LLMGroup) => {
+    writeGroupBuffer(group)
+    writeModelsBuffer(group.models)
+    setShowGroupEditor(true)
   }
 
   return (
@@ -229,15 +213,15 @@ const PageLayout = () => {
               {t("models.listTitle")}
             </div>
             <div className="right">
-              {showClose && (
+              {showNoModelAvailable && (
                 <PopupConfirm
                   noBorder={true}
                   zIndex={900}
                   footerType="center"
                   className="models-delete-confirm"
                   onConfirm={() => handleConfirm("close")}
-                  onCancel={() => setShowClose(false)}
-                  onClickOutside={() => setShowClose(false)}
+                  onCancel={() => setShowNoModelAvailable(false)}
+                  onClickOutside={() => setShowNoModelAvailable(false)}
                 >
                   <div className="models-delete-confirm-content">
                     <div className="models-delete-confirm-title">{t("models.closeAllTitle")}</div>
@@ -245,21 +229,21 @@ const PageLayout = () => {
                   </div>
                 </PopupConfirm>
               )}
-              {showDelete && (
+              {showDeleteGroupConfirm && (
                 <PopupConfirm
                   noBorder={true}
                   zIndex={900}
                   footerType="center"
                   className="models-delete-confirm"
                   onConfirm={() => handleConfirm("delete")}
-                  onCancel={() => setShowDelete(false)}
-                  onClickOutside={() => setShowDelete(false)}
+                  onCancel={() => setShowDeleteGroupConfirm(false)}
+                  onClickOutside={() => setShowDeleteGroupConfirm(false)}
                 >
                   <div className="models-delete-confirm-content">
                     <div className="models-delete-confirm-title">
                       {isNoModelAlert() ?
                         t("models.deleteAllTitle") :
-                        t("models.deleteTitle", { name: multiModelConfigList?.[currentIndex]?.name ?? "" })}
+                        t("models.deleteTitle", { name: getLatestBuffer().group.modelProvider })}
                     </div>
                     <div className="models-delete-confirm-description">
                       {isNoModelAlert() ?
@@ -271,8 +255,7 @@ const PageLayout = () => {
               <button
                 className="models-new-key-btn"
                 onClick={() => {
-                  setShowKeyPopup(true)
-                  setCurrentIndex(-1)
+                  setShowGroupCreator(true)
                 }}
               >
                 {t("models.newProvider")}
@@ -290,135 +273,45 @@ const PageLayout = () => {
               )}
             </div>
           </div>
-          <div className="providers-list">
+          <div className={`providers-list ${isOAPUsageLimit ? "oap-usage-limit" : ""}`}>
             <div className="providers-list-item head">
-              <div className="title-left">{t("Provider")}</div>
-              <div className="title-left">{t("Info")}</div>
-              <div>{t("Models")}</div>
-              <div>{t("Status")}</div>
+              <div className="provider-col-1"></div>
+              <div className="provider-col-2">{t("Provider")}</div>
+              <div className="provider-col-3">{t("Info")}</div>
+              <div className="provider-col-4">{t("Models")}</div>
+              <div className="provider-col-5"></div>
+              <div className="provider-col-6">{t("Status")}</div>
+              <div className="provider-col-7"></div>
+              <div className="provider-col-8"></div>
             </div>
-            <div className="providers-list-container">
-              {multiModelConfigList?.map((multiModelConfig: MultiModelConfig, index: number) => (
-                <div className="providers-list-item" key={`multiModelConfig-${index}`}>
-                  <div className="provider">
-                    <img
-                      src={PROVIDER_ICONS[multiModelConfig.name as InterfaceProvider]}
-                      alt={multiModelConfig.name}
-                      className={`provider-icon ${isProviderIconNoFilter(multiModelConfig.name as InterfaceProvider) ? "no-filter" : ""}`}
-                    />
-                    <div className="provider-name">
-                      {PROVIDER_LABELS[multiModelConfig.name as InterfaceProvider]}
-                    </div>
-                  </div>
-                  <div className="api-key">
-                    <div>
-                      {multiModelConfig.apiKey && <div>Key： ***{multiModelConfig.apiKey.slice(-5)}</div>}
-                      {(multiModelConfig as any).accessKeyId && <div>KeyId： ***{(multiModelConfig as any).accessKeyId.slice(-5)}</div>}
-                      {(multiModelConfig as any).secretAccessKey && <div>SecretKey： ***{(multiModelConfig as any).secretAccessKey.slice(-5)}</div>}
-                      {multiModelConfig.baseURL && <div>{multiModelConfig.baseURL}</div>}
-                    </div>
-                  </div>
-                  <div>
-                    <div className="models-popup-btn-container">
-                      <div
-                        className="models-popup-btn"
-                        onClick={() => openModelPopup(index)}
-                      >
-                        {getModelCount(multiModelConfig, true)}
-                      </div>
-                      {getModelCount(multiModelConfig, false) > 0 &&
-                        <Tooltip
-                          content={t("models.unSupportModelCount", { count: getModelCount(multiModelConfig, false) })}
-                        >
-                          <svg className="models-unsupport-count-tooltip" width="16px" height="16px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2" fill="none"></circle>
-                            <line x1="12" y1="6" x2="12" y2="14" stroke="currentColor" strokeWidth="2"></line>
-                            <circle cx="12" cy="17" r="1.5" fill="currentColor"></circle>
-                          </svg>
-                        </Tooltip>}
-                    </div>
-                  </div>
-                  <div>
-                    <Switch
-                      size="medium"
-                      checked={multiModelConfig.active}
-                      onChange={() => {
-                        handleMultiModelConfigChange(index, "active" as keyof MultiModelConfig, !multiModelConfig.active)
-                      }}
-                    />
-                  </div>
-                  <div>
-                    <Dropdown
-                      options={[
-                        { label:
-                            <div className="provider-edit-menu-item">
-                              <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 22 22" fill="none">
-                                <path d="M3 13.6684V18.9998H19" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                                <path d="M2.99991 13.5986L12.5235 4.12082C13.9997 2.65181 16.3929 2.65181 17.869 4.12082V4.12082C19.3452 5.58983 19.3452 7.97157 17.869 9.44058L8.34542 18.9183" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                              </svg>
-                              {t("models.providerMenu1")}
-                            </div>,
-                          onClick: () => {
-                            setShowKeyPopupEdit(true)
-                            setCurrentIndex(index)
-                        }},
-                        { label:
-                            <div className="provider-edit-menu-item">
-                              <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 22 22" fill="none">
-                                <path d="M11 15C13.2091 15 15 13.2091 15 11C15 8.79086 13.2091 7 11 7C8.79086 7 7 8.79086 7 11C7 13.2091 8.79086 15 11 15Z" stroke="currentColor" strokeWidth="2" strokeMiterlimit="10"/>
-                                <path d="M13.5404 2.49103L12.4441 3.94267C11.3699 3.71161 10.2572 3.72873 9.19062 3.99275L8.04466 2.58391C6.85499 2.99056 5.76529 3.64532 4.84772 4.50483L5.55365 6.17806C4.82035 6.99581 4.28318 7.97002 3.98299 9.02659L2.19116 9.31422C1.94616 10.5476 1.96542 11.8188 2.24768 13.0442L4.05324 13.2691C4.38773 14.3157 4.96116 15.27 5.72815 16.0567L5.07906 17.7564C6.02859 18.5807 7.14198 19.1945 8.34591 19.5574L9.44108 18.1104C10.5154 18.3413 11.6283 18.3245 12.6951 18.0613L13.8405 19.4692C15.0302 19.0626 16.12 18.4079 17.0375 17.5483L16.3321 15.876C17.0654 15.0576 17.6027 14.0829 17.9031 13.0259L19.6949 12.7382C19.9396 11.5049 19.9203 10.2337 19.6384 9.00827L17.8291 8.77918C17.4946 7.73265 16.9211 6.77831 16.1541 5.99166L16.8023 4.29248C15.8544 3.46841 14.7427 2.85442 13.5404 2.49103Z" stroke="currentColor" strokeWidth="2" strokeMiterlimit="10"/>
-                              </svg>
-                              {t("models.providerMenu2")}
-                            </div>,
-                          onClick: () => openModelPopup(index)
-                        },
-                        { label:
-                            <div className="provider-edit-menu-item">
-                              <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 22 22" fill="none">
-                                <path d="M3 5H19" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                                <path d="M17 7V18.2373C16.9764 18.7259 16.7527 19.1855 16.3778 19.5156C16.0029 19.8457 15.5075 20.0192 15 19.9983H7C6.49249 20.0192 5.99707 19.8457 5.62221 19.5156C5.24735 19.1855 5.02361 18.7259 5 18.2373V7" stroke="currentColor" strokeWidth="2" strokeLinejoin="round"/>
-                                <path d="M8 10.04L14 16.04" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round"/>
-                                <path d="M14 10.04L8 16.04" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round"/>
-                              <path d="M13.5 2H8.5C8.22386 2 8 2.22386 8 2.5V4.5C8 4.77614 8.22386 5 8.5 5H13.5C13.7761 5 14 4.77614 14 4.5V2.5C14 2.22386 13.7761 2 13.5 2Z" stroke="currentColor" strokeWidth="2" strokeLinejoin="round"/>
-                              </svg>
-                              {t("models.providerMenu3")}
-                            </div>,
-                          onClick: () => {
-                            setCurrentIndex(index)
-                            setShowDelete(true)
-                        }},
-                      ]}
-                    >
-                      <div className="provider-edit-menu">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 22 22" width="25" height="25">
-                          <path fill="currentColor" d="M19 13a2 2 0 1 0 0-4 2 2 0 0 0 0 4ZM11 13a2 2 0 1 0 0-4 2 2 0 0 0 0 4ZM3 13a2 2 0 1 0 0-4 2 2 0 0 0 0 4Z"></path>
-                        </svg>
-                      </div>
-                    </Dropdown>
-                  </div>
-                </div>
-              ))}
-            </div>
+            {modelGroups.map((group: LLMGroup, index: number) => (
+              <GroupItem
+                key={`config-${index}-${group.models.length}`}
+                group={group}
+                onGroupToggle={handleGroupToggle}
+                onOpenModelPopup={openModelPopup}
+                onEditGroup={handleEditGroup}
+                onDeleteGroup={handleDeleteGroup}
+              />
+            ))}
           </div>
         </div>
-        {showKeyPopup && (
-          <KeyPopup
-            onClose={() => setShowKeyPopup(false)}
-            onSuccess={handleNewKeySubmit}
+        {showGroupCreator && (
+          <GroupCreator
+            onClose={() => setShowGroupCreator(false)}
+            onSuccess={handleNewGroupSubmit}
           />
         )}
-        {showKeyPopupEdit && (
-          <KeyPopupEdit
-            onClose={() => setShowKeyPopupEdit(false)}
+        {showGrupEditor && (
+          <GroupEditor
+            onClose={() => setShowGroupEditor(false)}
             onSuccess={handleKeyPopupEditSubmit}
           />
         )}
         {showModelPopup && (
-          <ModelPopup
-            defaultModel={defaultModel}
+          <ModelsEditor
             onClose={() => {
               setShowModelPopup(false)
-              setDefaultModel("")
             }}
             onSuccess={handleModelSubmit}
           />

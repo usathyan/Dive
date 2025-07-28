@@ -1,265 +1,185 @@
-import { useAtom } from "jotai";
-import React, { useEffect, useRef, useState } from "react";
-import { useTranslation } from "react-i18next";
-import { InterfaceModelConfig, ModelConfig } from "../../../atoms/configState";
+import { useSetAtom } from "jotai"
+import React, { useEffect, useRef, useState } from "react"
+import { useTranslation } from "react-i18next"
+import { ModelConfig } from "../../../../atoms/configState"
 import {
   defaultInterface,
   FieldDefinition,
-  InterfaceProvider,
   PROVIDER_LABELS,
   PROVIDERS,
-} from "../../../atoms/interfaceState";
-import { showToastAtom } from "../../../atoms/toastState";
-import CheckBox from "../../../components/CheckBox";
-import PopupConfirm from "../../../components/PopupConfirm";
-import { formatData } from "../../../helper/config";
-import { useModelsProvider } from "./ModelsProvider";
+} from "../../../../atoms/interfaceState"
+import { showToastAtom } from "../../../../atoms/toastState"
+import CheckBox from "../../../../components/CheckBox"
+import PopupConfirm from "../../../../components/PopupConfirm"
+import { useModelsProvider } from "../ModelsProvider"
+import { ModelProvider } from "../../../../../types/model"
+import useModelInterface from "../../../../hooks/useModelInterface"
+import { fieldsToLLMGroup } from "../../../../helper/model"
 
-const KeyPopupEdit = ({
-  onClose,
-  onSuccess,
-}: {
-  onClose: () => void;
-  onSuccess: (customModelID?: string) => void;
-}) => {
-  const { t } = useTranslation();
-  const [provider, setProvider] = useState<InterfaceProvider>(PROVIDERS[0]);
-  const [fields, setFields] = useState<Record<string, FieldDefinition>>(
-    defaultInterface[provider]
-  );
+type Props = {
+  onClose: () => void
+  onSuccess: (customModelID?: string) => void
+}
 
-  const [formData, setFormData] = useState<InterfaceModelConfig>({
-    active: true,
-  } as InterfaceModelConfig);
-  const [errors, setErrors] = useState<Record<string, string>>({});
-  const [customModelID, setCustomModelID] = useState<string>("");
-  const isVerifying = useRef(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [, showToast] = useAtom(showToastAtom);
-  const [showOptional, setShowOptional] = useState<Record<string, Record<string, boolean>>>({});
-  const [isApiKeyVisible, setIsApiKeyVisible] = useState(false);
-  const [copySuccess, setCopySuccess] = useState(false);
+const KeyPopupEdit = ({ onClose, onSuccess }: Props) => {
+  const { t } = useTranslation()
+  const [provider, setProvider] = useState<ModelProvider>(PROVIDERS[0])
+  const [fields, setFields] = useState<Record<string, FieldDefinition>>(defaultInterface[provider])
 
-  const {
-    currentIndex,
-    multiModelConfigList,
-    setMultiModelConfigList,
-    saveConfig,
-    prepareModelConfig,
-    fetchListOptions,
-    setCurrentIndex,
-  } = useModelsProvider();
+  const [formData, setFormData] = useState<Record<string, any>>({})
+  const [errors, setErrors] = useState<Record<string, string>>({})
+  const [customModelID, setCustomModelID] = useState<string>("")
+  const isVerifying = useRef(false)
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const showToast = useSetAtom(showToastAtom)
+  const [showOptional, setShowOptional] = useState<Record<string, Record<string, boolean>>>({})
+  const [isApiKeyVisible, setIsApiKeyVisible] = useState(false)
+  const [copySuccess, setCopySuccess] = useState(false)
 
-  const modelConfig = multiModelConfigList?.[currentIndex];
+  const { fetchListField } = useModelInterface()
+  const { getLatestBuffer, groupToFields, writeGroupBuffer } = useModelsProvider()
 
   useEffect(() => {
-    return () => {
-      isVerifying.current = false;
-    };
-  }, []);
+    const group = getLatestBuffer().group
+    const modelProvider = group.modelProvider
+    setProvider(modelProvider)
 
-  useEffect(() => {
-    if (modelConfig) {
-      const modelProvider =
-        (modelConfig.name as InterfaceProvider) || PROVIDERS[0];
-      setProvider(modelProvider);
-      setFields(defaultInterface[modelProvider]);
+    const fileds = defaultInterface[modelProvider]
+    delete fileds.customModelId
+    setFields(fileds)
 
-      const modelData: InterfaceModelConfig = {
-        apiKey: modelConfig.apiKey,
-        baseURL: modelConfig.baseURL,
-        model: modelConfig.model,
-        topP: modelConfig.topP,
-        temperature: modelConfig.temperature,
-        active: modelConfig.active !== false,
-        modelProvider: modelProvider,
-        configuration: {
-          topP: modelConfig.topP,
-          temperature: modelConfig.temperature,
-        },
-      };
+    const formData = groupToFields(group)
+    setFormData(formData)
 
-      setFormData(modelData);
-
-      // const customModelList = localStorage.getItem("customModelList");
-      // if (customModelList) {
-      //   const parsedList = JSON.parse(customModelList);
-      //   const key = modelConfig.apiKey || modelConfig.baseURL;
-      //   if (key && parsedList[key]?.length) {
-      //     setCustomModelID(parsedList[key][0] || "");
-      //   }
-      // }
-
-      if (
-        modelConfig.baseURL &&
-        defaultInterface[modelProvider]?.baseURL &&
-        !defaultInterface[modelProvider].baseURL.required
-      ) {
-        setShowOptional((prev) => ({ ...prev, [modelProvider]: { ...showOptional[modelProvider], baseURL: true } }));
-      }
+    if (
+      formData.baseURL &&
+      defaultInterface[modelProvider]?.baseURL &&
+      !defaultInterface[modelProvider].baseURL.required
+    ) {
+      setShowOptional((prev) => ({ ...prev, [modelProvider]: { ...showOptional[modelProvider], baseURL: true } }))
     }
-  }, [modelConfig]);
+
+    isVerifying.current = false
+  }, [])
 
   const handleChange = (key: string, value: any) => {
-    setFormData((prev) => ({ ...prev, [key]: value }));
-  };
+    setFormData((prev) => ({ ...prev, [key]: value }))
+  }
 
   const validateForm = () => {
-    const newErrors: Record<string, string> = {};
+    const newErrors: Record<string, string> = {}
     Object.entries(fields).forEach(([key, field]) => {
-      if (field.required && !formData[key as keyof InterfaceModelConfig]) {
-        newErrors[key] = t("setup.required");
+      if (field.required && !formData[key]) {
+        newErrors[key] = t("setup.required")
       }
-    });
+    })
 
     if (Object.keys(newErrors).length > 0) {
-      setErrors(newErrors);
-      return false;
+      setErrors(newErrors)
+      return false
     }
-    return true;
-  };
+    return true
+  }
 
   const handleSubmit = async (data: Record<string, any>) => {
     try {
       if (data.success) {
-        onSuccess(customModelID);
+        onSuccess(customModelID)
       }
     } catch (error) {
-      console.error("Failed to save config:", error);
+      console.error("Failed to save config:", error)
       showToast({
         message: t("setup.saveFailed"),
         type: "error",
-      });
+      })
     }
-  };
+  }
 
   const onConfirm = async () => {
-    if (!validateForm()) return;
+    if (!validateForm()) {
+      return
+    }
 
-    const __formData = {
+    const data = {
       ...formData,
       baseURL:
         !fields?.baseURL?.required && !showOptional[provider]?.baseURL
           ? ""
           : formData.baseURL,
-    };
-
-    // 判斷是否為編輯現有配置或新建配置
-    const isEditing = modelConfig !== undefined;
-
-    // 如果不是編輯現有配置，則檢查是否已存在相同配置
-    let existingIndex = -1;
-    if (!isEditing && multiModelConfigList && multiModelConfigList.length > 0) {
-      if (__formData.baseURL) {
-        if (__formData.apiKey) {
-          existingIndex = multiModelConfigList.findIndex(
-            (config) =>
-              config.baseURL === __formData.baseURL &&
-              config.apiKey === __formData.apiKey
-          );
-        } else {
-          existingIndex = multiModelConfigList.findIndex(
-            (config) => config.baseURL === __formData.baseURL
-          );
-        }
-      } else if (__formData.apiKey) {
-        existingIndex = multiModelConfigList.findIndex(
-          (config) => config.apiKey === __formData.apiKey
-        );
-      }
     }
 
-    if (existingIndex !== -1) {
-      setCurrentIndex(existingIndex);
-      onSuccess();
-      return;
-    }
-
-    const _formData = prepareModelConfig(__formData, provider);
-    const multiModelConfig = {
-      ...formatData(_formData),
-      name: provider,
-    };
-
-    const _multiModelConfigList = JSON.parse(
-      JSON.stringify(multiModelConfigList)
-    );
+    const group = fieldsToLLMGroup(provider, data)
 
     try {
-      setErrors({});
-      setIsSubmitting(true);
-      isVerifying.current = true;
+      setErrors({})
+      setIsSubmitting(true)
+      isVerifying.current = true
 
-      // 對於新增和編輯都進行API金鑰驗證，但編輯時如果有自定義模型ID則跳過
-      if (!(isEditing && customModelID)) {
-        const listOptions = await fetchListOptions(multiModelConfig, fields);
+      // for both adding and editing, perform API key verification, but skip if editing and there is a custom model ID
+      if (!customModelID && fields["model"]) {
+        const listOptions = await fetchListField(fields["model"], formData).catch(e => {
+          console.error(e)
+          return []
+        })
 
-        if (!listOptions?.length) {
-          const newErrors: Record<string, string> = {};
-          newErrors["apiKey"] = t("models.apiKeyError");
-          setErrors(newErrors);
-          return;
+        if (!listOptions.length) {
+          const newErrors: Record<string, string> = {}
+          const keyFiled = group.modelProvider === "bedrock" ? "accessKeyId" : "apiKey"
+          newErrors[keyFiled] = t("models.apiKeyError")
+          setErrors(newErrors)
+          return
         }
       }
 
-      // 保存自定義模型列表
+      // save custom model list
       if (customModelID) {
-        const customModelList = localStorage.getItem("customModelList");
-        const allCustomModelList = customModelList
-          ? JSON.parse(customModelList)
-          : {};
-        allCustomModelList[_formData.apiKey || _formData.baseURL] = [...(allCustomModelList[_formData.apiKey || _formData.baseURL] || []), customModelID];
+        const customModelList = localStorage.getItem("customModelList")
+        const allCustomModelList = customModelList ? JSON.parse(customModelList) : {}
+        allCustomModelList[formData.apiKey || formData.baseURL || ""] = [...(allCustomModelList[formData.apiKey || formData.baseURL || ""] || []), customModelID]
         localStorage.setItem(
           "customModelList",
           JSON.stringify(allCustomModelList)
-        );
+        )
       }
 
-      if (isEditing) {
-        const updatedList = [...(multiModelConfigList || [])];
-        updatedList[currentIndex] = multiModelConfig;
-        setMultiModelConfigList(updatedList);
-        setCurrentIndex(currentIndex);
-      }
-      const data = await saveConfig();
-      await handleSubmit(data);
-    } catch (error) {
-      const newErrors: Record<string, string> = {};
-      newErrors["apiKey"] = t("models.apiKeyError");
-      setErrors(newErrors);
-      setMultiModelConfigList(_multiModelConfigList);
+      writeGroupBuffer(group)
+      await handleSubmit({ success: true })
+    } catch (_error) {
+      const newErrors: Record<string, string> = {}
+      newErrors["apiKey"] = t("models.apiKeyError")
+      setErrors(newErrors)
     } finally {
-      setIsSubmitting(false);
-      isVerifying.current = false;
+      setIsSubmitting(false)
+      isVerifying.current = false
     }
-  };
+  }
 
   const handleClose = () => {
     if (isVerifying.current) {
       showToast({
         message: t("models.verifyingAbort"),
         type: "error",
-      });
+      })
     }
-    onClose();
-  };
+    onClose()
+  }
 
   const toggleApiKeyVisibility = () => {
-    setIsApiKeyVisible(!isApiKeyVisible);
-  };
+    setIsApiKeyVisible(!isApiKeyVisible)
+  }
 
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text).then(() => {
-      setCopySuccess(true);
+      setCopySuccess(true)
       showToast({
         message: t("toast.copiedToClipboard"),
         type: "success",
-      });
+      })
       setTimeout(() => {
-        setCopySuccess(false);
-      }, 3000);
-    });
-  };
+        setCopySuccess(false)
+      }, 3000)
+    })
+  }
 
   return (
     <>
@@ -307,7 +227,7 @@ const KeyPopupEdit = ({
                       ) : (
                         field.label
                       )}
-                      {field.required && <span className="required">*</span>}
+                      {field.required && key !== "model" && <span className="required">*</span>}
                     </>
                     <div className="models-key-field-description">
                       {field.description}
@@ -435,6 +355,6 @@ const KeyPopupEdit = ({
         </div>
       </PopupConfirm>
     </>
-  );
-};
-export default React.memo(KeyPopupEdit);
+  )
+}
+export default React.memo(KeyPopupEdit)

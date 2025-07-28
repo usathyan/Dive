@@ -4,10 +4,13 @@ import App from "./App"
 import { loadConfigAtom } from "./atoms/configState"
 import { useSetAtom } from "jotai"
 import { loadHotkeyMapAtom } from "./atoms/hotkeyState"
+import { modelSettingsAtom } from "./atoms/modelState"
+import { fromRawConfigToModelGroupSetting } from "./helper/model"
 
 function Root() {
   const loadConfig = useSetAtom(loadConfigAtom)
   const loadHotkeyMap = useSetAtom(loadHotkeyMapAtom)
+  const setModelSetting = useSetAtom(modelSettingsAtom)
   const [loading, setLoading] = useState(true)
   const [downloading, setDownloading] = useState(window.PLATFORM !== "darwin")
   const init = useRef(false)
@@ -76,6 +79,19 @@ function Root() {
     initHost()
       .then(loadHotkeyMap)
       .then(loadConfig)
+      .then(async (res) => {
+        const existsSetting = await window.ipcRenderer.getModelSettings()
+        if (existsSetting) {
+          setModelSetting(existsSetting)
+          return
+        }
+
+        if (res) {
+          const settings = fromRawConfigToModelGroupSetting(res)
+          setModelSetting(settings)
+          return window.ipcRenderer.setModelSettings(settings)
+        }
+      })
       .finally(() => {
         setDownloading(false)
         setLoading(false)

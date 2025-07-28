@@ -1,57 +1,82 @@
 import "@/styles/components/_ModelSelect.scss"
 import { useTranslation } from "react-i18next"
 import Select from "./Select"
-import { useEffect, useState } from "react"
-import { InterfaceProvider, PROVIDER_ICONS } from "../atoms/interfaceState"
-import { useAtom, useAtomValue, useSetAtom } from "jotai"
-import { configAtom, configDictAtom, enabledModelsIdsAtom, InterfaceModelConfigMap, writeRawConfigAtom } from "../atoms/configState"
+import { useEffect, useMemo, useState } from "react"
+import { isProviderIconNoFilter, PROVIDER_ICONS } from "../atoms/interfaceState"
+import { useAtomValue, useSetAtom } from "jotai"
+import { configAtom, writeRawConfigAtom } from "../atoms/configState"
 import { openOverlayAtom } from "../atoms/layerState"
 import { showToastAtom } from "../atoms/toastState"
 import Tooltip from "./Tooltip"
 import { systemThemeAtom, userThemeAtom } from "../atoms/themeState"
+import { modelSettingsAtom } from "../atoms/modelState"
+import { getGroupTerm, getModelTerm, getTermFromRawModelConfig, GroupTerm, intoRawModelConfig, ModelTerm, queryGroup, queryModel } from "../helper/model"
 
-function optionMask(model: { name: string; provider: string }) {
-  const preText = !model.provider.startsWith("ollama") ? "***" : ""
-
-  return `${preText}${model.name}`
-}
+const DEFAULT_MODEL = {group: {}, model: {}}
 
 const ModelSelect = () => {
   const { t } = useTranslation()
   const config = useAtomValue(configAtom)
-  const configList = useAtomValue(configDictAtom)
   const saveAllConfig = useSetAtom(writeRawConfigAtom)
-  const [model, setModel] = useState<string>(config?.activeProvider ?? "")
+  const [model, setModel] = useState<{group: GroupTerm, model: ModelTerm}>(DEFAULT_MODEL)
   const openOverlay = useSetAtom(openOverlayAtom)
-  const [, showToast] = useAtom(showToastAtom)
+  const showToast = useSetAtom(showToastAtom)
   const systemTheme = useAtomValue(systemThemeAtom)
   const userTheme = useAtomValue(userThemeAtom)
-  const modelList = useAtomValue(enabledModelsIdsAtom)
+  const settings = useAtomValue(modelSettingsAtom)
 
-  useEffect(() => {
-    setModel(config?.activeProvider ?? "")
-  }, [config?.activeProvider])
-
-  const isProviderIconNoFilter = (model: string) => {
-    const isLightMode = userTheme === "system" ? systemTheme === "light" : userTheme === "light"
-    switch (model) {
-      case "ollama":
-      case "openai_compatible":
+  const getModelNamePrefix = (group: GroupTerm) => {
+    switch (group.modelProvider) {
+      case "oap":
+        return "OAP"
       case "bedrock":
-      case "google_genai":
-        return true
-      case "mistralai":
-        return isLightMode
+        return `***${group.extra?.credentials?.accessKeyId?.slice(-4)}`
+      case "lmstudio":
+        return "LMStudio"
       default:
-        return model.startsWith("google") && isLightMode
+        if (group.apiKey) {
+          return `***${group.apiKey.slice(-4)}`
+        }
+
+        if (group.baseURL) {
+          return `***${group.baseURL.slice(-4)}`
+        }
     }
   }
 
-  const handleModelChange = async (value: string) => {
+  const modelList = useMemo(() => {
+    return Object.values(settings.groups)
+      .filter((group) => group.active)
+      .flatMap((group) =>
+        group.models
+          .filter((model) => model.active)
+          .map((model) => ({
+            provider: group.modelProvider,
+            name: `${getModelNamePrefix(group)}/${model.model}`,
+            value: {group: getGroupTerm(group), model: getModelTerm(model)},
+          })
+      ))
+  }, [settings])
+
+  useEffect(() => {
+    setModel(getTermFromRawModelConfig(config) ?? DEFAULT_MODEL)
+  }, [config])
+
+  const handleModelChange = async (value: {group: GroupTerm, model: ModelTerm}) => {
     const _model = model
     setModel(value)
     try {
-      const data = await saveAllConfig({ providerConfigs: configList as InterfaceModelConfigMap, activeProvider: value as InterfaceProvider })
+      const group = queryGroup(value.group, settings.groups)
+      if (group.length === 0) {
+        throw new Error("Group not found")
+      }
+
+      const model = queryModel(value.model, group[0])
+      if (model.length === 0) {
+        throw new Error("Model not found")
+      }
+
+      const data = await saveAllConfig(intoRawModelConfig(settings, group[0], model[0])!)
       if (data.success) {
         showToast({
           message: t("setup.saveSuccess"),
@@ -64,31 +89,27 @@ const ModelSelect = () => {
     }
   }
 
-  const getRealProvider = (key: string) => {
-    return key.split("-")[0]
-  }
-
   return (
     <div className="model-select">
       <Select
-        options={modelList.map((model) => ({
-          value: model.key,
+        options={modelList.map((model, i) => ({
+          value: model.value,
           label: (
-              <div className="model-select-label" key={model.key}>
+              <div className="model-select-label" key={i}>
                 <img
-                  src={PROVIDER_ICONS[getRealProvider(model.key) as keyof typeof PROVIDER_ICONS]}
+                  src={PROVIDER_ICONS[model.provider]}
                   alt={model.provider}
-                  className={`model-select-label-icon ${isProviderIconNoFilter(getRealProvider(model.key)) ? "no-filter" : ""}`}
+                  className={`model-select-label-icon ${isProviderIconNoFilter(model.provider, userTheme, systemTheme) ? "no-filter" : ""}`}
                 />
                 <span className="model-select-label-text">
-                  {optionMask(model)}
+                  {model.name}
                 </span>
               </div>
             )
           })
         )}
         placeholder={modelList.length === 0 ? t("models.noModelAlertOption") : t("models.selectModelPlaceHolder")}
-        value={model}
+        value={model!}
         onSelect={handleModelChange}
         className={`${modelList.length === 0 ? "disabled" : ""}`}
         contentClassName="model-select-content"

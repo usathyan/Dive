@@ -21,6 +21,7 @@
     "retry": "Reintentar",
     "noModelAlert": "No hay modelos disponibles",
     "noModelBanner": "No hay modelos disponibles, por favor seleccione un modelo",
+    "onLimit": "Has alcanzado el límite de uso de {{plan}}. oap modelos no se pueden usar",
     "modelSettings": "Configuración del Modelo",
     "copy": "Copiar",
     "copied": "Copiado",
@@ -65,7 +66,10 @@
     "settings": "Configuración del Modelo",
     "update": "Actualización disponible",
     "models": "Configuración del Modelo",
-    "system": "Configuración del Sistema"
+    "system": "Configuración del Sistema",
+    "manageAndSettings": "Gestión y Configuración",
+    "OAPhub": "OAPhub",
+    "signOut": "Cerrar sesión"
   },
   "tools": {
     "title": "Gestión de Herramientas (MCP)",
@@ -98,6 +102,7 @@
     "toolMenu1": "Eliminar",
     "toolMenu2": "Editar",
     "toolMenu3": "Recargar",
+    "toolMenu4": "Ver detalles",
     "delete": "Eliminar",
     "jsonCopy": "Copiar",
     "jsonCopied": "Copiado",
@@ -132,7 +137,29 @@
     "transportPlaceholder": "Seleccione Transport...",
     "toogleTool.alt": "Activar herramientas MCP",
     "logTitle": "Ejecutar comando UVX",
-    "logProcessing": "Procesando..."
+    "logProcessing": "Procesando...",
+    "no_tool_title": "No hay servidores MCP disponibles",
+    "no_oap_tool_message.all": "Por favor seleccione un servidor MCP OAP para usar o agregue un servidor MCP personalizado.",
+    "no_oap_tool_message.oap": "Por favor seleccione un servidor MCP OAP para usar.",
+    "no_oap_tool_message.local": "Por favor agregue un servidor MCP personalizado.",
+    "no_tool_message": "Por favor agregue un servidor MCP.",
+    "addOapMcp.alt": "Agregar y ver herramientas MCP OAP",
+    "oap.type.all": "Todas las herramientas",
+    "oap.type.base": "Solo Base",
+    "oap.type.pro": "Solo Pro",
+    "oap.sort": "Ordenar",
+    "oap.sort.popular": "Popular",
+    "oap.sort.new": "Nuevo",
+    "oap.tag": "Etiquetas",
+    "oap.no_search_data_title": "No se encontraron herramientas MCP",
+    "oap.no_search_data": "No se encontraron resultados, por favor limpie las palabras clave o ajuste los filtros.",
+    "oap.clear_filter": "Limpiar filtros",
+    "oap.hint": "Los servidores MCP avanzados requieren una actualización a la versión Pro para instalarse",
+    "tabAll": "Todas las herramientas",
+    "tabOap": "Herramientas OAP",
+    "tabLocal": "Herramientas personalizadas",
+    "oap.pro_only": "Solo disponible para usuarios del plan Pro",
+    "oapStoreLink.alt": "Ver detalles"
   },
   "modelConfig": {
     "title": "Configuración del Modelo",
@@ -150,7 +177,13 @@
     "confirm": "Confirmar",
     "cancel": "Cancelar",
     "copy": "Copiar",
-    "copySuccess": "Copiado con éxito"
+    "copySuccess": "Copiado",
+    "zoomInImage": "Imagen ampliada",
+    "copyImage": "Copiar imagen",
+    "copyImageUrl": "Copiar URL de imagen",
+    "downloadImage": "Descargar imagen",
+    "login": "Iniciar sesión",
+    "signup": "Registrarse"
   },
   "models": {
     "title": "Configuración de Modelos",
@@ -238,7 +271,8 @@
     "verifyErrorMsg": "El modelo no utilizó ninguna herramienta durante la verificación, lo que puede deberse a que no soporta herramientas o no se activaron. Por lo tanto, no se puede confirmar si soporta herramientas.",
     "verifyStatusSuccess": "Modelo verificado con éxito, habilitado con la configuración original",
     "verifyStatusSuccessInPrompt": "Modelo verificado con éxito, habilitado con MCP Prompts",
-    "verifyUnexpectedFailed": "Modelo verificación fallida, ocurrió un error desconocido, por favor inténtelo más tarde"
+    "verifyUnexpectedFailed": "Modelo verificación fallida, ocurrió un error desconocido, por favor inténtelo más tarde",
+    "oapUsageLimit": "Uso de OAP alcanzado"
   },
   "system": {
     "title": "Configuración del Sistema",
@@ -252,15 +286,38 @@
     "autoDownloadDescription": "Descargar automáticamente la nueva versión de DIVE cuando se reinicie o se haga clic en el botón \"Actualizar\" en la página del menú",
     "autoLaunch": "Iniciar automáticamente",
     "autoLaunchDescription": "Iniciar Dive AI automáticamente cuando se reinicie",
-    "minimalToTray": "Minimizar a la barra de tareas",
-    "minimalToTrayDescription": "Cuando se cierra la ventana, el programa no se cerrará, sino que se minimizará a un icono",
+    "loginTitle": "OAP Login",
+    "loginDescription": "Use OpenAgentPlatform to login, no technical background is required to easily connect LLMs, AI Agents and MCP Servers — Experience smart solutions now!",
+    "personalInformationTitle": "Información personal",
+    "minimalToTray": "Minimizar",
+    "minimalToTrayDescription": "Cuando se cierra la ventana, no se cerrará el programa, sino que se minimizará a un icono",
     "defaultSystemPrompt": "Dive Default System Prompt",
-    "defaultSystemPromptDescription": "El Prompt del Sistema Predeterminado de Dive se utiliza como el prompt del sistema predeterminado oficial para el chat, permitiendo que el LLM soporte KaTeX, Markdown, Mermaid y otros formatos de salida en el contenido del chat de Dive. Habilitar esta función consumirá más tokens, lo que puede hacer que las respuestas sean un poco más lentas, pero garantiza la calidad de las respuestas; si se desactiva, las respuestas pueden ser más rápidas pero la calidad puede disminuir.",
+    "defaultSystemPromptDescription": "Dive Default System Prompt se utiliza como el sistema predeterminado de chat. Le dice al LLM que Dive chat soporta KaTeX / Markdown / Mermaid, etc. Este uso consume ciertos tokens, lo que puede hacer que la respuesta sea más lenta que la de un prompt sin sistema predeterminado. Por otro lado, si se desactiva, la calidad de la respuesta del LLM puede disminuir",
+    "usageAnalytics": "Vaya a la página de Panel en OAP Hub para ver",
+    "usageAnalyticsTitle": "Análisis de uso",
+    "userEdit": "Vaya a la página de Cuenta en OAP Hub para realizar cambios",
+    "planSectionTitle": "Uso actual del plan",
+    "subscriptionDate": "Fecha de suscripción",
+    "remainingUsage": "Uso restante",
+    "usageWarningTitle": "Límite de uso de tokens alcanzado.",
+    "usageWarning": "El plan Pro se restablecerá el próximo mes. O bien, puede comprar un paquete de tokens para aumentar su uso. Los Modelos Básicos y el MCP Básico aún están disponibles.",
+    "usageWarningHint": "Los modelos básicos y los MCP básicos no están sujetos a límites de uso.",
+    "BaseSubscriptionDate": "Nunca expira",
+    "BaseRemainingUsage": "Sin límite",
+    "BaseUsageWarning": "El plan Base incluye acceso a Modelos Básicos y MCPs Básicos. Para usar otros modelos y MCPs, actualice su plan desde la <planLink>Página de Planes</planLink>.",
     "customPromptDescription": "Si necesita instrucciones adicionales, haga clic en la función \"Prompt personalizado\" a continuación para configurarlo.",
-    "customPromptButton": "Prompt personalizado"
+    "customPromptButton": "Prompt personalizado",
+    "tokenPackageTitle": "Uso del paquete de tokens",
+    "tokenPackageHint": "El paquete de tokens no tiene fecha de vencimiento y se utilizará después de agotar la cuota del plan mensual.",
+    "tokenPackageRemainingUsage": "Uso restante",
+    "tokenPackageWarningTitle": "El uso de tokens ha alcanzado el límite.",
+    "tokenPackageWarning": "Puede ir a la página <planLink>Dashboard</planLink> de OAPhub para recargar más uso de tokens."
   },
   "toast": {
-    "copiedToClipboard": "Copiado al portapapeles"
+    "copiedToClipboard": "Copiado al portapapeles",
+    "copyFailed": "Error al copiar",
+    "copiedImage": "Imagen copiada",
+    "downloadedImage": "Imagen descargada"
   },
   "keymap": {
     "title": "Atajos de Teclado",
@@ -269,7 +326,6 @@
       "chat-input_upload-file": "Subir Archivo",
       "chat-input_focus": "Enfocar Entrada",
       "chat-input_paste-last-message": "Pegar Último Mensaje",
-      "chat-message_copy-last": "Copiar Última Respuesta",
       "chat_delete": "Eliminar Chat",
       "global_new-chat": "Nuevo Chat",
       "global_toggle-sidebar": "Alternar Barra Lateral",
@@ -281,6 +337,16 @@
     "downloading": "Descargando",
     "readyToInstall": "Descarga completada",
     "clickToInstall": "Haga clic para instalar la actualización"
+  },
+  "login": {
+    "subtitle": "Dive AI es una aplicación de escritorio de código abierto que integra perfectamente varios modelos de lenguaje grandes que admiten llamadas a funciones. A través de una interfaz concisa e intuitiva, le permite conversar fácilmente con la IA de vanguardia, desde preguntas diarias hasta tareas profesionales, obteniendo respuestas precisas y convirtiéndose en su asistente inteligente.",
+    "title1": "Usa tus propios modelos preparados",
+    "description1": "Adecuado para expertos en IA avanzados. Si ya tiene su propia configuración, ya sea Ollama local, llama.cpp o servicios remotos como Openrouter, OpenAI, Anthropic u otras APIs LLM proporcionadas por empresas de IA, utilice esta opción",
+    "button1": "Ir a configurar modelo",
+    "title2": "Usa la plataforma OpenAgentPlatform",
+    "description2": "OAP permite que todos utilicen fácilmente los servicios de IA más avanzados, conectando LLM, AI Agent y MCP Servers sin necesidad de conocimientos técnicos. Explore las infinitas posibilidades de la IA, es una solución inteligente para experimentar ahora",
+    "button2": "Registrarse en OAP",
+    "button3": "Iniciar sesión en OAP"
   },
   "InstallHostDependencies": {
     "title": "Descargando módulos...",

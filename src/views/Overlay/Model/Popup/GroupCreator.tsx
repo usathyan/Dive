@@ -1,41 +1,52 @@
 import { useTranslation } from "react-i18next"
-import { InterfaceModelConfig, ModelConfig } from "../../../atoms/configState"
-import { defaultInterface, FieldDefinition, InterfaceProvider, PROVIDER_LABELS, PROVIDERS } from "../../../atoms/interfaceState"
-import PopupConfirm from "../../../components/PopupConfirm"
-import { useEffect, useRef, useState } from "react"
-import { showToastAtom } from "../../../atoms/toastState"
-import { useAtom } from "jotai"
+import { ModelConfig } from "../../../../atoms/configState"
+import { defaultInterface, FieldDefinition, PROVIDER_LABELS, PROVIDERS } from "../../../../atoms/interfaceState"
+import PopupConfirm from "../../../../components/PopupConfirm"
+import { useEffect, useMemo, useRef, useState } from "react"
+import { showToastAtom } from "../../../../atoms/toastState"
+import { useAtomValue, useSetAtom } from "jotai"
 import React from "react"
-import { useModelsProvider } from "./ModelsProvider"
-import { formatData } from "../../../helper/config"
-import CheckBox from "../../../components/CheckBox"
-import Tooltip from "../../../components/Tooltip"
-import SelectSearch from "../../../components/SelectSearch"
+import CheckBox from "../../../../components/CheckBox"
+import Tooltip from "../../../../components/Tooltip"
+import SelectSearch from "../../../../components/SelectSearch"
+import { ModelProvider } from "../../../../../types/model"
+import { useModelsProvider } from "../ModelsProvider"
+import useModelInterface from "../../../../hooks/useModelInterface"
+import { fieldsToLLMGroup, getGroupTerm, queryGroup } from "../../../../helper/model"
+import { modelSettingsAtom } from "../../../../atoms/modelState"
 
-const KeyPopup = ({
-  onClose,
-  onSuccess,
-}: {
+type Props = {
   onClose: () => void
-  onSuccess: (customModelId?: string) => void
-}) => {
+  onSuccess: () => void
+}
+
+const GroupCreator = ({ onClose, onSuccess }: Props) => {
   const { t } = useTranslation()
-  const [provider, setProvider] = useState<InterfaceProvider>(PROVIDERS[0])
+  const [provider, setProvider] = useState<ModelProvider>(PROVIDERS[0])
   const [fields, setFields] = useState<Record<string, FieldDefinition>>(defaultInterface[provider])
 
-  const [formData, setFormData] = useState<InterfaceModelConfig>({active: true} as InterfaceModelConfig)
+  const [formData, setFormData] = useState<Record<string, any>>({active: true})
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [customModelId, setCustomModelId] = useState<string>("")
   const [verifyError, setVerifyError] = useState<string>("")
   const isVerifying = useRef(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [, showToast] = useAtom(showToastAtom)
+  const showToast = useSetAtom(showToastAtom)
   const [showOptional, setShowOptional] = useState<Record<string, Record<string, boolean>>>({})
+  const settings = useAtomValue(modelSettingsAtom)
 
-  const { multiModelConfigList, setMultiModelConfigList,
-    saveConfig, prepareModelConfig,
-    fetchListOptions, setCurrentIndex
+  const providerList = useMemo(() => {
+    return PROVIDERS.filter(p => p !== "default" && !(p === "oap" && !window.isDev))
+  }, [])
+
+  const {
+    isGroupExist,
+    writeGroupBufferWithFields: writeGroupBuffer,
+    writeModelsBufferWithModelNames,
+    writeModelsBuffer,
+    reset: resetModelGroup,
   } = useModelsProvider()
+  const { fetchListField } = useModelInterface()
 
   useEffect(() => {
     return () => {
@@ -43,17 +54,23 @@ const KeyPopup = ({
     }
   }, [])
 
-  const handleProviderChange = (value: InterfaceProvider) => {
+  const handleProviderChange = (value: ModelProvider) => {
     setProvider(value)
-    setFormData({active: true} as InterfaceModelConfig)
+    setFormData({active: true})
     setCustomModelId("")
     Object.entries(defaultInterface[value]).forEach(([key, field]) => {
-      if(Object.keys(field).includes("value") && field.value){
+      if (Object.keys(field).includes("value") && field.value) {
         setFormData(prev => ({ ...prev, [key]: field.value }))
 
         if(key === "customModelId"){
           setCustomModelId(field.value)
         }
+      }
+
+      if (field.getValue) {
+        field.getValue().then(value => {
+          setFormData(prev => ({ ...prev, [key]: value }))
+        })
       }
     })
     setFields(defaultInterface[value])
@@ -68,7 +85,7 @@ const KeyPopup = ({
   const validateForm = () => {
     const newErrors: Record<string, string> = {}
     Object.entries(fields).forEach(([key, field]) => {
-      if (field.required && !formData[key as keyof InterfaceModelConfig] && key !== "customModelId") {
+      if (field.required && !formData[key] && key !== "customModelId") {
         newErrors[key] = t("setup.required")
       }
     })
@@ -84,62 +101,25 @@ const KeyPopup = ({
     return true
   }
 
-  const handleSubmit = async (data: Record<string, any>) => {
-    try {
-      if (data.success) {
-        onSuccess(customModelId)
-      }
-    } catch (error) {
-      console.error("Failed to save config:", error)
-      showToast({
-        message: t("setup.saveFailed"),
-        type: "error"
-      })
-    }
-  }
-
   const onConfirm = async () => {
-    if (!validateForm())
+    if (!validateForm()) {
       return
+    }
 
-    const __formData = {
+    const isFillOptionalBaseURL = !defaultInterface[provider]["baseURL"]?.required && !showOptional[provider]?.["baseURL"]
+    const fields: Record<string, any> = {
       ...formData,
-      baseURL: (!fields?.baseURL?.required && !showOptional[provider]?.["baseURL"]) ? "" : formData.baseURL
+      baseURL: isFillOptionalBaseURL ? "" : formData.baseURL
     }
 
-    let existingIndex = -1
-    if(multiModelConfigList && multiModelConfigList.length > 0){
-      if (__formData.baseURL) {
-        if (__formData.apiKey) {
-          existingIndex = multiModelConfigList.findIndex(config =>
-            config.baseURL === __formData.baseURL &&
-            config.apiKey === __formData.apiKey
-          )
-        } else {
-          existingIndex = multiModelConfigList.findIndex(config =>
-            config.baseURL === __formData.baseURL
-          )
-        }
-      } else if (__formData.apiKey) {
-        existingIndex = multiModelConfigList.findIndex(config =>
-          config.apiKey === __formData.apiKey
-        )
-      }
-    }
-
-    if(existingIndex !== -1){
-      setCurrentIndex(existingIndex)
+    const fieldsGroup = fieldsToLLMGroup(provider, fields)
+    if(isGroupExist(fieldsGroup)) {
+      const existingGroup = queryGroup(getGroupTerm(fieldsGroup), settings.groups)[0]
+      writeGroupBuffer(provider, fields)
+      writeModelsBuffer(existingGroup.models)
       onSuccess()
       return
     }
-
-    const _formData = prepareModelConfig(__formData, provider)
-    const multiModelConfig = {
-      ...formatData(_formData),
-      name: provider,
-    }
-
-    const _multiModelConfigList = JSON.parse(JSON.stringify(multiModelConfigList))
 
     try {
       setErrors({})
@@ -147,19 +127,28 @@ const KeyPopup = ({
       setIsSubmitting(true)
       isVerifying.current = true
 
-      let newCustomModelId = customModelId
-      if(!fields["customModelId"]?.required && !showOptional[provider]?.["customModelId"]) {
-        newCustomModelId = ""
-        setCustomModelId(newCustomModelId)
+      let isCustomIdEmpty = !customModelId
+      const isCustomModelIdRequired = fields["customModelId"]?.required
+      if(!isCustomModelIdRequired && !showOptional[provider]?.["customModelId"]) {
+        isCustomIdEmpty = true
+        setCustomModelId("")
+      }
+
+      let models: string[] = []
+      try {
+        models = await fetchListField(defaultInterface[provider]["model"], fields)
+      } catch (e) {
+        if (isCustomIdEmpty) {
+          setVerifyError((e as Error).message)
+          return
+        }
       }
 
       //if custom model id is required, still need to check if the key is valid
-      if(!newCustomModelId || fields["customModelId"]?.required) {
-        const listOptions = await fetchListOptions(multiModelConfig, fields)
-
+      if(isCustomIdEmpty && isCustomModelIdRequired) {
         //if custom model id is required, it doesn't need to check if listOptions is empty
         //because fetchListOptions in pre step will throw error if the key is invalid
-        if (!listOptions?.length && !fields["customModelId"]?.required){
+        if (!models?.length && !isCustomModelIdRequired){
           const newErrors: Record<string, string> = {}
           newErrors["apiKey"] = t("models.apiKeyError")
           setErrors(newErrors)
@@ -167,23 +156,22 @@ const KeyPopup = ({
         }
       }
 
-      if(newCustomModelId) {
+      if(!isCustomIdEmpty) {
         // save custom model list to local storage
         const customModelList = localStorage.getItem("customModelList")
         const allCustomModelList = customModelList ? JSON.parse(customModelList) : {}
         localStorage.setItem("customModelList", JSON.stringify({
           ...allCustomModelList,
-          [formData.accessKeyId || _formData.apiKey || _formData.baseURL]: [newCustomModelId]
+          [formData.accessKeyId || fields.apiKey || fields.baseURL || ""]: [customModelId]
         }))
       }
 
-      setMultiModelConfigList([...(multiModelConfigList ?? []), multiModelConfig])
-      setCurrentIndex((multiModelConfigList?.length ?? 0))
-      const data = await saveConfig()
-      await handleSubmit(data)
+      writeGroupBuffer(provider, fields)
+      writeModelsBufferWithModelNames(models, !isCustomIdEmpty ? [customModelId] : [])
+      onSuccess()
     } catch (error) {
       setVerifyError((error as Error).message)
-      setMultiModelConfigList(_multiModelConfigList)
+      resetModelGroup()
     } finally {
       setIsSubmitting(false)
       isVerifying.current = false
@@ -197,7 +185,9 @@ const KeyPopup = ({
         type: "error"
       })
     }
+
     onClose()
+    resetModelGroup()
   }
 
   const handleCopiedError = async (text: string) => {
@@ -214,9 +204,7 @@ const KeyPopup = ({
       zIndex={900}
       footerType="center"
       onConfirm={onConfirm}
-      confirmText={(isVerifying.current || isSubmitting) ? (
-        <div className="loading-spinner"></div>
-      ) : t("tools.save")}
+      confirmText={(isVerifying.current || isSubmitting) ? (<div className="loading-spinner"></div>) : t("tools.save")}
       disabled={isVerifying.current || isSubmitting}
       onCancel={handleClose}
       onClickOutside={handleClose}
@@ -228,7 +216,7 @@ const KeyPopup = ({
           </div>
           <SelectSearch
             fullWidth
-            options={PROVIDERS.map(p => ({ value: p, label: PROVIDER_LABELS[p] }))}
+            options={providerList.map(p => ({ value: p, label: PROVIDER_LABELS[p] }))}
             value={provider}
             onSelect={handleProviderChange as (value: unknown) => void}
             noResultText={t("tools.noProviderSearchResult")}
@@ -323,4 +311,4 @@ const KeyPopup = ({
   )
 }
 
-export default React.memo(KeyPopup)
+export default React.memo(GroupCreator)

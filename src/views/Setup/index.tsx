@@ -1,17 +1,18 @@
 import React, { useState } from "react"
 import { useSetAtom } from "jotai"
-import { InterfaceProvider, defaultInterface } from "../../atoms/interfaceState"
+import { defaultInterface } from "../../atoms/interfaceState"
 import { useTranslation } from "react-i18next"
 import { useNavigate, useLocation } from "react-router-dom"
 import ModelConfigForm from "./ModelConfigForm"
 import { showToastAtom } from "../../atoms/toastState"
+import { ModelProvider } from "../../../types/model"
 
 const Setup = () => {
   const { t } = useTranslation()
   const navigate = useNavigate()
   const location = useLocation()
-  const isInitialSetup = location.pathname !== '/setup'
-  const [localProvider, setLocalProvider] = useState<InterfaceProvider>("openai")
+  const isInitialSetup = location.pathname !== "/setup"
+  const [localProvider, setLocalProvider] = useState<ModelProvider>("openai")
   const showToast = useSetAtom(showToastAtom)
 
   const handleSubmit = async (data: any) => {
@@ -42,7 +43,7 @@ const Setup = () => {
             <svg width="20" height="20" viewBox="0 0 24 24">
               <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/>
             </svg>
-            {t('setup.back')}
+            {t("setup.back")}
           </button>
         ) || (
           <>

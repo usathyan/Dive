@@ -40,6 +40,11 @@
         outline: none;
       }
     }
+
+    &.on-limit {
+      background: var(--bg-alert);
+      color: var(--text-alert-weak);
+    }
   }
 }
 
@@ -98,6 +103,10 @@
 
   .abort-btn {
     cursor: pointer;
+
+    &:focus {
+      outline: none;
+    }
   }
 
   .input-wrapper {
@@ -149,6 +158,10 @@
         svg {
           fill: var(--stroke-extremestrong);
         }
+      }
+
+      &:focus {
+        outline: none;
       }
     }
 

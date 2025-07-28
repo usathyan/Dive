@@ -9,6 +9,7 @@ import { showToastAtom } from "../../atoms/toastState"
 import { useTranslation } from "react-i18next"
 import { currentChatIdAtom, isChatStreamingAtom, lastMessageAtom } from "../../atoms/chatState"
 import { safeBase64Encode } from "../../util"
+import { updateOAPUsageAtom } from "../../atoms/oapState"
 
 interface ToolCall {
   name: string
@@ -56,10 +57,10 @@ const ChatWindow = () => {
   const toolResultCount = useRef(0)
   const toolResultTotal = useRef(0)
   const toolKeyRef = useRef(0)
+  const updateOAPUsage = useSetAtom(updateOAPUsageAtom)
 
   const loadChat = useCallback(async (id: string) => {
     try {
-      setIsChatStreaming(true)
       const response = await fetch(`/api/chat/${id}`)
       const data = await response.json()
 
@@ -487,6 +488,7 @@ const ChatWindow = () => {
     } finally {
       setIsChatStreaming(false)
       scrollToBottom()
+      updateOAPUsage()
     }
   }, [])
 
