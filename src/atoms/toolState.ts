@@ -1,16 +1,18 @@
 import { atom } from "jotai"
 
+export interface MCP {
+  type: "oap" | "local"
+  plan?: string
+  description: string
+  icon?: string
+  disabled?: boolean
+  enabled?: boolean
+  error?: string
+  env?: Record<string, unknown>
+}
+
 export interface MCPConfig {
-  [key: string]: {
-    type: "oap" | "local"
-    plan?: string
-    description: string
-    icon?: string
-    disabled?: boolean
-    enabled?: boolean
-    error?: string
-    env?: Record<string, unknown>
-  }
+  [key: string]: MCP
 }
 
 export interface SubTool {
@@ -78,3 +80,5 @@ export const loadMcpConfigAtom = atom(
     return data
   }
 )
+
+export const installToolBufferAtom = atom<{name: string, config: Record<string, MCP>}[]>([])

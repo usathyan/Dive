@@ -89,6 +89,11 @@ contextBridge.exposeInMainWorld("ipcRenderer", {
     ipcRenderer.on("refresh", cb)
     return () => ipcRenderer.off("refresh", cb)
   },
+  listenMcpApply: (cb: (id: string) => void) => {
+    const listener = (_event: Electron.IpcMainInvokeEvent, id: string) => cb(id)
+    ipcRenderer.on("mcp.install", listener as any)
+    return () => ipcRenderer.off("mcp.install", listener as any)
+  },
 })
 
 // --------- Preload scripts loading ---------

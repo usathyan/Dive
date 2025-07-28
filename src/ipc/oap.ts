@@ -75,7 +75,8 @@ export function oapGetMCPServers(): Promise<ApiResponse<OAPMCPServer[]>> {
     return invoke("oap_get_mcp_servers")
 }
 
-export function oapRegistEvent(event: "login" | "logout" | "refresh", callback: () => void) {
+type BackendEvent = "login" | "logout" | "refresh" | "mcp.install"
+export function registBackendEvent(event: BackendEvent, callback: (...args: any[]) => void) {
     if (isElectron) {
         switch (event) {
             case "login":
@@ -84,10 +85,20 @@ export function oapRegistEvent(event: "login" | "logout" | "refresh", callback: 
                 return window.ipcRenderer.oapRegistEvent("logout", callback)
             case "refresh":
                 return window.ipcRenderer.listenRefresh(callback)
+            case "mcp.install":
+                return window.ipcRenderer.listenMcpApply(callback)
         }
     }
 
-    return listenIPC(`oap:${event}`, callback)
+    const listener = (data: any) => callback(data.payload)
+    switch (event) {
+        case "login":
+        case "logout":
+        case "refresh":
+            return listenIPC(`oap:${event}`, listener)
+        case "mcp.install":
+            return listenIPC("mcp:install", listener)
+    }
 }
 
 export function oapModelDescription(params: OAPModelDescriptionParam): Promise<ApiResponse<OAPModelDescription[]>> {

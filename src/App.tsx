@@ -10,11 +10,12 @@ import Updater from "./updater"
 import { loadOapToolsAtom, oapUsageAtom, oapUserAtom, updateOAPUsageAtom } from "./atoms/oapState"
 import { queryGroup } from "./helper/model"
 import { modelGroupsAtom, modelSettingsAtom } from "./atoms/modelState"
-import { loadMcpConfigAtom, loadToolsAtom } from "./atoms/toolState"
+import { installToolBufferAtom, loadMcpConfigAtom, loadToolsAtom } from "./atoms/toolState"
 import { useTranslation } from "react-i18next"
 import { setModelSettings } from "./ipc/config"
-import { oapGetMe, oapGetToken, oapLogout, oapRegistEvent } from "./ipc"
+import { oapGetMe, oapGetToken, oapLogout, registBackendEvent } from "./ipc"
 import { refreshConfig } from "./ipc/host"
+import { openOverlayAtom } from "./atoms/layerState"
 
 function App() {
   const setSystemTheme = useSetAtom(systemThemeAtom)
@@ -30,6 +31,8 @@ function App() {
   const { i18n } = useTranslation()
   const loadMcpConfig = useSetAtom(loadMcpConfigAtom)
   const loadOapTools = useSetAtom(loadOapToolsAtom)
+  const openOverlay = useSetAtom(openOverlayAtom)
+  const setInstallToolBuffer = useSetAtom(installToolBufferAtom)
 
   useEffect(() => {
     console.log("set model setting", modelSetting)
@@ -64,9 +67,9 @@ function App() {
     }
   }
 
-  // handle oap event
+  // handle backend event
   useEffect(() => {
-    const unregistLogin = oapRegistEvent("login", () => {
+    const unregistLogin = registBackendEvent("login", () => {
       console.info("oap login")
       updateOAPUser()
         .catch(console.error)
@@ -76,14 +79,14 @@ function App() {
         .catch(console.error)
     })
 
-    const unregistLogout = oapRegistEvent("logout", () => {
+    const unregistLogout = registBackendEvent("logout", () => {
       console.info("oap logout")
       removeOapConfig()
       setOAPUser(null)
       setOAPUsage(null)
     })
 
-    const unlistenRefresh = oapRegistEvent("refresh", () => {
+    const unlistenRefresh = registBackendEvent("refresh", () => {
       console.info("oap refresh")
       refreshConfig()
         .then(loadTools)
@@ -96,6 +99,28 @@ function App() {
         .catch(console.error)
     })
 
+    const unlistenMcpInstall = registBackendEvent("mcp.install", (data: { name: string, config: string }) => {
+      try {
+        const { name } = data
+        const config = JSON.parse(atob(data.config))
+        console.log(config)
+        setInstallToolBuffer(prev => [...prev, { name, config }])
+        openOverlay("Tools")
+      } catch(e) {
+        console.error("oap mcp install error", e)
+      }
+    })
+
+    return () => {
+      unregistLogin()
+      unregistLogout()
+      unlistenRefresh()
+      unlistenMcpInstall()
+    }
+  }, [])
+
+  // init oap user
+  useEffect(() => {
     updateOAPUser().then(() => {
       setOAPUser(user => {
         if (!user) {
@@ -113,12 +138,6 @@ function App() {
     })
     .then(loadOapTools)
     .catch(console.error)
-
-    return () => {
-      unregistLogin()
-      unregistLogout()
-      unlistenRefresh()
-    }
   }, [])
 
   // set system theme
@@ -131,24 +150,6 @@ function App() {
     mediaQuery.addEventListener("change", handleChange)
     return () => {
       mediaQuery.removeEventListener("change", handleChange)
-    }
-  }, [])
-
-  useEffect(() => {
-    const unlistenRefresh = window.ipcRenderer.listenRefresh(() => {
-      window.ipcRenderer.refreshConfig()
-        .then(loadTools)
-        .catch(console.error)
-
-      updateOAPUser()
-        .catch(console.error)
-        .then(removeOapConfig)
-        .then(writeOapConfig)
-        .catch(console.error)
-    })
-
-    return () => {
-      unlistenRefresh()
     }
   }, [])
 

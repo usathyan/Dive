@@ -10,7 +10,7 @@ import { linter, lintGutter } from "@codemirror/lint"
 import { systemThemeAtom, themeAtom } from "../../atoms/themeState"
 import { closeOverlayAtom } from "../../atoms/layerState"
 import Switch from "../../components/Switch"
-import { loadMcpConfigAtom, loadToolsAtom, MCPConfig, mcpConfigAtom, Tool, toolsAtom } from "../../atoms/toolState"
+import { loadMcpConfigAtom, loadToolsAtom, MCPConfig, mcpConfigAtom, Tool, toolsAtom, installToolBufferAtom } from "../../atoms/toolState"
 import Tooltip from "../../components/Tooltip"
 import PopupConfirm from "../../components/PopupConfirm"
 import Dropdown from "../../components/DropDown"
@@ -22,6 +22,7 @@ import { isLoggedInOAPAtom, loadOapToolsAtom, oapToolsAtom } from "../../atoms/o
 import { OAP_ROOT_URL } from "../../../shared/oap"
 import { openUrl } from "../../ipc/util"
 import { oapApplyMCPServer } from "../../ipc"
+import cloneDeep from "lodash/cloneDeep"
 
 interface ToolsCache {
   [key: string]: {
@@ -72,6 +73,35 @@ const Tools = () => {
   const loadOapTools = useSetAtom(loadOapToolsAtom)
   const [isResort, setIsResort] = useState(true)
   const sortedConfigOrderRef = useRef<string[]>([])
+  const [installToolBuffer, setInstallToolBuffer] = useAtom(installToolBufferAtom)
+
+  // consume install tool buffer
+  useEffect(() => {
+    if (!installToolBuffer.length) {
+      return
+    }
+
+    const cfg = cloneDeep(mcpConfig.mcpServers)
+    const install = ({ name, config }: { name: string, config: Record<string, MCP> }) => {
+      if (name in cfg) {
+        cfg[name] = {
+          ...mcpConfig.mcpServers[name],
+          enabled: true,
+        }
+
+        return
+      }
+
+      cfg[name] = {
+        ...config,
+        enabled: true,
+      }
+    }
+
+    installToolBuffer.forEach(install)
+    setInstallToolBuffer([])
+    handleConfigSubmit({ mcpServers: cfg })
+  }, [installToolBuffer.length])
 
   useEffect(() => {
     (async () => {
@@ -217,7 +247,7 @@ const Tools = () => {
       // const filledConfig = await window.ipcRenderer.fillPathToConfig(JSON.stringify(newConfig))
       const filledConfig = { ...newConfig }
       const data = await updateMCPConfig(filledConfig)
-      if (data.errors && Array.isArray(data.errors) && data.errors.length) {
+      if (data?.errors && Array.isArray(data.errors) && data.errors.length) {
         data.errors
           .map((e: any) => e.serverName)
           .forEach((serverName: string) => {
@@ -240,7 +270,7 @@ const Tools = () => {
             })
           })
       }
-      if (data.success) {
+      if (data?.success) {
         setMcpConfig(newConfig)
         setShowMcpEditJsonPopup(false)
         setShowMcpEditPopup(false)

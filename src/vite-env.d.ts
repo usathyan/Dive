@@ -47,6 +47,7 @@ declare global {
       getModelSettings: () => Promise<ModelGroupSetting>
       setModelSettings: (settings: ModelGroupSetting) => Promise<void>
       listenRefresh: (cb: () => void) => () => void
+      listenMcpApply: (cb: (id: string) => void) => () => void
       refreshConfig: () => Promise<void>
       onReceiveInstallHostDependenciesLog: (callback: (data: string) => void) => () => void
       getInstallHostDependenciesLog: () => Promise<string[]>

@@ -1,3 +1,4 @@
+use std::collections::HashMap;
 use std::fs::create_dir_all;
 use std::sync::Arc;
 
@@ -9,8 +10,8 @@ use tauri_plugin_deep_link::DeepLinkExt;
 use tauri_plugin_store::StoreExt;
 use tokio::sync::mpsc;
 
-use crate::event::EMIT_OAP_LOGOUT;
-use crate::event::EMIT_OAP_REFRESH;
+use crate::event::MCPInstallParam;
+use crate::event::{EMIT_MCP_INSTALL, EMIT_OAP_LOGOUT, EMIT_OAP_REFRESH};
 use crate::state::oap::OAPState;
 use crate::state::AppState;
 
@@ -166,8 +167,35 @@ pub fn run() {
                             log::info!("oap login via deep link: {:?}*******", &token[..4]);
                         }
                         Some("refresh") => {
-                            let _ = _app_handle.emit(event::EMIT_OAP_REFRESH, "");
+                            let _ = _app_handle.emit(EMIT_OAP_REFRESH, "");
                             log::info!("oap refresh via deep link");
+                        }
+                        Some("mcp.install") => {
+                            log::info!("oap mcp install via deep link: {:?}", &url);
+                            let Some(query) = url.query() else {
+                                log::warn!("invalid oap mcp apply url: {:?}", &url);
+                                return;
+                            };
+
+                            let query_map: HashMap<String, String> = query.split('&').filter_map(|pair| {
+                                let (key, value) = pair.split_once('=')?;
+                                Some((key.to_string(), value.to_string()))
+                            }).collect();
+
+                            let Some(name) = query_map.get("name") else {
+                                log::warn!("missing mcp name");
+                                return;
+                            };
+
+                            let Some(config) = query_map.get("config") else {
+                                log::warn!("missing mcp config");
+                                return;
+                            };
+
+                            let _ = _app_handle.emit(EMIT_MCP_INSTALL, MCPInstallParam {
+                                name: name.clone(),
+                                config: config.clone(),
+                            });
                         }
                         _ => {
                             log::warn!("unknown deep link url: {:?}", &url);

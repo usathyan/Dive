@@ -7,7 +7,7 @@ import { serviceStatus, setServiceUpCallback } from "./service"
 import { createWindow } from "."
 
 const DESKTOP_FILE_NAME = "oaphub-dive.desktop"
-type DeepLinkType = "login" | "refresh" | "unknown"
+type DeepLinkType = "login" | "refresh" | "mcp.install" | "unknown"
 
 function getDeepLinkTypeFromUrl(url: string): DeepLinkType {
   if (url.startsWith("dive://signin/")) {
@@ -16,6 +16,10 @@ function getDeepLinkTypeFromUrl(url: string): DeepLinkType {
 
   if (url.includes("refresh")) {
     return "refresh"
+  }
+
+  if (url.includes("mcp.install")) {
+    return "mcp.install"
   }
 
   return "unknown"
@@ -80,6 +84,13 @@ export async function deeplinkHandler(win: BrowserWindow|null, url: string) {
     case "refresh":
       win?.webContents.send("refresh")
       refreshConfig().catch(console.error)
+      break
+    case "mcp.install":
+      const deeplink = new URL(url)
+      win?.webContents.send("mcp.install", {
+        name: deeplink.searchParams.get("name") || "",
+        config: deeplink.searchParams.get("config") || "",
+      })
       break
     default:
       break
