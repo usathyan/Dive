@@ -13,7 +13,7 @@ export function setOapHost(host: string) {
 
 export function openOapLoginPage(regist: boolean) {
     if (isElectron) {
-        window.ipcRenderer.oapLogin(regist)
+        return window.ipcRenderer.oapLogin(regist)
     }
 
     return invoke("open_oap_login_page", { regist })
@@ -21,7 +21,7 @@ export function openOapLoginPage(regist: boolean) {
 
 export function oapLogout() {
     if (isElectron) {
-        window.ipcRenderer.oapLogout()
+        return window.ipcRenderer.oapLogout()
     }
 
     return invoke("oap_logout")
