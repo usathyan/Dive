@@ -65,7 +65,5 @@ echo "=== Building Tauri packages ==="\n\
 cargo tauri build --config src-tauri/tauri.beta.conf.json -v\n\
 ' > /build.sh && chmod +x /build.sh
 
-RUN chown -R ${USER_ID}:${GROUP_ID} /app
-
 # Execute build script by default
 CMD ["/build.sh"]

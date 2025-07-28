@@ -13,3 +13,5 @@ mkdir -p release/tauri
 docker run --rm \
   -v $(pwd):/app \
   dive-builder
+
+chown -R $(id -u):$(id -g) ./
