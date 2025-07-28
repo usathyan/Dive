@@ -28,7 +28,6 @@ class OAPClient {
   constructor() {
     const token = getToken()
     this.loggedIn = !!token
-    console.log("token", token)
     if (token) {
       this.openWebSocket(token)
     }
