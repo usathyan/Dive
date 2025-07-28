@@ -1,3 +1,5 @@
+import "../styles/components/_ChatInput.scss"
+
 import React, { useState, useRef, useEffect, useCallback } from "react"
 import { useTranslation } from "react-i18next"
 import Tooltip from "./Tooltip"
@@ -9,10 +11,10 @@ import { activeConfigAtom, activeProviderAtom, configAtom, configDictAtom, curre
 import { openOverlayAtom } from "../atoms/layerState"
 import { enabledToolsAtom, loadToolsAtom } from "../atoms/toolState"
 import { useNavigate } from "react-router-dom"
-import "../styles/components/_ChatInput.scss"
 import { showToastAtom } from "../atoms/toastState"
 import { getTermFromModelConfig, queryGroup, queryModel, updateGroup, updateModel } from "../helper/model"
 import { modelSettingsAtom } from "../atoms/modelState"
+import { fileToBase64 } from "../util"
 import { isLoggedInOAPAtom, isOAPUsageLimitAtom, oapUserAtom } from "../atoms/oapState"
 
 interface Props {
@@ -29,9 +31,7 @@ interface FilePreview {
   size: string
 }
 
-const ACCEPTED_FILE_TYPES = [
-  "*/*"
-].join(",")
+const ACCEPTED_FILE_TYPES = "*"
 
 const ChatInput: React.FC<Props> = ({ page, onSendMessage, disabled, onAbort }) => {
   const { t } = useTranslation()
@@ -78,7 +78,7 @@ const ChatInput: React.FC<Props> = ({ page, onSendMessage, disabled, onAbort }) 
     return (bytes / (1024 * 1024)).toFixed(1) + " MB"
   }, [])
 
-  const handleFiles = (files: File[]) => {
+  const handleFiles = async (files: File[]) => {
     const existingFiles = uploadedFiles.current
 
     const newFiles = files.filter(newFile => {
@@ -101,7 +101,8 @@ const ChatInput: React.FC<Props> = ({ page, onSendMessage, disabled, onAbort }) 
     if (newFiles.length === 0)
       return
 
-    const newPreviews = newFiles.map(file => {
+    const newPreviews: FilePreview[] = []
+    for (const file of newFiles) {
       const preview: FilePreview = {
         type: file.type.startsWith("image/") ? "image" : "file",
         name: file.name,
@@ -109,11 +110,11 @@ const ChatInput: React.FC<Props> = ({ page, onSendMessage, disabled, onAbort }) 
       }
 
       if (preview.type === "image") {
-        preview.url = URL.createObjectURL(file)
+        preview.url = await fileToBase64(file).catch(() => "") || ""
       }
 
-      return preview
-    })
+      newPreviews.push(preview)
+    }
 
     setPreviews(prev => [...prev, ...newPreviews])
     uploadedFiles.current = [...existingFiles, ...newFiles]
@@ -148,9 +149,6 @@ const ChatInput: React.FC<Props> = ({ page, onSendMessage, disabled, onAbort }) 
 
     setPreviews(prev => {
       const newPreviews = [...prev]
-      if (newPreviews[index].type === "image" && newPreviews[index].url) {
-        URL.revokeObjectURL(newPreviews[index].url)
-      }
       newPreviews.splice(index, 1)
       return newPreviews
     })
@@ -197,11 +195,6 @@ const ChatInput: React.FC<Props> = ({ page, onSendMessage, disabled, onAbort }) 
     document.addEventListener("paste", handlePaste)
     return () => {
       document.removeEventListener("paste", handlePaste)
-      previews.forEach(preview => {
-        if (preview.type === "image" && preview.url) {
-          URL.revokeObjectURL(preview.url)
-        }
-      })
     }
   }, [])
 
@@ -233,7 +226,7 @@ const ChatInput: React.FC<Props> = ({ page, onSendMessage, disabled, onAbort }) 
     const handleContextMenu = (e: MouseEvent) => {
       e.preventDefault()
       e.stopPropagation()
-      window.ipcRenderer.showInputContextMenu()
+      window.ipcRenderer && window.ipcRenderer.showInputContextMenu()
     }
 
     if (textareaRef.current) {
@@ -318,14 +311,7 @@ const ChatInput: React.FC<Props> = ({ page, onSendMessage, disabled, onAbort }) 
         fileInputRef.current.value = ""
       }
 
-      setPreviews(prev => {
-        prev.forEach(preview => {
-          if (preview.type === "image" && preview.url) {
-            URL.revokeObjectURL(preview.url)
-          }
-        })
-        return []
-      })
+      setPreviews([])
     } else {
       e.preventDefault()
       if (!hasActiveConfig)

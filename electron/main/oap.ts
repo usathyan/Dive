@@ -4,6 +4,17 @@ import { serviceStatus } from "./service"
 import { oapStore as store } from "./store"
 import EventEmitter from "node:events"
 import { OAP_ROOT_URL } from "../../shared/oap"
+import WebSocket from "ws"
+
+export type WebsocketMessageType =
+  "user.account.subscription.update" |
+  "user.account.coupon.update" |
+  "user.settings.mcps.updated"
+
+export type WebsocketMessage = {
+  type: WebsocketMessageType
+  data: any
+}
 
 export const getToken = () => store.get("token") as string | undefined
 export const setToken = (token: string) => store.set("token", token)
@@ -11,19 +22,75 @@ export const setToken = (token: string) => store.set("token", token)
 class OAPClient {
   public loggedIn: boolean
   private eventEmitter = new EventEmitter()
+  socket: WebSocket | null = null
+  onReceiveWebSocketMessageCB: (message: WebsocketMessage) => void = () => {}
 
   constructor() {
-    this.loggedIn = !!getToken()
+    const token = getToken()
+    this.loggedIn = !!token
+    console.log("token", token)
+    if (token) {
+      this.openWebSocket(token)
+    }
+  }
+
+  onReceiveWebSocketMessage(cb: (message: any) => void) {
+    this.onReceiveWebSocketMessageCB = cb
   }
 
   registEvent(event: "login" | "logout", callback: () => void) {
     this.eventEmitter.on(event, callback)
   }
 
+  openWebSocket(token: string) {
+    try {
+      if (this.socket) {
+        this.closeWebSocket()
+      }
+
+      console.log(`wss://${OAP_ROOT_URL.split("://")[1]}/api/v1/socket`)
+      this.socket = new WebSocket(`wss://${OAP_ROOT_URL.split("://")[1]}/api/v1/socket`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
+
+      this.socket.on("message", (message) => {
+        this.onReceiveWebSocketMessageCB(JSON.parse(message.toString()) as WebsocketMessage)
+      })
+
+      this.socket.on("open", () => {
+        console.log("oap socket connected")
+      })
+
+      this.socket.on("close", () => {
+        console.log("oap socket closed")
+      })
+
+      this.socket.on("error", (error) => {
+        console.error("oap socket error", error)
+      })
+    } catch (error) {
+      console.error("openWebSocket", error)
+    }
+  }
+
+  closeWebSocket() {
+    try {
+      if (this.socket) {
+        this.socket.close()
+        this.socket = null
+      }
+    } catch (error) {
+      console.error("closeWebSocket", error)
+    }
+  }
+
   login(token: string) {
     setToken(token)
     this.loggedIn = true
     this.eventEmitter.emit("login")
+    this.openWebSocket(token)
   }
 
   async logout() {
@@ -39,6 +106,8 @@ class OAPClient {
     const url = `http://${serviceStatus.ip}:${serviceStatus.port}`
     fetch(`${url}/api/plugins/oap-platform/auth`, { method: "DELETE" })
       .then((res) => console.log("oap logout", res.status))
+
+    this.closeWebSocket()
   }
 
   fetch<T>(url: string, options: RequestInit = {}) {

@@ -5,6 +5,9 @@ import Tooltip from "./Tooltip"
 import { useTranslation } from "react-i18next"
 import { useSetAtom } from "jotai"
 import { showToastAtom } from "../atoms/toastState"
+import { invokeIPC, isTauri } from "../ipc"
+import { save } from "@tauri-apps/plugin-dialog"
+import { copyImage } from "../ipc/util"
 
 type ZoomProps = {
   children: React.ReactNode
@@ -118,11 +121,19 @@ export default function Zoom({
         return
       }
 
-      await window.ipcRenderer.copyImage(img.src)
-      showToast({
-        message: t("toast.copiedToClipboard"),
-        type: "info"
-      })
+      copyImage(img.src)
+        .then(() => {
+          showToast({
+            message: t("toast.copiedToClipboard"),
+            type: "info"
+          })
+        })
+        .catch(e => {
+          showToast({
+            message: e.toString(),
+            type: "error"
+          })
+        })
     }
   }
 
@@ -133,7 +144,21 @@ export default function Zoom({
       if (!img) {
         return
       }
-      await window.ipcRenderer.download(img.src)
+
+      if (isTauri) {
+        let filename = img.src.split("/").pop() ?? "image"
+        if (filename.includes("?")) {
+          filename = filename.split("?")[0]
+        }
+
+        const savePath = await save({ title: filename })
+        if (savePath) {
+          await invokeIPC("download_image", { src: img.src, dst: savePath })
+        }
+      } else {
+        await window.ipcRenderer.download(img.src)
+      }
+
       showToast({
         message: t("toast.downloadedImage"),
         type: "info"

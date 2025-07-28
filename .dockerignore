@@ -11,3 +11,4 @@ node_modules
 release
 dist
 dist-electron
+src-tauri/target

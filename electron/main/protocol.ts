@@ -37,5 +37,4 @@ export function initProtocol() {
     const assetPath = path.join(process.env.VITE_PUBLIC, "image", url)
     return net.fetch(`file://${assetPath}`)
   })
-
 }

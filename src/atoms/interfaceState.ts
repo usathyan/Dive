@@ -1,5 +1,8 @@
+import { imgPrefix } from "../ipc/env"
 import { OAP_PROXY_URL } from "../../shared/oap"
 import { ModelProvider } from "../../types/model"
+import { fetchModels } from "../ipc/llm"
+import { oapGetToken } from "../ipc"
 
 export const EMPTY_PROVIDER = "none"
 
@@ -41,20 +44,20 @@ export const PROVIDER_LABELS: Record<ModelProvider, string> = {
 }
 
 export const PROVIDER_ICONS: Record<ModelProvider, string> = {
-  ollama: "img://model_ollama.svg",
-  openai_compatible: "img://model_openai_compatible.svg",
-  openai: "img://model_openai.svg",
-  anthropic: "img://model_anthropic.svg",
-  "google-genai": "img://model_gemini.svg",
-  mistralai: "img://model_mistral-ai.svg",
-  bedrock: "img://model_bedrock.svg",
-  openrouter: "img://model_openrouter.svg",
-  lmstudio: "img://model_lmstudio.svg",
-  groq: "img://model_groq.svg",
-  grok: "img://model_grok.svg",
-  nvdia: "img://model_nvdia.svg",
-  perplexity: "img://model_perplexity.svg",
-  oap: "img://logo_oap.png",
+  ollama: `${imgPrefix}model_ollama.svg`,
+  openai_compatible: `${imgPrefix}model_openai_compatible.svg`,
+  openai: `${imgPrefix}model_openai.svg`,
+  anthropic: `${imgPrefix}model_anthropic.svg`,
+  "google-genai": `${imgPrefix}model_gemini.svg`,
+  mistralai: `${imgPrefix}model_mistral-ai.svg`,
+  bedrock: `${imgPrefix}model_bedrock.svg`,
+  openrouter: `${imgPrefix}model_openrouter.svg`,
+  lmstudio: `${imgPrefix}model_lmstudio.svg`,
+  groq: `${imgPrefix}model_groq.svg`,
+  grok: `${imgPrefix}model_grok.svg`,
+  nvdia: `${imgPrefix}model_nvdia.svg`,
+  perplexity: `${imgPrefix}model_perplexity.svg`,
+  oap: `${imgPrefix}logo_oap.png`,
   default: "",
 }
 
@@ -76,26 +79,6 @@ export interface FieldDefinition {
 }
 
 export type InterfaceDefinition = Record<string, FieldDefinition>
-
-export function fetchModels(provider: ModelProvider, apiKey: string, baseURL: string = "", extra: string[] = []) {
-  switch(provider) {
-  case "openai":
-    return window.ipcRenderer.openaiModelList(apiKey)
-  case "ollama":
-    return window.ipcRenderer.ollamaModelList(baseURL)
-  case "anthropic":
-    return window.ipcRenderer.anthropicModelList(apiKey, baseURL)
-  case "google-genai":
-    return window.ipcRenderer.googleGenaiModelList(apiKey)
-  case "bedrock":
-    return window.ipcRenderer.bedrockModelList(...(extra as [string, string, string, string]))
-  case "mistralai":
-    return window.ipcRenderer.mistralaiModelList(apiKey)
-  // openai compatible
-  default:
-    return window.ipcRenderer.openaiCompatibleModelList(apiKey, baseURL)
-  }
-}
 
 const openaiCompatibleListCallback = async (deps: Record<string, string>) => {
   const results = await fetchModels("openai_compatible", deps.apiKey, deps.baseURL)
@@ -180,7 +163,7 @@ export const defaultInterface: Record<ModelProvider, InterfaceDefinition> = {
   oap: openaiCompatibleTemplate(`${OAP_PROXY_URL}/v1`, {
     apiKey: {
       getValue: () => {
-        return window.ipcRenderer.oapGetToken()
+        return oapGetToken()
       }
     }
   }),

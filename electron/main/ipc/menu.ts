@@ -12,7 +12,7 @@ const inputMenu = Menu.buildFromTemplate([
   { role: "selectAll" }
 ])
 
-export function ipcMenuHandler(win: BrowserWindow) {
+export function ipcMenuHandler(_win: BrowserWindow) {
   ipcMain.handle("show-selection-context-menu", () => {
     selectionMenu.popup()
   })

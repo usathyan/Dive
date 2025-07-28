@@ -16,6 +16,7 @@ import NonStreamingParameter from "./SpecialParameters/NonStreaming"
 import ReasoningLevelParameter from "./SpecialParameters/ReasoningLevel"
 import TokenBudgetParameter from "./SpecialParameters/TokenBudget"
 import { getVerifyStatus } from "../ModelVerify"
+import { imgPrefix } from "../../../../ipc/env"
 import { BaseModel, ModelProvider } from "../../../../../types/model"
 import { useModelsProvider } from "../ModelsProvider"
 
@@ -261,7 +262,7 @@ const AdvancedSettingPopup = ({ model, onClose, onSave }: Props) => {
                 <label>{t("models.customInput")}</label>
               </div>
               <button className="btn" onClick={handleAddParameter}>
-                <img src={"img://CircleAdd.svg"} />
+                <img src={`${imgPrefix}CircleAdd.svg`} />
                 {t("models.addCustomParameter")}
               </button>
             </div>

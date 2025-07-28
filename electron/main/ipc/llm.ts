@@ -23,7 +23,7 @@ export function ipcLlmHandler(_win: BrowserWindow) {
     try {
       const client = new Anthropic({ apiKey, baseURL })
       const models = await client.models.list()
-      return { results: models.data.map((model) => model.id), error: null }
+      return { results: models.data.map((model: any) => model.id), error: null }
     } catch (error) {
       return { results: [], error: (error as Error).message }
     }
@@ -94,7 +94,7 @@ export function ipcLlmHandler(_win: BrowserWindow) {
       const command = new ListFoundationModelsCommand({})
       const response = await client.send(command)
       const models = response.modelSummaries
-      return { results: models?.map((model) => `${modelPrefix}${model.modelId}`) ?? [], error: null }
+      return { results: models?.map((model: any) => `${modelPrefix}${model.modelId}`) ?? [], error: null }
     } catch (error) {
       return { results: [], error: (error as Error).message }
     }

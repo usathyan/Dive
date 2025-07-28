@@ -13,6 +13,7 @@ import { useAtom, useAtomValue, useSetAtom } from "jotai"
 import { isOAPProAtom } from "../../../../atoms/oapState"
 import Tooltip from "../../../../components/Tooltip"
 import { OAP_ROOT_URL } from "../../../../../shared/oap"
+import { imgPrefix, oapApplyMCPServer, oapSearchMCPServer } from "../../../../ipc"
 import InfoTooltip from "../../../../components/InfoTooltip"
 import ReactMarkdown from "react-markdown"
 import rehypeRaw from "rehype-raw"
@@ -138,7 +139,8 @@ const OAPServerList = ({
       "mcp-sort-order": sort === "popular" ? 0 : 1,
       filter: subscription === "ALL" ? 0 : subscription === "BASE" ? 1 : 2,
     } as MCPServerSearchParam
-    window.ipcRenderer.oapSearchMCPServer(params).then(async (res: any) => {
+
+    oapSearchMCPServer(params).then(async (res: any) => {
       const newSearchText = await getState(setSearchText)
       const newTag = await getState(setTag)
       const newSubscription = await getState(setSubscription)
@@ -153,7 +155,7 @@ const OAPServerList = ({
           return {
             ...tool,
             checked: oapTools?.find(t => t.id === tool.id) ? true : false,
-          }
+          } as any
         })
         setToolList(prev => [
           ...prev,
@@ -201,7 +203,7 @@ const OAPServerList = ({
     const selectedServers = Array.from(
       new Set(oapTools.map(tool => tool.id))
     )
-    await window.ipcRenderer.oapApplyMCPServer(selectedServers)
+    await oapApplyMCPServer(selectedServers)
     setIsSubmitting(false)
     onConfirm()
     onCancel()
@@ -242,7 +244,7 @@ const OAPServerList = ({
       <div className="oap-container">
         <div className="oap-header">
           <div className="oap-title">
-            <img className="oap-logo" src={"img://logo_oap.png"} alt="info" />
+            <img className="oap-logo" src={`${imgPrefix}logo_oap.png`} alt="info" />
             OAP MCP Servers
           </div>
           <div className="oap-search-wrapper">

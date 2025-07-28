@@ -17,6 +17,8 @@ import { DropDownOptionType } from "./DropDown"
 import { createPortal } from "react-dom"
 import { isLoggedInOAPAtom, OAPLevelAtom, oapUserAtom } from "../atoms/oapState"
 import { OAP_ROOT_URL } from "../../shared/oap"
+import { openUrl } from "../ipc/util"
+import { imgPrefix, oapLogout } from "../ipc"
 
 interface Props {
   onNewChat?: () => void
@@ -129,7 +131,7 @@ const HistorySidebar = ({ onNewChat }: Props) => {
           type: "error"
         })
       }
-    } catch (error) {
+    } catch (_error) {
       showToast({
         message: t("chat.deleteFailed"),
         type: "error"
@@ -170,12 +172,12 @@ const HistorySidebar = ({ onNewChat }: Props) => {
   }
 
   const handleOAP = () => {
-    window.open(OAP_ROOT_URL, "_blank")
+    openUrl(OAP_ROOT_URL)
     setVisible(false)
   }
 
   const handleSignOut = () => {
-    window.ipcRenderer.oapLogout()
+    oapLogout()
     setVisible(false)
   }
 
@@ -275,7 +277,7 @@ const HistorySidebar = ({ onNewChat }: Props) => {
               { label:
                   <button className="sidebar-footer-btn oap">
                     <div className="oap-label">
-                      <img src="img://logo_oap.png" alt="oap" className="provider-icon no-filter" />
+                      <img src={`${imgPrefix}logo_oap.png`} alt="oap" className="provider-icon no-filter" />
                       {t("sidebar.OAPhub")}
                     </div>
                     <div className="oap-level">

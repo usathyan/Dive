@@ -281,7 +281,7 @@
     "languageDescription": "系统界面显示时所使用的语言。模型中使用的语言可以在模型设置页面中的提示词里修改，这里是指 Dive 界面上显示的语言",
     "theme": "深色模式",
     "themeDescription": "切换系统默认 / Darkmode 显示模式",
-    "defaultInstructions": "以繁体中文回應",
+    "defaultInstructions": "以简体中文回應",
     "autoDownload": "自动下载更新",
     "autoDownloadDescription": "自动在后台下载新版本 DIVE，用户下次重启后或点击菜单页的「新版本升级」按钮，即会启用新版本",
     "autoLaunch": "自动启动",

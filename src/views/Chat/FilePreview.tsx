@@ -1,6 +1,7 @@
 import React from "react"
 import Zoom from "../../components/Zoom"
 import "@/styles/components/_Zoom.scss"
+import { convertLocalFileSrc } from "../../ipc/util"
 
 interface FilePreviewProps {
   files: (File | string)[]
@@ -24,8 +25,8 @@ const FilePreview: React.FC<FilePreviewProps> = ({ files }) => {
   const getImageSrc = (file: File | string) => {
     if (typeof file === "string") {
       if (!file.startsWith("http") && !file.startsWith("data:") && !file.startsWith("local-file:///")) {
-        const normalizedPath = file.replace(/\\/g, "/");
-        return `local-file:///${encodeURI(normalizedPath)}`;
+        const normalizedPath = file.replace(/\\/g, "/")
+        return convertLocalFileSrc(normalizedPath)
       }
       return file
     }

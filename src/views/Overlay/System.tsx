@@ -1,4 +1,4 @@
-import { useAtom, useAtomValue } from "jotai"
+import { useAtom, useAtomValue, useSetAtom } from "jotai"
 import { Trans, useTranslation } from "react-i18next"
 import Select from "../../components/Select"
 import { closeOverlayAtom, openOverlayAtom } from "../../atoms/layerState"
@@ -8,11 +8,14 @@ import ThemeSwitch from "../../components/ThemeSwitch"
 import Switch from "../../components/Switch"
 import { getAutoDownload, setAutoDownload as _setAutoDownload } from "../../updater"
 import { disableDiveSystemPromptAtom, updateDisableDiveSystemPromptAtom } from "../../atoms/configState"
+import { getIPCAutoLaunch, getIPCMinimalToTray, setIPCAutoLaunch, setIPCMinimalToTray } from "../../ipc/system"
 import { isLoggedInOAPAtom, isOAPUsageLimitAtom, OAPLevelAtom, oapUsageAtom, oapUserAtom } from "../../atoms/oapState"
 import { OAP_ROOT_URL } from "../../../shared/oap"
 import { commonFlashAtom } from "../../atoms/globalState"
 
 import Tooltip from "../../components/Tooltip"
+import { openUrl } from "../../ipc/util"
+import { openOapLoginPage } from "../../ipc/oap"
 
 const USER_EDIT_URL = `${OAP_ROOT_URL}/u/account`
 const USAGE_ANALYTICS_URL = `${OAP_ROOT_URL}/u/dashboard`
@@ -20,7 +23,7 @@ const PLAN_PAGE_URL = `${OAP_ROOT_URL}/u/plan`
 
 const System = () => {
   const { t, i18n } = useTranslation()
-  const [, closeOverlay] = useAtom(closeOverlayAtom)
+  const closeOverlay = useSetAtom(closeOverlayAtom)
   const [language, setLanguage] = useState(i18n.language)
   const [autoDownload, setAutoDownload] = useState(false)
   const [autoLaunch, setAutoLaunch] = useState(false)
@@ -36,13 +39,13 @@ const System = () => {
   const [, setCommonFlash] = useAtom(commonFlashAtom)
 
   useEffect(() => {
-    window.ipcRenderer.getAutoLaunch().then(setAutoLaunch)
-    window.ipcRenderer.getMinimalToTray().then(setMinimalToTray)
+    getIPCAutoLaunch().then(setAutoLaunch)
+    getIPCMinimalToTray().then(setMinimalToTray)
   }, [])
 
   const handleAutoLaunchChange = (value: boolean) => {
     setAutoLaunch(value)
-    window.ipcRenderer.setAutoLaunch(value)
+    setIPCAutoLaunch(value)
   }
 
   const languageOptions = [
@@ -89,7 +92,7 @@ const System = () => {
 
   const handleMinimalToTrayChange = (value: boolean) => {
     setMinimalToTray(value)
-    window.ipcRenderer.setMinimalToTray(value)
+    setIPCMinimalToTray(value)
   }
 
   const handleDefaultSystemPromptChange = async (value: boolean) => {
@@ -124,8 +127,8 @@ const System = () => {
             {t("system.loginDescription")}
           </p>
           <div className="login-section-button-group">
-            <button className="login-section-button login" onClick={() => window.ipcRenderer.oapLogin()}>{t("common.login")}</button>
-            <button className="login-section-button signup" onClick={() => window.ipcRenderer.oapLogin(true)}>{t("common.signup")}</button>
+            <button className="login-section-button login" onClick={() => openOapLoginPage(false)}>{t("common.login")}</button>
+            <button className="login-section-button signup" onClick={() => openOapLoginPage(false)}>{t("common.signup")}</button>
           </div>
         </div>
         :
@@ -170,7 +173,7 @@ const System = () => {
                 <div className="user-name">
                   {oapUser?.username}
                   <Tooltip content={t("system.userEdit")}>
-                    <button className="user-edit-btn" onClick={() => window.open(USER_EDIT_URL)}>
+                    <button className="user-edit-btn" onClick={() => openUrl(USER_EDIT_URL)}>
                       <svg xmlns="http://www.w3.org/2000/svg" width="22" height="23" viewBox="0 0 22 23" fill="none">
                         <path d="M3 14.1686V19.5001H19" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                         <path d="M3.00088 14.0986L12.5245 4.62082C14.0006 3.15181 16.3939 3.15181 17.87 4.62082V4.62082C19.3461 6.08983 19.3461 8.47157 17.87 9.94058L8.34639 19.4183" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
@@ -187,7 +190,7 @@ const System = () => {
             <div className="section-header">
               <div className="section-title">{t("system.planSectionTitle")}</div>
               <Tooltip content={t("system.usageAnalytics")}>
-                <button className="analytics-btn" onClick={() => window.open(USAGE_ANALYTICS_URL)}>
+                <button className="analytics-btn" onClick={() => openUrl(USAGE_ANALYTICS_URL)}>
                   <svg className="analytics-icon" xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 22 22" fill="none">
                     <path d="M3 5V17.5C3 18.3284 3.67157 19 4.5 19H18" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
                     <path d="M3 11L7.5 7.5L10.5 11.5L16.5 7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>

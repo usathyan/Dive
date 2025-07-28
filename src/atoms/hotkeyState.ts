@@ -6,6 +6,7 @@ import mitt from "mitt"
 import { closeAllOverlaysAtom, popLayerAtom } from "./layerState"
 import { toggleKeymapModalAtom } from "./modalState"
 import { currentChatIdAtom } from "./chatState"
+import { getKeymap } from "../../shared/keymap"
 
 export const ChatInputHotkeyEvent = [
     "chat-input:submit",
@@ -225,9 +226,9 @@ export const rawKeymapAtom = atom<Record<string, string>>({})
 export const loadHotkeyMapAtom = atom(
   null,
   async (get, set) => {
-    const rawMap = await window.ipcRenderer.getHotkeyMap()
-    const map = getHotkeyMap(rawMap)
-    set(rawKeymapAtom, rawMap)
+    const keymap = getKeymap()
+    const map = getHotkeyMap(keymap)
+    set(rawKeymapAtom, keymap)
     set(hotKeymapAtom, map)
   }
 )

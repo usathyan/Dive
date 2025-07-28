@@ -2,19 +2,15 @@ import { useSetAtom } from "jotai"
 import React, { useEffect, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { ModelConfig } from "../../../../atoms/configState"
-import {
-  defaultInterface,
-  FieldDefinition,
-  PROVIDER_LABELS,
-  PROVIDERS,
-} from "../../../../atoms/interfaceState"
-import { showToastAtom } from "../../../../atoms/toastState"
-import CheckBox from "../../../../components/CheckBox"
-import PopupConfirm from "../../../../components/PopupConfirm"
-import { useModelsProvider } from "../ModelsProvider"
 import { ModelProvider } from "../../../../../types/model"
 import useModelInterface from "../../../../hooks/useModelInterface"
 import { fieldsToLLMGroup } from "../../../../helper/model"
+import { defaultInterface, FieldDefinition, PROVIDER_LABELS, PROVIDERS } from "../../../../atoms/interfaceState"
+import { showToastAtom } from "../../../../atoms/toastState"
+import { useModelsProvider } from "../ModelsProvider"
+import PopupConfirm from "../../../../components/PopupConfirm"
+import CheckBox from "../../../../components/CheckBox"
+import { imgPrefix } from "../../../../ipc"
 
 type Props = {
   onClose: () => void
@@ -268,8 +264,8 @@ const KeyPopupEdit = ({ onClose, onSuccess }: Props) => {
                               <img
                                 src={
                                   isApiKeyVisible
-                                    ? "img://Hide.svg"
-                                    : "img://Show.svg"
+                                    ? `${imgPrefix}Hide.svg`
+                                    : `${imgPrefix}Show.svg`
                                 }
                                 alt={
                                   isApiKeyVisible
@@ -307,7 +303,7 @@ const KeyPopupEdit = ({ onClose, onSuccess }: Props) => {
                                 </svg>
                               ) : (
                                 <img
-                                  src="img://Copy.svg"
+                                  src={`${imgPrefix}Copy.svg`}
                                   alt={t("models.copy")}
                                   width="20"
                                   height="20"

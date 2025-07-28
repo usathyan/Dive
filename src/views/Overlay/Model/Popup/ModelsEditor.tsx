@@ -17,6 +17,7 @@ import { isDefaultModelGroup } from "../../../../helper/model"
 import InfoTooltip from "../../../../components/InfoTooltip"
 import { OAP_ROOT_URL } from "../../../../../shared/oap"
 import { OAPModelDescription } from "../../../../../types/oap"
+import { oapModelDescription } from "../../../../ipc"
 
 type Props = {
   onClose: () => void
@@ -101,7 +102,7 @@ const ModelPopup = ({ onClose, onSuccess }: Props) => {
     const params = {
       models: models.map((model: any) => model.model),
     }
-    const res = await window.ipcRenderer.oapModelDescription(params)
+    const res = await oapModelDescription(params)
     if (res && res.status === "success" && res.data && res.data.length > 0) {
       setDescriptionList(res.data)
     }

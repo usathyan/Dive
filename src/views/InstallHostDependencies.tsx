@@ -1,8 +1,10 @@
+import "../styles/pages/_InstallHostDependencies.scss"
+
 import React, { useEffect, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
-import "../styles/pages/_InstallHostDependencies.scss"
 import { systemThemeAtom, themeAtom } from "../atoms/themeState"
 import { useAtom } from "jotai"
+import { onReceiveDownloadDependencyLog, startReceiveDownloadDependencyLog } from "../ipc"
 
 type Log = {
   timestamp: string
@@ -22,8 +24,18 @@ const InstallHostDependencies = ({ onFinish, onUpdate }: Props) => {
   const logsRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    return window.ipcRenderer.onReceiveInstallHostDependenciesLog((log) => {
+    const unlisten = onReceiveDownloadDependencyLog((log) => {
       if (log === "finish") {
+        setLogs(prevLogs => {
+          return [
+            ...prevLogs,
+            {
+              timestamp: new Date().toLocaleString(),
+              message: "install host dependencies finished, wait for mcp host to start...",
+            },
+          ]
+        })
+
         return onFinish()
       }
 
@@ -42,6 +54,11 @@ const InstallHostDependencies = ({ onFinish, onUpdate }: Props) => {
           }
         }, 100)
     })
+
+    startReceiveDownloadDependencyLog()
+    return () => {
+      unlisten.then(fn => fn())
+    }
   }, [])
 
   return (

@@ -7,6 +7,8 @@ import { ModelGroupSetting, ModelProvider, ModelVerifyStatus } from "../../types
 import { modelSettingsAtom } from "./modelState"
 import { defaultBaseModel, defaultModelGroup, intoRawModelConfigWithQuery, queryGroup, reverseQueryGroup } from "../helper/model"
 import { getVerifyKeyFromModelConfig } from "../helper/verify"
+import { oapGetToken } from "../ipc"
+import { fetchModels } from "../ipc/llm"
 
 
 export type OldVerifyStatus = {
@@ -308,8 +310,8 @@ export const writeOapConfigAtom = atom(
       return
     }
 
-    const token = await window.ipcRenderer.oapGetToken()
-    const models = await window.ipcRenderer.openaiCompatibleModelList(token, `${OAP_PROXY_URL}/v1`)
+    const token = await oapGetToken()
+    const models = await fetchModels("openai_compatible", token, `${OAP_PROXY_URL}/v1`)
     if (models.error) {
       return
     }

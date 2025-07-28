@@ -39,10 +39,10 @@ export function ipcOapHandler(_win: BrowserWindow) {
   })
 
   ipcMain.handle("oap:getMe", async () => {
-    return await oapClient.getMe().then(res => res.data)
+    return await oapClient.getMe()
   })
 
   ipcMain.handle("oap:getUsage", async () => {
-    return await oapClient.getUsage().then(res => res.data)
+    return await oapClient.getUsage()
   })
 }

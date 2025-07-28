@@ -1,11 +1,13 @@
 import { useCallback, useEffect, useRef } from "react"
 import { useSetAtom } from "jotai"
 import { newVersionAtom } from "./atoms/globalState"
+import { invokeIPC, isElectron, listenIPC } from "./ipc"
+import { check } from "@tauri-apps/plugin-updater"
 
 export const getAutoDownload = () => !!localStorage.getItem("autoDownload")
 export const setAutoDownload = (value: boolean) => localStorage.setItem("autoDownload", value?"1":"")
 
-export default function Updater() {
+function ElectronUpdater() {
   const setNewVersion = useSetAtom(newVersionAtom)
   const newVersion = useRef("")
 
@@ -18,7 +20,7 @@ export default function Updater() {
 
     const autoDownload = getAutoDownload()
     if (window.PLATFORM !== "darwin" && autoDownload) {
-      window.ipcRenderer.invoke("start-download")
+      invokeIPC("start-download")
       return
     }
 
@@ -33,14 +35,46 @@ export default function Updater() {
 
   // listen new version
   useEffect(() => {
-    window.ipcRenderer.on("update-can-available", handleUpdateAvailable)
-    window.ipcRenderer.on("update-downloaded", handleUpdateDownloaded)
+    const unlistenUpdateAvailable = listenIPC("update-can-available", handleUpdateAvailable)
+    const unlistenUpdateDownloaded = listenIPC("update-downloaded", handleUpdateDownloaded)
 
     return () => {
-      window.ipcRenderer.off("update-can-available", handleUpdateAvailable)
-      window.ipcRenderer.off("update-downloaded", handleUpdateDownloaded)
+      unlistenUpdateAvailable()
+      unlistenUpdateDownloaded()
     }
-  }, [handleUpdateAvailable])
+  }, [handleUpdateAvailable, handleUpdateDownloaded])
 
   return null
+}
+
+function TauriUpdater() {
+  const setNewVersion = useSetAtom(newVersionAtom)
+  const newVersion = useRef("")
+
+  useEffect(() => {
+    check().then(async (update) => {
+      if (!update) {
+        return
+      }
+
+      setNewVersion(update.version)
+      newVersion.current = update.version
+
+      const autoDownload = getAutoDownload()
+      if (window.PLATFORM !== "darwin" && autoDownload) {
+        await update.downloadAndInstall()
+        return
+      }
+    })
+  }, [])
+
+  return null
+}
+
+export default function Updater() {
+  if (isElectron) {
+    return <ElectronUpdater />
+  }
+
+  return <TauriUpdater />
 }

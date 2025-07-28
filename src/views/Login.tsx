@@ -4,6 +4,7 @@ import "@/styles/pages/_Login.scss"
 import { useAtomValue } from "jotai"
 import { useNavigate } from "react-router-dom"
 import { isLoggedInOAPAtom } from "../atoms/oapState"
+import { openOapLoginPage } from "../ipc/oap"
 
 const Login = () => {
   const navigate = useNavigate()
@@ -51,8 +52,8 @@ const Login = () => {
             {t("login.description2")}
           </p>
           <div className="button-container">
-            <button className="option-btn login-btn" onClick={() => window.ipcRenderer.oapLogin(true)}>{t("login.button2")}</button>
-            <button className="option-btn login-btn" onClick={() => window.ipcRenderer.oapLogin(false)}>{t("login.button3")}</button>
+            <button className="option-btn login-btn" onClick={() => openOapLoginPage(false)}>{t("login.button2")}</button>
+            <button className="option-btn login-btn" onClick={() => openOapLoginPage(false)}>{t("login.button3")}</button>
           </div>
         </div>
       </div>

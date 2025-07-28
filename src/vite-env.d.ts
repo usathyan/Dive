@@ -37,17 +37,16 @@ declare global {
       oapLogin: (regist?: boolean) => Promise<void>
       oapLogout: () => Promise<void>
       oapGetToken: () => Promise<string>
-      oapSearchMCPServer: (params: MCPServerSearchParam) => Promise<OAPMCPServer[]>
+      oapSearchMCPServer: (params: MCPServerSearchParam) => Promise<ApiResponse<OAPMCPServer[]>>
       oapModelDescription: (params?: OAPModelDescriptionParam) => Promise<ApiResponse<OAPModelDescription[]>>
       oapApplyMCPServer: (ids: string[]) => Promise<void>
       oapGetMCPServers: () => Promise<ApiResponse<OAPMCPServer[]>>
-      oapGetMe: () => Promise<OAPUser>
+      oapGetMe: () => Promise<ApiResponse<OAPUser>>
       oapRegistEvent: (event: "login" | "logout", callback: () => void) => () => void
       oapGetUsage: () => Promise<OAPUsage>
       getModelSettings: () => Promise<ModelGroupSetting>
       setModelSettings: (settings: ModelGroupSetting) => Promise<void>
       listenRefresh: (cb: () => void) => () => void
-      isDev: () => Promise<boolean>
       refreshConfig: () => Promise<void>
       onReceiveInstallHostDependenciesLog: (callback: (data: string) => void) => () => void
       getInstallHostDependenciesLog: () => Promise<string[]>
@@ -55,5 +54,10 @@ declare global {
 
     PLATFORM: "darwin" | "win32" | "linux"
     isDev: boolean
+
+    __TAURI_INTERNALS__: object
+    __TAURI_METADATA__: {
+      app: object
+    }
   }
 }

@@ -1,13 +1,13 @@
-import React, { useEffect } from "react"
+import React, { useEffect, useMemo } from "react"
 import { useNavigate } from "react-router-dom"
 import { useSetAtom, useAtomValue } from "jotai"
 import { codeStreamingAtom } from "../atoms/codeStreaming"
 import { useTranslation } from "react-i18next"
 import { historiesAtom, loadHistoriesAtom } from "../atoms/historyState"
-import { modelVerifyListAtom } from "../atoms/configState"
 import ChatInput from "../components/ChatInput"
 import Login from "./Login"
 import { isLoggedInOAPAtom } from "../atoms/oapState"
+import { modelGroupsAtom } from "../atoms/modelState"
 
 const Welcome = () => {
   const { t } = useTranslation()
@@ -15,9 +15,9 @@ const Welcome = () => {
   const updateStreamingCode = useSetAtom(codeStreamingAtom)
   const histories = useAtomValue(historiesAtom)
   const loadHistories = useSetAtom(loadHistoriesAtom)
-  const modelVerifyList = useAtomValue(modelVerifyListAtom)
-  const isInitialized = localStorage.getItem("isInitialized") === "true"
+  const isInitialized = useMemo(() => localStorage.getItem("isInitialized") === "true", [])
   const isLoggedInOAP = useAtomValue(isLoggedInOAPAtom)
+  const modelGroups = useAtomValue(modelGroupsAtom)
 
   useEffect(() => {
     document.title = t("header.title")
@@ -31,7 +31,7 @@ const Welcome = () => {
     loadHistories()
   }, [loadHistories])
 
-  if (!isInitialized && Object.keys(modelVerifyList).length === 0 && !isLoggedInOAP) {
+  if (!isInitialized && !isLoggedInOAP && modelGroups.length === 0) {
     return <Login />
   }
 

@@ -1,14 +1,9 @@
 import { app, ipcMain, BrowserWindow } from "electron"
-import config from "../../config"
 import { serviceStatus } from "../service"
 import path from "node:path"
 import { VITE_DEV_SERVER_URL } from "../constant"
 
 export function ipcEnvHandler(_win: BrowserWindow) {
-  ipcMain.handle("env:getHotkeyMap", async () => {
-    return config.keymap
-  })
-
   ipcMain.handle("env:getPlatform", async () => {
     return process.platform
   })

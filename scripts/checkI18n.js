@@ -8,7 +8,7 @@ const __dirname = path.dirname(__filename);
 
 // Get all language files
 function getLocaleFiles() {
-  const localesPath = path.join(path.dirname(__dirname), 'public', 'locales');
+  const localesPath = path.join(path.dirname(__dirname), 'src', 'locales');
   return fs.readdirSync(localesPath)
     .filter(file => fs.statSync(path.join(localesPath, file)).isDirectory())
     .map(dir => ({
@@ -74,4 +74,4 @@ function checkLocales() {
 }
 
 // Execute check
-checkLocales(); 
+checkLocales();

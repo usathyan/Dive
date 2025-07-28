@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next"
 import InfoTooltip from "../../../../../components/InfoTooltip"
 import Switch from "../../../../../components/Switch"
 import { Parameter } from "../../../../../helper/modelParameterUtils"
+import { imgPrefix } from "../../../../../ipc"
 
 type Props = {
   parameters: Parameter[]
@@ -88,7 +89,7 @@ const NonStreamingParameter = ({ parameters, setParameters }: Props) => {
       </div>
 
       <div className={clsx("non-streaming-alert", !isStreamingMode && "visible")}>
-        <img src={"img://Alert.svg"} alt="info" />
+        <img src={`${imgPrefix}Alert.svg`} alt="info" />
         <div className="alert-content">{t("models.streamingModeAlert")}</div>
       </div>
     </div>

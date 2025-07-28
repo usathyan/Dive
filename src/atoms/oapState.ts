@@ -1,5 +1,5 @@
 import { atom } from "jotai"
-
+import { oapGetMCPServers, oapGetUsage, oapLogout } from "../ipc"
 import type { OAPMCPServer, OAPUsage, OAPUser } from "../../types/oap"
 
 export const oapUserAtom = atom<OAPUser | null>(null)
@@ -9,14 +9,18 @@ export const isLoggedInOAPAtom = atom((get) => get(oapUserAtom))
 export const oapToolsAtom = atom<OAPMCPServer[]>([])
 
 export const logoutOAPAtom = atom(null, (get, set) => {
-  window.ipcRenderer.oapLogout()
+  oapLogout()
   set(oapUserAtom, null)
   set(oapUsageAtom, null)
 })
 
 export const updateOAPUsageAtom = atom(null, async (get, set) => {
-  const usage = await window.ipcRenderer.oapGetUsage()
-  set(oapUsageAtom, usage)
+  if (!get(isLoggedInOAPAtom)) {
+    return
+  }
+
+  const { data } = await oapGetUsage()
+  set(oapUsageAtom, data)
 })
 
 export const isOAPUsageLimitAtom = atom((get) => {
@@ -45,7 +49,7 @@ export const loadOapToolsAtom = atom(null, async (get, set) => {
     set(oapToolsAtom, [])
     return
   }
-  const oapData = await window.ipcRenderer.oapGetMCPServers()
+  const oapData = await oapGetMCPServers()
   if (oapData.status === "success") {
     set(oapToolsAtom, oapData.data)
   }

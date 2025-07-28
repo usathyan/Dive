@@ -17,6 +17,7 @@ import { themeAtom } from "../../atoms/themeState"
 import Textarea from "../../components/WrappedTextarea"
 import { isChatStreamingAtom } from "../../atoms/chatState"
 import Zoom from "../../components/Zoom"
+import { convertLocalFileSrc } from "../../ipc/util"
 
 declare global {
   namespace JSX {
@@ -227,14 +228,15 @@ const Message = ({ messageId, text, isSent, files, isError, isLoading, onRetry, 
               </a>
             )
           },
-          img({className, src, alt}) {
+          img({className, src}) {
             let imageSrc = src
             if (src?.startsWith("https://localfile")) {
               let path = src.replace("https://localfile", "").replace(/\\/g, "/")
               if (path === decodeURI(path)) {
                 path = encodeURI(path)
               }
-              imageSrc = `local-file:///${path}`
+
+              imageSrc = convertLocalFileSrc(path)
             }
 
             return <Zoom allowCopy allowDownload><img src={imageSrc} className={className} /></Zoom>
@@ -246,14 +248,15 @@ const Message = ({ messageId, text, isSent, files, isError, isLoading, onRetry, 
               if (path === decodeURI(path)) {
                 path = encodeURI(path)
               }
-              audioSrc = `local-file:///${path}`
+
+              audioSrc = convertLocalFileSrc(path)
             }
 
             return (
               <div className="audio-container">
-                <audio 
-                  src={audioSrc} 
-                  controls={controls} 
+                <audio
+                  src={audioSrc}
+                  controls={controls}
                   className={className}
                 />
               </div>

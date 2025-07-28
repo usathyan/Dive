@@ -1,23 +1,24 @@
 import { RouterProvider } from "react-router-dom"
 import { router } from "./router"
 import { useAtom, useAtomValue, useSetAtom } from "jotai"
-import { modelVerifyListAtom, removeOapConfigAtom, writeOapConfigAtom } from "./atoms/configState"
+import { removeOapConfigAtom, writeOapConfigAtom } from "./atoms/configState"
 import { useEffect } from "react"
 import { handleGlobalHotkey } from "./atoms/hotkeyState"
 import { handleWindowResizeAtom } from "./atoms/sidebarState"
 import { systemThemeAtom } from "./atoms/themeState"
 import Updater from "./updater"
-import { NewVerifyStatus, OldVerifyStatus } from "./atoms/configState"
 import { loadOapToolsAtom, oapUsageAtom, oapUserAtom, updateOAPUsageAtom } from "./atoms/oapState"
 import { queryGroup } from "./helper/model"
 import { modelGroupsAtom, modelSettingsAtom } from "./atoms/modelState"
 import { loadMcpConfigAtom, loadToolsAtom } from "./atoms/toolState"
 import { useTranslation } from "react-i18next"
+import { setModelSettings } from "./ipc/config"
+import { oapGetMe, oapGetToken, oapLogout, oapRegistEvent } from "./ipc"
+import { refreshConfig } from "./ipc/host"
 
 function App() {
   const setSystemTheme = useSetAtom(systemThemeAtom)
   const handleWindowResize = useSetAtom(handleWindowResizeAtom)
-  const setAllVerifiedList = useSetAtom(modelVerifyListAtom)
   const setOAPUser = useSetAtom(oapUserAtom)
   const setOAPUsage = useSetAtom(oapUsageAtom)
   const updateOAPUsage = useSetAtom(updateOAPUsageAtom)
@@ -33,7 +34,7 @@ function App() {
   useEffect(() => {
     console.log("set model setting", modelSetting)
     if (modelSetting) {
-      window.ipcRenderer.setModelSettings(modelSetting)
+      setModelSettings(modelSetting)
     }
   }, [modelSetting])
 
@@ -54,18 +55,18 @@ function App() {
   }, [])
 
   const updateOAPUser = async () => {
-    const token = await window.ipcRenderer.oapGetToken()
+    const token = await oapGetToken()
     if (token) {
-      const user = await window.ipcRenderer.oapGetMe()
-      setOAPUser(user)
+      const user = await oapGetMe()
+      setOAPUser(user.data)
       await updateOAPUsage()
-      console.log("oap user", user)
+      console.log("oap user", user.data)
     }
   }
 
   // handle oap event
   useEffect(() => {
-    const unregistLogin = window.ipcRenderer.oapRegistEvent("login", () => {
+    const unregistLogin = oapRegistEvent("login", () => {
       console.info("oap login")
       updateOAPUser()
         .catch(console.error)
@@ -75,15 +76,34 @@ function App() {
         .catch(console.error)
     })
 
-    const unregistLogout = window.ipcRenderer.oapRegistEvent("logout", () => {
+    const unregistLogout = oapRegistEvent("logout", () => {
       console.info("oap logout")
       removeOapConfig()
       setOAPUser(null)
       setOAPUsage(null)
     })
 
+    const unlistenRefresh = oapRegistEvent("refresh", () => {
+      console.info("oap refresh")
+      refreshConfig()
+        .then(loadTools)
+        .catch(console.error)
+
+      updateOAPUser()
+        .catch(console.error)
+        .then(removeOapConfig)
+        .then(writeOapConfig)
+        .catch(console.error)
+    })
+
     updateOAPUser().then(() => {
       setOAPUser(user => {
+        if (!user) {
+          console.warn("no user found, logout")
+          oapLogout()
+          return null
+        }
+
         if (user && queryGroup({ modelProvider: "oap" }, modelGroups).length === 0) {
           writeOapConfig().catch(console.error)
         }
@@ -97,6 +117,7 @@ function App() {
     return () => {
       unregistLogin()
       unregistLogout()
+      unlistenRefresh()
     }
   }, [])
 
@@ -111,50 +132,6 @@ function App() {
     return () => {
       mediaQuery.removeEventListener("change", handleChange)
     }
-  }, [])
-
-  // convert old model verify status to new model verify status
-  //TODO: remove this after all verified list is converted in future version
-  useEffect(() => {
-    const result: Record<string, Record<string, NewVerifyStatus | string>> = {}
-    const allVerifiedListString = localStorage.getItem("modelVerify")
-    const allVerifiedList = JSON.parse(allVerifiedListString || "{}") as Record<string, Record<string, NewVerifyStatus | string>>
-    for (const [apiKey, models] of Object.entries({ ...allVerifiedList })) {
-      result[apiKey] = {} as Record<string, NewVerifyStatus | string>
-
-      for (const [modelName, status] of Object.entries(models)) {
-        if (status === "ignore") {
-          result[apiKey][modelName] = "ignore"
-          continue
-        }
-
-        if ((status as NewVerifyStatus).connecting?.final_state || (status as NewVerifyStatus).supportTools?.final_state) {
-          result[apiKey][modelName] = status as NewVerifyStatus
-          continue
-        }
-
-        const oldStatus = status as unknown as OldVerifyStatus
-        result[apiKey][modelName] = {
-          success: oldStatus.success,
-          connecting: {
-            success: oldStatus.connectingSuccess,
-            final_state: oldStatus.connectingSuccess ? "CONNECTED" : "ERROR",
-            error_msg: oldStatus.connectingSuccess ? null : (oldStatus.connectingResult ?? "Connection failed")
-          },
-          supportTools: {
-            success: oldStatus.supportTools,
-            final_state: oldStatus.supportTools ? "TOOL_RESPONDED" : "ERROR",
-            error_msg: oldStatus.supportTools ? null : (oldStatus.supportToolsResult ?? "Tool verification failed")
-          },
-          supportToolsInPrompt: {
-            success: false,
-            final_state: "ERROR",
-            error_msg: "Tool verification failed"
-          }
-        }
-      }
-    }
-    setAllVerifiedList(result)
   }, [])
 
   useEffect(() => {

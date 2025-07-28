@@ -11,7 +11,7 @@ import { initTray } from "./tray"
 import { preferencesStore } from "./store"
 import { initProtocol } from "./protocol"
 import log from "electron-log/main"
-import { deeplinkHandler, setOAPTokenToHost, setupAppImageDeepLink } from "./deeplink"
+import { deeplinkHandler, refreshConfig, setOAPTokenToHost, setupAppImageDeepLink } from "./deeplink"
 import { oapClient } from "./oap"
 import electronDl from "electron-dl"
 
@@ -91,6 +91,20 @@ async function onReady() {
   oapClient.registEvent("logout", () => {
     win!.webContents.send("oap:logout")
   })
+
+  oapClient.onReceiveWebSocketMessage((message) => {
+    if (VITE_DEV_SERVER_URL) {
+      console.log("receive websocket message", message)
+    }
+
+    switch (message.type) {
+      case "user.settings.mcps.updated":
+      case "user.account.subscription.update":
+        refreshConfig()
+        break
+      default:
+    }
+  })
 }
 
 export async function createWindow() {
@@ -112,6 +126,7 @@ export async function createWindow() {
     },
   })
 
+  // win.webContents.openDevTools()
   if (VITE_DEV_SERVER_URL) { // #298
     win.loadURL(VITE_DEV_SERVER_URL)
     // Open devTool if the app is not packaged
