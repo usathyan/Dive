@@ -55,6 +55,7 @@ export async function fetchModels(provider: ModelProvider, apiKey: string, baseU
   const res = isTauri
     ? await fetchTauriModels(provider, apiKey, baseURL)
     : await fetchElectronModels(provider, apiKey, baseURL, extra)
-  console.log(res)
+
+  console.log("[llm] fetchModels", res)
   return res
 }
