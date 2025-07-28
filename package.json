@@ -134,5 +134,9 @@
     "vite-plugin-electron-renderer": "^0.14.6",
     "vitest": "^2.1.9",
     "ws": "^8.18.3"
+  },
+  "optionalDependencies": {
+    "bufferutil": "^4.0.9",
+    "utf-8-validate": "^6.0.5"
   }
 }
