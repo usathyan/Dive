@@ -54,6 +54,8 @@ interface ToolItem {
   tags: string[]
   checked: boolean
   id: string
+  popular?: boolean
+  new?: boolean
 }
 
 const TAGS = [ "Text", "Search", "Document", "Image", "Audio & Video" ]
@@ -389,7 +391,8 @@ const OAPServerList = ({
                           <div className="oap-item-img">
                             <img src={handleBannerUrl(item.banner)} alt={item.name} />
                             <span className="oap-tags">
-                              {/* <span className={`oap-tag ${item.plan}`}>{item.plan}</span> */}
+                              {item?.popular && <span className="oap-tag popular">Popular</span>}
+                              {item?.new && <span className="oap-tag new">New</span>}
                             </span>
                             <div className="oap-checkbox">
                               <CheckBox
@@ -482,7 +485,7 @@ const OAPServerList = ({
                               <div className="oap-metadata-wrapper">
                                 <div className="oap-metadata">
                                   <span className="oap-tags">
-                                    <span className={`oap-tag ${item.plan}`}>{item.plan}</span>
+                                    <span className={`oap-tag ${item.plan}`}>{item.plan.toLowerCase()}</span>
                                     {item.tags.map((tag: string) => (
                                       <span key={tag} className="oap-tag">{tag}</span>
                                     ))}

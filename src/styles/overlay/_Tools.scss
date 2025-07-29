@@ -1638,11 +1638,25 @@
           object-fit: cover;
         }
 
-        .oap-tag {
+        .oap-tags {
           position: absolute;
           bottom: 0;
           right: 0;
           margin: 0 7px 7px 0;
+          display: flex;
+
+          .oap-tag {
+            color: var(--text-light);
+            font-weight: 700;
+
+            &.popular {
+              background-color: var(--bg-pri-blue-medium);
+            }
+
+            &.new {
+              background-color: var(--bg-alert-medium);
+            }
+          }
         }
 
         .oap-checkbox {
