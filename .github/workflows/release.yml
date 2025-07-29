@@ -12,9 +12,15 @@ jobs:
     strategy:
       matrix:
         include:
+          # - os: windows-latest
+          #   platform: windows
+          #   arch: x64
           - os: macos-latest
             platform: darwin
             arch: arm64
+          - os: ubuntu-latest
+            platform: linux
+            arch: x64
     runs-on: ${{ matrix.os }}
 
     steps:
@@ -132,8 +138,8 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - platform: 'ubuntu-22.04'
-            args: ''
+          # - platform: 'ubuntu-22.04'
+          #   args: ''
           - platform: 'windows-latest'
             args: ''
 
