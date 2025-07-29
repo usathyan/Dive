@@ -4,11 +4,13 @@ use std::sync::Arc;
 
 use std::sync::Mutex;
 use futures::executor::block_on;
-use tauri::{Emitter, Manager, WindowEvent};
+use tauri::RunEvent;
+use tauri::{Emitter, Manager};
 use tauri_plugin_autostart::MacosLauncher;
 use tauri_plugin_deep_link::DeepLinkExt;
 use tauri_plugin_store::StoreExt;
 use tokio::sync::mpsc;
+use tokio::time::sleep;
 
 use crate::event::MCPInstallParam;
 use crate::event::{EMIT_MCP_INSTALL, EMIT_OAP_LOGOUT, EMIT_OAP_REFRESH};
@@ -31,7 +33,7 @@ mod util;
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     let host_handle = Arc::new(Mutex::new(None::<host::HostProcess>));
-    let host_handle_clone = host_handle.clone();
+    let host_handle_in_setup = host_handle.clone();
 
     let log_level = if cfg!(debug_assertions) {
         log::LevelFilter::Debug
@@ -40,7 +42,7 @@ pub fn run() {
     };
 
     tauri::async_runtime::set(tokio::runtime::Handle::current());
-    tauri::Builder::default()
+    let app = tauri::Builder::default()
         .plugin(tauri_plugin_process::init())
         .plugin(tauri_plugin_updater::Builder::new().build())
         .plugin(tauri_plugin_single_instance::init(|app, argv, cwd: String| {
@@ -75,41 +77,6 @@ pub fn run() {
         .plugin(tauri_plugin_clipboard_manager::init())
         .plugin(tauri_plugin_http::init())
         .plugin(tauri_plugin_fs::init())
-        .on_window_event(move |window, event| {
-            match event {
-                WindowEvent::Destroyed => {
-                    if let Ok(mut host_handle) = host_handle.lock() {
-                        if let Some(mut host) = host_handle.take() {
-                            log::info!("destroying host");
-                            host.destroy();
-                        }
-                    }
-                }
-                tauri::WindowEvent::CloseRequested { api, .. } => {
-                    let app_handle = window.app_handle();
-                    let settings = app_handle.state::<AppState>();
-
-                    if settings.get_minimize_to_tray() {
-                        // if minimize to tray, hide the window
-                        api.prevent_close();
-                        if let Err(e) = window.hide() {
-                            log::warn!("Failed to hide window: {}", e);
-                        } else {
-                            log::info!("Window minimized to tray");
-                        }
-                    } else {
-                        // if not minimize to tray, close the window and clean up the host
-                        if let Ok(mut host_handle) = host_handle.lock() {
-                            if let Some(mut host) = host_handle.take() {
-                                log::info!("Window closing, cleaning up host");
-                                host.destroy();
-                            }
-                        }
-                    }
-                }
-                _ => {}
-            }
-        })
         .setup(move |app| {
             #[cfg(debug_assertions)]
             {
@@ -298,7 +265,7 @@ pub fn run() {
                     log::error!("failed to start host: {e}");
                 }
 
-                if let Ok(mut host_handle) = host_handle_clone.lock() {
+                if let Ok(mut host_handle) = host_handle_in_setup.lock() {
                     *host_handle = Some(host);
                 }
             });
@@ -341,8 +308,51 @@ pub fn run() {
             command::oap::oap_get_model_description,
         ])
         .append_invoke_initialization_script(include_str!("../../shared/preload.js"))
-        .run(tauri::generate_context!())
-        .expect("error while running tauri application");
+        .build(tauri::generate_context!());
+    
+    let destroy_host = move || {
+        if let Some(mut host) = host_handle.lock().unwrap().take() {
+            log::info!("make sure host is destroyed");
+            host.destroy();
+        }
+    };
+
+    match app {
+        Ok(app) => {
+            app.run(move |_app_handle, _event| {
+                match &_event {
+                    RunEvent::Exit => {
+                        destroy_host();
+                    }
+                    RunEvent::WindowEvent {
+                        event: tauri::WindowEvent::CloseRequested { api, .. },
+                        ..
+                    } => {
+                        let settings = _app_handle.state::<AppState>();
+
+                        if settings.get_minimize_to_tray() {
+                            // if minimize to tray, hide the window
+                            api.prevent_close();
+                            if let Some(window) = _app_handle.get_webview_window("main") {
+                                match window.hide() {
+                                    Ok(_) => log::info!("Window minimized to tray"),
+                                    Err(e) => log::warn!("Failed to hide window: {}", e),
+                                }
+                            };
+                        } else {
+                            // if not minimize to tray, close the window and clean up the host
+                            destroy_host();
+                        }
+                    }
+                    _ => (),
+                }
+            });
+        }
+        Err(e) => {
+            log::error!("failed to build tauri application: {e}");
+            destroy_host();
+        }
+    }
 }
 
 async fn upgrade_from_electron() -> anyhow::Result<()> {
