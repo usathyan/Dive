@@ -101,6 +101,11 @@ export function fromRawConfigToModelGroupSetting(rawConfig: RawModelConfig): Mod
           group.extra.credentials = (config as any).credentials
           group.extra.region = (config as any).region
           break
+        case "azure_openai":
+          group.extra.azureEndpoint = (config as any).azureEndpoint
+          group.extra.azureDeployment = (config as any).azureDeployment
+          group.extra.apiVersion = (config as any).apiVersion
+          break
         default:
           group.apiKey = apiKey
           group.baseURL = baseURL || configuration?.baseURL
@@ -427,6 +432,10 @@ export function fieldsToLLMGroup(provider: ModelProvider, obj: Record<string, an
   switch (provider) {
   case "bedrock":
     mutGroup.extra = { credentials: other }
+    break
+  case "azure_openai":
+    mutGroup.apiKey = apiKey
+    mutGroup.extra = { ...other }
     break
   default:
     if (apiKey) {

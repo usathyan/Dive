@@ -11,7 +11,8 @@ export type BaseProvider =
   "groq" |
   "grok" |
   "nvdia" |
-  "perplexity"
+  "perplexity" |
+  "azure_openai"
 
 export type ModelVerifyStatus = "ignore" | "success" | "successInPrompt" | "unSupportTool" | "unSupportModel" | "unVerified" | "error" | "verifying" | "abort"
 
@@ -52,10 +53,18 @@ export type BedrockCredential = {
   region: string
 }
 
+export type AzureOpenaiConfig = {
+  apiKey: string
+  azureEndpoint: string
+  azureDeployment: string
+  apiVersion: string
+}
+
 export type DefaultModelGroup = ModelGroup<"default", any, any>
 export type BedrockModelGroup = ModelGroup<"bedrock", { credentials: BedrockCredential, region: string }>
+export type AzureOpenaiModelGroup = ModelGroup<"azure_openai", AzureOpenaiConfig>
 
-export type LLMGroup = ModelGroup<BaseProvider> | BedrockModelGroup | DefaultModelGroup
+export type LLMGroup = ModelGroup<BaseProvider> | BedrockModelGroup | AzureOpenaiModelGroup | DefaultModelGroup
 
 export interface CommonConfiguration {
   temperature: number

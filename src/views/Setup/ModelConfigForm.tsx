@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react"
 import { useTranslation } from "react-i18next"
-import { FieldDefinition, InterfaceProvider, PROVIDER_LABELS, PROVIDERS } from "../../atoms/interfaceState"
+import { FieldDefinition, PROVIDER_LABELS, PROVIDERS } from "../../atoms/interfaceState"
 import { ModelConfig, verifyModelWithConfig, writeEmptyConfigAtom, writeRawConfigAtom } from "../../atoms/configState"
 import { useSetAtom } from "jotai"
 import { loadConfigAtom } from "../../atoms/configState"
@@ -102,7 +102,7 @@ const ModelConfigForm: React.FC<ModelConfigFormProps> = ({
   }
 
   const handleProviderChange = (value: unknown) => {
-    const newProvider = value as InterfaceProvider
+    const newProvider = value as ModelProvider
     onProviderChange?.(newProvider)
     setIsVerified(false)
   }

@@ -17,6 +17,8 @@ export function fetchElectronModels(provider: ModelProvider, apiKey: string, bas
     return window.ipcRenderer.bedrockModelList(...(extra as [string, string, string, string]))
   case "mistralai":
     return window.ipcRenderer.mistralaiModelList(apiKey)
+  case "azure_openai":
+    return window.ipcRenderer.azureOpenaiModelList(apiKey, ...(extra as [string, string, string]))
   // openai compatible
   default:
     return window.ipcRenderer.openaiCompatibleModelList(apiKey, baseURL)
@@ -39,12 +41,15 @@ export async function fetchTauriModels(provider: ModelProvider, apiKey: string, 
   case "google-genai":
     return wrapper(await invoke("llm_google_genai_model_list", { apiKey }))
   case "bedrock":
-    return {
-      results: [],
-      error: "Bedrock is not supported in Tauri",
-    }
+    return wrapper([])
   case "mistralai":
     return wrapper(await invoke("llm_mistralai_model_list", { apiKey }))
+  case "azure_openai":
+    // todo: implement azure openai model list for tauri version
+    return {
+      results: [],
+      error: "Azure OpenAI is not implemented in Tauri version",
+    }
   // openai compatible
   default:
     return wrapper(await invoke("llm_openai_compatible_model_list", { apiKey, baseUrl }))

@@ -57,6 +57,11 @@ export default function ModelsProvider({ children }: { children: ReactNode }) {
           ...group.extra.credentials,
           region: group.extra.region,
         }
+      case "azure_openai":
+        return {
+          ...group.extra,
+          apiKey: group.apiKey || "",
+        }
       default:
         return {
           apiKey: group.apiKey,
@@ -104,8 +109,13 @@ export default function ModelsProvider({ children }: { children: ReactNode }) {
   const fetchModels = useCallback(async () => {
     const group = modelGroupBuffer.current
     let extra: string[] = []
+
     if (group.modelProvider === "bedrock") {
       extra = [group.extra.credentials.accessKeyId, group.extra.credentials.secretAccessKey, group.extra.credentials.sessionToken, group.extra.credentials.region]
+    }
+
+    if (group.modelProvider === "azure_openai") {
+      extra = [group.extra.azureEndpoint, group.extra.azureDeployment, group.extra.apiVersion]
     }
 
     const result = await _fetchModels(group.modelProvider, group.apiKey || "", group.baseURL || "", extra).catch(() => ({ error: "fetch models failed" }))

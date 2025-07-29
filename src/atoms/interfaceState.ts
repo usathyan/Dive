@@ -6,8 +6,6 @@ import { oapGetToken } from "../ipc"
 
 export const EMPTY_PROVIDER = "none"
 
-export type BaseProvider = "openai" | "ollama" | "anthropic" | "mistralai" | "bedrock" | "oap"
-export type InterfaceProvider = BaseProvider | "openai_compatible" | "google-genai" | "openrouter" | "lmstudio" | "groq" | "grok" | "nvdia" | "perplexity"
 export const PROVIDERS: ModelProvider[] = [
   "openai",
   "openai_compatible",
@@ -16,6 +14,7 @@ export const PROVIDERS: ModelProvider[] = [
   "google-genai",
   "mistralai",
   "bedrock",
+  "azure_openai",
   "openrouter",
   "lmstudio",
   "groq",
@@ -40,6 +39,7 @@ export const PROVIDER_LABELS: Record<ModelProvider, string> = {
   nvdia: "NVIDIA",
   perplexity: "Perplexity",
   oap: "OAP",
+  azure_openai: "Azure OpenAI",
   default: "Default",
 }
 
@@ -58,6 +58,7 @@ export const PROVIDER_ICONS: Record<ModelProvider, string> = {
   nvdia: `${imgPrefix}model_nvdia.svg`,
   perplexity: `${imgPrefix}model_perplexity.svg`,
   oap: `${imgPrefix}logo_oap.png`,
+  azure_openai: `${imgPrefix}model_azure.svg`,
   default: "",
 }
 
@@ -345,60 +346,60 @@ export const defaultInterface: Record<ModelProvider, InterfaceDefinition> = {
       default: ""
     }
   },
-  // azure_openai: {
-  //   apiKey: {
-  //     type: "string",
-  //     inputType: "password",
-  //     label: "API Key",
-  //     description: "Azure OpenAI API Key",
-  //     required: true,
-  //     default: "",
-  //     placeholder: "YOUR_API_KEY"
-  //   },
-  //   azureEndpoint: {
-  //     type: "string",
-  //     inputType: "text",
-  //     label: "Endpoint",
-  //     description: "Azure OpenAI Endpoint",
-  //     required: true,
-  //     default: "",
-  //     placeholder: "https://your-endpoint.openai.azure.com/"
-  //   },
-  //   azureDeployment: {
-  //     type: "string",
-  //     inputType: "text",
-  //     label: "Deployment",
-  //     description: "Azure OpenAI Deployment",
-  //     required: true,
-  //     default: "",
-  //     placeholder: "YOUR_DEPLOYMENT"
-  //   },
-  //   apiVersion: {
-  //     type: "string",
-  //     inputType: "text",
-  //     label: "API Version",
-  //     description: "Azure OpenAI API Version",
-  //     required: true,
-  //     default: "2023-03-15-preview",
-  //     placeholder: "2025-03-01-preview"
-  //   },
-  //   model: {
-  //     type: "list",
-  //     label: "Model ID",
-  //     description: "modelConfig.modelDescriptionHint",
-  //     required: false,
-  //     default: "",
-  //     placeholder: "Select a model",
-  //     listCallback: async (deps) => {
-  //       const results = await window.ipcRenderer.azureOpenaiModelList(deps.apiKey, deps.azureEndpoint, deps.azureDeployment, deps.apiVersion)
-  //       if (results.error) {
-  //         throw new Error(results.error)
-  //       }
-  //       return results.results
-  //     },
-  //     listDependencies: ["apiKey", "azureEndpoint", "azureDeployment", "apiVersion"]
-  //   },
-  // },
+  azure_openai: {
+    apiKey: {
+      type: "string",
+      inputType: "password",
+      label: "API Key",
+      description: "Azure OpenAI API Key",
+      required: true,
+      default: "",
+      placeholder: "YOUR_API_KEY"
+    },
+    azureEndpoint: {
+      type: "string",
+      inputType: "text",
+      label: "Endpoint",
+      description: "Azure OpenAI Endpoint",
+      required: true,
+      default: "",
+      placeholder: "https://your-endpoint.openai.azure.com/"
+    },
+    azureDeployment: {
+      type: "string",
+      inputType: "text",
+      label: "Deployment",
+      description: "Azure OpenAI Deployment",
+      required: true,
+      default: "",
+      placeholder: "YOUR_DEPLOYMENT"
+    },
+    apiVersion: {
+      type: "string",
+      inputType: "text",
+      label: "API Version",
+      description: "Azure OpenAI API Version",
+      required: true,
+      default: "2023-03-15-preview",
+      placeholder: "2025-03-01-preview"
+    },
+    model: {
+      type: "list",
+      label: "Model ID",
+      description: "modelConfig.modelDescriptionHint",
+      required: false,
+      default: "",
+      placeholder: "Select a model",
+      listCallback: async (deps) => {
+        const results = await fetchModels("azure_openai", deps.apiKey, "", [deps.azureEndpoint, deps.azureDeployment, deps.apiVersion])
+        if (results.error) {
+          throw new Error(results.error)
+        }
+        return results.results
+      },
+      listDependencies: ["apiKey", "azureEndpoint", "azureDeployment", "apiVersion"]
+    },
+  },
   openrouter: openaiCompatibleTemplate("https://openrouter.ai/api/v1"),
   lmstudio: openaiCompatibleTemplate("https://localhost:1234/api/v1", {
     apiKey: {
