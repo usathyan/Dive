@@ -135,6 +135,8 @@
     "inputKeyError": "{{ name }} 变量名称重复",
     "urlPlaceholder": "输入URL...",
     "transportPlaceholder": "选择Transport...",
+    "providerSearchPlaceholder": "输入搜索 Provider...",
+    "noProviderSearchResult": "找不到相关 Provider",
     "toogleTool.alt": "启用 MCP Tools",
     "logTitle": "执行 UVX 命令",
     "logProcessing": "处理中...",
@@ -159,7 +161,9 @@
     "tabOap": "OAP工具",
     "tabLocal": "自定义工具",
     "oap.pro_only": "Pro 方案用户才能安装",
-    "oapStoreLink.alt": "在 OAP Hub 查看详情"
+    "oapStoreLink.alt": "在 OAP Hub 查看详情",
+    "subToolsCount": "工具启用：{{count}} / {{total}}",
+    "disabledDescription": "已停用"
   },
   "modelConfig": {
     "title": "模型设置",

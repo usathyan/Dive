@@ -135,6 +135,8 @@
     "inputKeyError": "{{ name }} nombre de variable duplicado",
     "urlPlaceholder": "Ingrese la URL...",
     "transportPlaceholder": "Seleccione Transport...",
+    "providerSearchPlaceholder": "Ingrese búsqueda Provider...",
+    "noProviderSearchResult": "No se encontró Provider relacionado",
     "toogleTool.alt": "Activar herramientas MCP",
     "logTitle": "Ejecutar comando UVX",
     "logProcessing": "Procesando...",
@@ -159,7 +161,9 @@
     "tabOap": "Herramientas OAP",
     "tabLocal": "Herramientas personalizadas",
     "oap.pro_only": "Solo disponible para usuarios del plan Pro",
-    "oapStoreLink.alt": "Ver detalles"
+    "oapStoreLink.alt": "Ver detalles",
+    "subToolsCount": "Herramientas activadas：{{count}} / {{total}}",
+    "disabledDescription": "Desactivado"
   },
   "modelConfig": {
     "title": "Configuración del Modelo",

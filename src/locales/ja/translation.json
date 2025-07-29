@@ -135,6 +135,8 @@
     "inputKeyError": "{{ name }} 変数名が重複しています",
     "urlPlaceholder": "URLを入力...",
     "transportPlaceholder": "トランスポートを選択...",
+    "providerSearchPlaceholder": "Providerを検索...",
+    "noProviderSearchResult": "関連するProviderが見つかりません",
     "toogleTool.alt": "MCPツールを有効化",
     "logTitle": "UVXコマンドの実行",
     "logProcessing": "処理中...",
@@ -159,7 +161,9 @@
     "tabOap": "OAPツール",
     "tabLocal": "カスタムツール",
     "oap.pro_only": "Proプランのユーザーのみインストール可能",
-    "oapStoreLink.alt": "詳細を見る"
+    "oapStoreLink.alt": "詳細を見る",
+    "subToolsCount": "ツール有効：{{count}} / {{total}}",
+    "disabledDescription": "無効"
   },
   "modelConfig": {
     "title": "モデル設定",

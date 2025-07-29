@@ -424,10 +424,11 @@
     background: var(--bg-medium);
     box-shadow: 0 2px 6px var(--shadow-modal-light);
 
-    .tool-header {
+    .tool-header-container {
       padding: 16px;
       cursor: pointer;
       display: flex;
+      flex-direction: column;
       justify-content: space-between;
       align-items: center;
 
@@ -439,7 +440,6 @@
         img, svg {
           width: 24px;
           height: 24px;
-          opacity: 0.7;
         }
 
         svg {
@@ -462,7 +462,7 @@
           padding: 3px 8px;
           border-radius: 200px;
 
-          &.Pro {
+          &.PRO {
             background-color: var(--bg-btn-hover-strong);
             border: none;
           }
@@ -476,7 +476,6 @@
         height: 16px;
 
         svg {
-          opacity: 1;
           width: 16px;
           height: 16px;
         }
@@ -556,17 +555,108 @@
       &:hover {
         background: var(--bg-op-dark-extremeweak);
 
-        .tool-edit-menu {
-          opacity: 1;
+        .tool-header {
+          .tool-edit-menu {
+            opacity: 1;
+          }
         }
+      }
+
+      .tool-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+        width: 100%;
+
+        .tool-header-content {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+
+          img, svg {
+            width: 24px;
+            height: 24px;
+          }
+
+          svg {
+            fill: var(--stroke-op-dark-extremestrong);
+          }
+
+          .tool-name {
+            font-weight: 500;
+          }
+        }
+
+        .tool-status-light {
+          display: flex;
+          align-items: center;
+          width: 16px;
+          height: 16px;
+
+          svg {
+            opacity: 1;
+            width: 16px;
+            height: 16px;
+          }
+        }
+
+        .tool-disabled-label {
+          color: var(--text-weak);
+          font-size: 14px;
+          margin-left: 12px;
+          display: flex;
+          align-items: center;
+        }
+
+        .tool-toggle {
+          width: 18px;
+          font-size: 18px;
+          transition: transform 0.3s;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+
+          &.disabled {
+            color: var(--stroke-neg-medium);
+          }
+        }
+
+        .tool-edit-menu {
+          width: 42px;
+          height: 42px;
+          padding: 2px;
+          border-radius: 50%;
+          cursor: pointer;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          opacity: 0;
+          transition: opacity $transition-fast ease-in-out;
+
+          &:hover,
+          &[data-state="open"] {
+            opacity: 1;
+            background: var(--bg-op-dark-ultraweak);
+          }
+        }
+      }
+
+      .tool-content-sub-title {
+        padding-left: 64px;
+        font-size: 13px;
+        font-weight: 500;
+        color: var(--text-ultraweak);
+        margin-top: -9px;
+        width: 100%;
       }
     }
 
     .tool-content {
       display: none;
-      padding: 16px 16px;
+      padding: 0;
       max-height: 420px;
-      overflow-y: auto;
+      overflow-y: auto;;
 
       @include scrollbar;
 
@@ -575,6 +665,10 @@
         color: var(--text-weak);
 
         @include line-clamp(3);
+      }
+
+      &:has(.sub-tool-error) {
+        padding: 15px;
       }
 
       .sub-tool-error {
@@ -613,22 +707,36 @@
     }
 
     .sub-tools {
-      display: grid;
+      display: flex;
+      flex-wrap: wrap;
+      padding: 10px 16px;
       gap: 12px;
 
       .sub-tool {
-        padding: 12px;
-        border-radius: 6px;
-        background: var(--bg-op-dark-extremeweak);
+        padding: 8px 16px;
+        border-radius: 200px;
+        background: var(--bg-op-dark-ultraweak);
+        cursor: pointer;
 
-        .sub-tool-name {
-          font-weight: 500;
-          margin-bottom: 4px;
+        &:hover {
+          background: var(--bg-op-dark-mediumweak);
         }
 
-        .sub-tool-description {
-          font-size: 14px;
-          color: var(--text-weak);
+        .sub-tool-name {
+          font-weight: 600;
+          font-size: 15px;
+        }
+
+        &.active {
+          background: var(--bg-blue-ultraweak);
+
+          &:hover {
+            background: var(--bg-blue-weak);
+          }
+
+          .sub-tool-name {
+            color: var(--text-blue-strong);
+          }
         }
       }
     }

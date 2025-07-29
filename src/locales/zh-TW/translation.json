@@ -161,7 +161,9 @@
     "tabOap": "OAP工具",
     "tabLocal": "自訂工具",
     "oap.pro_only": "Pro 方案用戶才能安裝",
-    "oapStoreLink.alt": "詳細說明"
+    "oapStoreLink.alt": "詳細說明",
+    "subToolsCount": "工具啟用：{{count}} / {{total}}",
+    "disabledDescription": "已停用"
   },
   "modelConfig": {
     "title": "模型設定",

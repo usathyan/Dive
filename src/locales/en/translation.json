@@ -135,6 +135,8 @@
     "inputKeyError": "{{ name }} variable name duplicate",
     "urlPlaceholder": "Enter URL...",
     "transportPlaceholder": "Select Transport...",
+    "providerSearchPlaceholder": "Enter search Provider...",
+    "noProviderSearchResult": "No related Provider found",
     "toogleTool.alt": "Enable MCP Tools",
     "logTitle": "Execute UVX Command",
     "logProcessing": "Processing...",
@@ -159,7 +161,9 @@
     "tabOap": "OAP Tools",
     "tabLocal": "Custom Tools",
     "oap.pro_only": "Pro plan users only",
-    "oapStoreLink.alt": "View Details"
+    "oapStoreLink.alt": "View Details",
+    "subToolsCount": "Tools Enabled：{{count}} / {{total}}",
+    "disabledDescription": "Disabled"
   },
   "modelConfig": {
     "title": "Model Settings",
