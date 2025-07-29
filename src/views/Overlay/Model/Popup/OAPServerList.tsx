@@ -389,10 +389,8 @@ const OAPServerList = ({
                           <div className="oap-item-img">
                             <img src={handleBannerUrl(item.banner)} alt={item.name} />
                             <span className="oap-tags">
-                              <span className={`oap-tag ${item.plan}`}>{item.plan}</span>
+                              {/* <span className={`oap-tag ${item.plan}`}>{item.plan}</span> */}
                             </span>
-                          </div>
-                          <div className="oap-item-content">
                             <div className="oap-checkbox">
                               <CheckBox
                                 checked={item.checked}
@@ -402,76 +400,89 @@ const OAPServerList = ({
                                 }}
                               />
                             </div>
-                            <div className="oap-content">
-                              <div className="oap-content-title">
-                                <SearchHightLight text={item.name} searchText={searchText} />
-                                <InfoTooltip
-                                  side="bottom"
-                                  className="oap-content-title-tooltip"
-                                  content={<ReactMarkdown
-                                    remarkPlugins={[remarkGfm]}
-                                    rehypePlugins={[rehypeKatex, rehypeRaw]}
-                                    components={{
-                                      code({node, className, children, ...props}) {
-                                        const match = /language-(\w+)/.exec(className || "")
-                                        const language = match ? match[1] : ""
-                                        const code = String(children).replace(/\n$/, "")
+                          </div>
+                          <div className="oap-item-content">
+                            <div className="oap-item-content-top">
+                              <div className="oap-content">
+                                <div className="oap-content-title">
+                                  <SearchHightLight text={item.name} searchText={searchText} />
+                                  <InfoTooltip
+                                    side="bottom"
+                                    className="oap-content-title-tooltip"
+                                    content={<ReactMarkdown
+                                      remarkPlugins={[remarkGfm]}
+                                      rehypePlugins={[rehypeKatex, rehypeRaw]}
+                                      components={{
+                                        code({node, className, children, ...props}) {
+                                          const match = /language-(\w+)/.exec(className || "")
+                                          const language = match ? match[1] : ""
+                                          const code = String(children).replace(/\n$/, "")
 
-                                        const inline = node?.position?.start.line === node?.position?.end.line
-                                        if (inline) {
-                                          return <code className={`${className} inline-code`} {...props}>{children}</code>
+                                          const inline = node?.position?.start.line === node?.position?.end.line
+                                          if (inline) {
+                                            return <code className={`${className} inline-code`} {...props}>{children}</code>
+                                          }
+
+                                          return (
+                                            <div className="code-block">
+                                              <SyntaxHighlighter
+                                                language={language.toLowerCase()}
+                                                style={theme === "dark" ? tomorrow : oneLight}
+                                                customStyle={{
+                                                  margin: 0,
+                                                  padding: "12px",
+                                                  background: "transparent"
+                                                }}
+                                              >
+                                                {code}
+                                              </SyntaxHighlighter>
+                                              <button
+                                                className="copy-btn"
+                                                onClick={() => copyToClipboard(code)}
+                                              >
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="18px" height="18px" viewBox="0 0 22 22" fill="transparent">
+                                                  <path d="M13 20H2V6H10.2498L13 8.80032V20Z" fill="transparent" stroke="currentColor" strokeWidth="2" strokeMiterlimit="10" strokeLinejoin="round"/>
+                                                  <path d="M13 9H10V6L13 9Z" fill="currentColor" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                                                  <path d="M9 3.5V2H17.2498L20 4.80032V16H16" fill="transparent" stroke="currentColor" strokeWidth="2" strokeMiterlimit="10" strokeLinejoin="round"/>
+                                                  <path d="M20 5H17V2L20 5Z" fill="currentColor" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                                                </svg>
+                                              </button>
+                                            </div>
+                                          )
                                         }
-
-                                        return (
-                                          <div className="code-block">
-                                            <SyntaxHighlighter
-                                              language={language.toLowerCase()}
-                                              style={theme === "dark" ? tomorrow : oneLight}
-                                              customStyle={{
-                                                margin: 0,
-                                                padding: "12px",
-                                                background: "transparent"
-                                              }}
-                                            >
-                                              {code}
-                                            </SyntaxHighlighter>
-                                            <button
-                                              className="copy-btn"
-                                              onClick={() => copyToClipboard(code)}
-                                            >
-                                              <svg xmlns="http://www.w3.org/2000/svg" width="18px" height="18px" viewBox="0 0 22 22" fill="transparent">
-                                                <path d="M13 20H2V6H10.2498L13 8.80032V20Z" fill="transparent" stroke="currentColor" strokeWidth="2" strokeMiterlimit="10" strokeLinejoin="round"/>
-                                                <path d="M13 9H10V6L13 9Z" fill="currentColor" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                                                <path d="M9 3.5V2H17.2498L20 4.80032V16H16" fill="transparent" stroke="currentColor" strokeWidth="2" strokeMiterlimit="10" strokeLinejoin="round"/>
-                                                <path d="M20 5H17V2L20 5Z" fill="currentColor" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                                              </svg>
-                                            </button>
-                                          </div>
-                                        )
-                                      }
-                                    }}
-                                  >{item.document}</ReactMarkdown>}
+                                      }}
+                                    >{item.document}</ReactMarkdown>}
+                                  >
+                                    <div className="oap-content-title-hint">
+                                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 23 22" width="18" height="18">
+                                        <g clipPath="url(#ic_information_svg__a)">
+                                          <circle cx="11.5" cy="11" r="10.25" stroke="currentColor" strokeWidth="1.5"></circle>
+                                          <path fill="currentColor" d="M9.928 13.596h3.181c-.126-2.062 2.516-2.63 2.516-5.173 0-2.01-1.6-3.677-4.223-3.608-2.229.051-4.08 1.288-4.026 3.9h2.714c0-.824.593-1.168 1.222-1.185.593 0 1.258.326 1.222.962-.144 1.942-2.911 2.389-2.606 5.104Zm1.582 3.591c.988 0 1.779-.618 1.779-1.563 0-.963-.791-1.581-1.78-1.581-.97 0-1.76.618-1.76 1.58 0 .946.79 1.565 1.76 1.565Z"></path>
+                                        </g>
+                                        <defs>
+                                          <clipPath id="ic_information_svg__a">
+                                            <path fill="currentColor" d="M.5 0h22v22H.5z"></path>
+                                          </clipPath>
+                                        </defs>
+                                      </svg>
+                                    </div>
+                                  </InfoTooltip>
+                                </div>
+                                <Tooltip
+                                  content={`≈ ${item.token_required} OAPhub Tokens / ${item.token_price_unit}`}
                                 >
-                                  <div className="oap-content-title-hint">
-                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 23 22" width="18" height="18">
-                                      <g clipPath="url(#ic_information_svg__a)">
-                                        <circle cx="11.5" cy="11" r="10.25" stroke="currentColor" strokeWidth="1.5"></circle>
-                                        <path fill="currentColor" d="M9.928 13.596h3.181c-.126-2.062 2.516-2.63 2.516-5.173 0-2.01-1.6-3.677-4.223-3.608-2.229.051-4.08 1.288-4.026 3.9h2.714c0-.824.593-1.168 1.222-1.185.593 0 1.258.326 1.222.962-.144 1.942-2.911 2.389-2.606 5.104Zm1.582 3.591c.988 0 1.779-.618 1.779-1.563 0-.963-.791-1.581-1.78-1.581-.97 0-1.76.618-1.76 1.58 0 .946.79 1.565 1.76 1.565Z"></path>
-                                      </g>
-                                      <defs>
-                                        <clipPath id="ic_information_svg__a">
-                                          <path fill="currentColor" d="M.5 0h22v22H.5z"></path>
-                                        </clipPath>
-                                      </defs>
-                                    </svg>
+                                  <div className="oap-cost">                              
+                                    <span>$ {item.token_cost} / {item.token_price_unit}</span>
                                   </div>
-                                </InfoTooltip>
+                                </Tooltip>
+                                <div className="oap-description">{item.description}</div>
                               </div>
-                              <div className="oap-description">{item.description}</div>
+                            </div>
+                            <div className="oap-item-content-bottom">
                               <div className="oap-metadata-wrapper">
                                 <div className="oap-metadata">
-                                  <span>$ {item.token_cost} / {item.token_price_unit}</span>
                                   <span className="oap-tags">
+                                    <span className={`oap-tag ${item.plan}`}>{item.plan}</span>
                                     {item.tags.map((tag: string) => (
                                       <span key={tag} className="oap-tag">{tag}</span>
                                     ))}

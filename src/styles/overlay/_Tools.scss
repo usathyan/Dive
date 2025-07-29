@@ -1368,8 +1368,10 @@
 }
 
 .oap-popup {
-  min-height: min(746px, 85vh);
-  min-width: 1110px;
+  min-height: min(746px, 80vh);
+  min-width: 768px;
+  max-width: 1440px;
+  width: 75vw;
 
   .popup-confirm-content {
     flex: 1 1 0;
@@ -1379,6 +1381,7 @@
     overflow: hidden;
     flex: 1;
     height: 100%;
+    width: 100%;
     flex-direction: column;
     display: flex;
   }
@@ -1407,11 +1410,13 @@
 
   .oap-search-wrapper {
     display: flex;
+    flex: 1;
     align-items: center;
   }
 
   .oap-search-container {
     display: flex;
+    flex: 1;
     align-items: center;
     gap: 5px;
     padding: 7px;
@@ -1419,7 +1424,7 @@
     border: 1px solid var(--border-weak);
     background-color: var(--bg-op-dark-extremeweak);
     height: 36px;
-    width: 500px;
+    max-width: 500px;
     border-radius: 8px;
 
     .oap-search-input {
@@ -1537,7 +1542,7 @@
 
   .oap-grid {
     display: grid;
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(4, 1fr);
     grid-template-rows: min-content;
     gap: 12px;
     padding: 8px;
@@ -1548,19 +1553,46 @@
     .default-loader svg {
       color: var(--text-pri-blue);
     }
+
+    @media (max-width: $breakpoint-xl) {
+      grid-template-columns: repeat(3, 1fr);
+    }
   }
 
   .oap-item {
     display: flex;
     gap: 12px;
     border: 1px solid var(--border-weak);
-    border-radius: 6px;
+    border-radius: 8px;
     align-items: flex-start;
     cursor: pointer;
-    height: fit-content;
+    height: auto;
+    position: relative;
+
+    &::before {
+      content: "";
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      z-index: 1;
+      background-color: var(--bg-op-dark-medium);
+      border-radius: 8px;
+      pointer-events: none;
+      opacity: 0;
+    }
 
     &:hover {
-      background-color: var(--bg-op-dark-ultraweak);
+      &::before {
+        opacity: 1;
+      }
+
+      .oap-item-container {
+        .oap-item-img {
+          .oap-checkbox {
+            display: flex;
+          }
+        }
+      }
     }
 
     &:not(.disabled):has(.oap-store-link:hover) {
@@ -1569,10 +1601,28 @@
 
     &.disabled {
       cursor: not-allowed;
-      background-color: var(--bg-op-dark-extremeweak);
+      &::before {
+        opacity: 1;
+      }
+    }
+
+    &:has(.oap-checkbox input:checked) {
+      &::before {
+        opacity: 1;
+      }
+    }
+
+    &:has(.oap-cost:hover),
+    &:has(.oap-store-link:hover) {
+      &::before {
+        opacity: 0;
+      }
     }
 
     .oap-item-container {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
       width: 100%;
       border-radius: 6px;
       overflow: hidden;
@@ -1594,25 +1644,43 @@
           right: 0;
           margin: 0 7px 7px 0;
         }
+
+        .oap-checkbox {
+          z-index: 2;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          position: absolute;
+          left: 15px;
+          top: 15px;
+          background-color: var(--bg);
+          border-radius: 4px;
+          display: none;
+
+          &:has(input:checked) {
+            display: flex;
+          }
+        }
       }
 
       .oap-item-content {
         display: flex;
+        flex: 1;
+        flex-direction: column;
         align-items: center;
-        gap: 12px;
-        padding: 10px;
+        justify-content: space-between;
+        gap: 4px;
+        padding: 6px 14px;
+
+        .oap-item-content-top,
+        .oap-item-content-bottom {
+          display: flex;
+          flex-direction: column;
+          align-items: flex-start;
+          gap: 4px;
+          width: 100%;
+        }
       }
-    }
-  }
-
-  .oap-checkbox {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    height: 100%;
-
-    .checkbox-content:not(.disabled):hover .box::before {
-      display: none;
     }
   }
 
@@ -1628,9 +1696,11 @@
       gap: 10px;
 
       .oap-title-text {
-        font-size: 16px;
+        font-size: 18px;
         font-weight: 700;
         color: var(--text-medium);
+
+        @include line-clamp(1);
       }
 
       .oap-title-text-hightlight {
@@ -1644,13 +1714,24 @@
         cursor: default;
       }
     }
+
+    .oap-cost {
+      font-size: 15px;
+      font-weight: 700;
+
+      &:hover {
+        text-decoration: underline;
+      }
+    }
   }
 
   .oap-metadata-wrapper {
     display: flex;
     align-items: center;
     justify-content: space-between;
+    padding-top: 6px;
     gap: 12px;
+    width: 100%;
 
     .oap-metadata {
       display: flex;
@@ -1667,7 +1748,7 @@
       border: none;
       background: none;
       padding: 0;
-      color: var(--text-medium);
+      color: var(--text-ultraweak);
       padding: 4px;
       border-radius: 50%;
 
@@ -1683,10 +1764,10 @@
   }
 
   .oap-description {
-    font-size: 14px;
+    font-size: 13px;
     color: var(--text-weak);
 
-    @include line-clamp(1);
+    @include line-clamp(2);
   }
 
   .oap-tags {
@@ -1707,13 +1788,11 @@
       &.BASE {
         color: var(--text-dark);
         background-color: var(--bg-light);
-        border: none;
       }
 
       &.PRO {
         color: var(--text-dark);
         background-color: var(--bg-hover-blue-ultraweak);
-        border: none;
       }
     }
   }
@@ -1874,6 +1953,14 @@
         word-break: break-all;
         white-space: pre-wrap;
       }
+    }
+  }
+
+  p:has(img) {
+    width: 100%;
+
+    img {
+      width: 100%;
     }
   }
 }
