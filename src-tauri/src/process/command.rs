@@ -24,6 +24,8 @@ impl Command {
     #[cfg(target_os = "windows")]
     pub fn new(cmd: impl AsRef<OsStr>) -> Self {
         {
+            use std::os::windows::process::CommandExt;
+
             let mut cmd = std::process::Command::new(cmd);
             // CREATE_NO_WINDOW flag to prevent console window from appearing
             cmd.creation_flags(0x08000000);
