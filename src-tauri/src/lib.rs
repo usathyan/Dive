@@ -10,7 +10,6 @@ use tauri_plugin_autostart::MacosLauncher;
 use tauri_plugin_deep_link::DeepLinkExt;
 use tauri_plugin_store::StoreExt;
 use tokio::sync::mpsc;
-use tokio::time::sleep;
 
 use crate::event::MCPInstallParam;
 use crate::event::{EMIT_MCP_INSTALL, EMIT_OAP_LOGOUT, EMIT_OAP_REFRESH};
@@ -138,7 +137,7 @@ pub fn run() {
                             log::info!("oap refresh via deep link");
                         }
                         Some("mcp.install") => {
-                            log::info!("oap mcp install via deep link: {:?}", &url);
+                            log::info!("oap mcp install via deep link");
                             let Some(query) = url.query() else {
                                 log::warn!("invalid oap mcp apply url: {:?}", &url);
                                 return;
@@ -309,7 +308,7 @@ pub fn run() {
         ])
         .append_invoke_initialization_script(include_str!("../../shared/preload.js"))
         .build(tauri::generate_context!());
-    
+
     let destroy_host = move || {
         if let Some(mut host) = host_handle.lock().unwrap().take() {
             log::info!("make sure host is destroyed");
