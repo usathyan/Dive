@@ -311,7 +311,7 @@ pub fn run() {
 
     let destroy_host = move || {
         if let Some(mut host) = host_handle.lock().unwrap().take() {
-            log::info!("make sure host is destroyed");
+            log::info!("kill mcp-host process");
             host.destroy();
         }
     };
