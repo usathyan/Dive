@@ -39,7 +39,17 @@ impl Command {
             use std::os::unix::process::CommandExt;
 
             cmd.pre_exec(|| {
-                libc::setpgid(0, 0);
+                // Set up process to be killed when parent dies (Linux only)
+                #[cfg(target_os = "linux")]
+                {
+                    // PR_SET_PDEATHSIG: Send SIGTERM when parent dies
+                    libc::prctl(libc::PR_SET_PDEATHSIG, libc::SIGTERM, 0, 0, 0);
+                }
+
+                #[cfg(target_os = "macos")]
+                {
+                    libc::setpgid(0, 0);
+                }
                 Ok(())
             });
         }

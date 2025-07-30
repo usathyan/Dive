@@ -247,6 +247,7 @@ impl HostProcess {
 
             log::info!("killing host process");
             let _ = child.kill();
+            let _ = child.wait();
         }
     }
 }
