@@ -44,12 +44,7 @@ pub fn run() {
     let app = tauri::Builder::default()
         .plugin(tauri_plugin_process::init())
         .plugin(tauri_plugin_updater::Builder::new().build())
-        .plugin(tauri_plugin_single_instance::init(|app, argv, cwd: String| {
-            log::info!(
-                "single instance, {}, {argv:?}, {cwd}",
-                app.package_info().name
-            );
-        }))
+        .plugin(tauri_plugin_single_instance::init(|_app, _argv, _cwd: String| {}))
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_deep_link::init())
         .plugin(
