@@ -1,7 +1,7 @@
 use std::{
     future::Future,
     path::{Path, PathBuf},
-    process::Stdio,
+    process::{Child, Stdio},
 };
 
 use anyhow::Result;
@@ -14,7 +14,6 @@ use tauri_plugin_http::reqwest;
 use tokio::{
     fs::{self, create_dir_all, read_dir, remove_dir_all, remove_file, rename, File},
     io::{AsyncBufReadExt, AsyncReadExt, AsyncWriteExt, BufReader},
-    process::Child,
     sync::mpsc,
     time::Instant,
 };
@@ -248,7 +247,6 @@ impl DependencyDownloader {
             return Command::new(&uv)
                 .arg("-V")
                 .output()
-                .await
                 .map(|o| {
                     // uv x.x.x
                     if let Ok(version) = String::from_utf8(o.stdout) {
@@ -506,6 +504,9 @@ impl DependencyDownloader {
         let Some(stdout) = child.stdout.take() else {
             return Err(anyhow::anyhow!("handle stdout failed"));
         };
+
+        let stdout = tokio::process::ChildStdout::from_std(stdout).unwrap();
+        let stderr = tokio::process::ChildStderr::from_std(stderr).unwrap();
 
         let stdout_reader = BufReader::new(stdout);
         let mut stdout_lines = stdout_reader.lines();

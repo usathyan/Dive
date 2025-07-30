@@ -8,7 +8,6 @@ use anyhow::Result;
 use tokio::{
     fs::{create_dir_all, File},
     io::{AsyncBufReadExt, AsyncWriteExt, BufReader, BufWriter},
-    process::Child,
 };
 
 use crate::process::command::Command;
@@ -21,7 +20,7 @@ pub const HTTPD_CONFIG_FILE: &str = "dive_httpd.json";
 pub const PLUGIN_CONFIG_FILE: &str = "plugin_config.json";
 
 pub struct HostProcess {
-    child_process: Option<Child>,
+    child_process: Option<std::process::Child>,
     file_path: PathBuf,
     host_dir: PathBuf,
 }
@@ -111,6 +110,10 @@ impl HostProcess {
 
         if let (Some(stdout), Some(stderr)) = (process.stdout.take(), process.stderr.take()) {
             tauri::async_runtime::spawn(async move {
+                // Convert std::process stdio to tokio-compatible versions
+                let stdout = tokio::process::ChildStdout::from_std(stdout).unwrap();
+                let stderr = tokio::process::ChildStderr::from_std(stderr).unwrap();
+
                 let stdout_reader = BufReader::new(stdout);
                 let mut stdout_lines = stdout_reader.lines();
                 let stderr_reader = BufReader::new(stderr);
@@ -221,30 +224,30 @@ impl HostProcess {
 
     pub fn destroy(&mut self) {
         let child = self.child_process.take();
-        tokio::spawn(async move {
-            // remove bus
-            let bus_path = crate::shared::PROJECT_DIRS.bus.clone();
-            log::info!("removing bus: {}", bus_path.to_string_lossy());
-            if tokio::fs::try_exists(&bus_path).await.unwrap_or(false) {
-                let _ = tokio::fs::remove_file(&bus_path).await;
+
+        // remove bus
+        let bus_path = crate::shared::PROJECT_DIRS.bus.clone();
+        log::info!("removing bus: {}", bus_path.to_string_lossy());
+        if bus_path.exists() {
+            let _ = std::fs::remove_file(&bus_path);
+        }
+
+        // kill the host process
+        if let Some(mut child) = child {
+            #[cfg(target_os = "linux")]
+            {
+                use nix::sys::signal::{self, Signal};
+                use nix::unistd::Pid;
+                let pid = child.id() as i32;
+                let _ = signal::kill(Pid::from_raw(pid), Signal::SIGTERM);
+                std::thread::sleep(std::time::Duration::from_millis(50));
+                let _ = signal::kill(Pid::from_raw(pid), Signal::SIGKILL);
+                std::thread::sleep(std::time::Duration::from_millis(50));
             }
 
-            // kill the host process
-            if let Some(mut child) = child {
-                #[cfg(target_os = "linux")]
-                {
-                    use nix::sys::signal::{self, Signal};
-                    use nix::unistd::Pid;
-                    if let Some(pid) = child.id() {
-                        let _ = signal::kill(Pid::from_raw(pid as i32), Signal::SIGTERM);
-                    }
-                    std::thread::sleep(std::time::Duration::from_millis(100));
-                }
-
-                log::info!("killing host process");
-                let _ = child.kill().await;
-            }
-        });
+            log::info!("killing host process");
+            let _ = child.kill();
+        }
     }
 }
 
