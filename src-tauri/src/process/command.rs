@@ -33,26 +33,24 @@ impl Command {
 
     #[cfg(not(target_os = "windows"))]
     pub fn new(cmd: impl AsRef<OsStr>) -> Self {
+        use std::os::unix::process::CommandExt;
+
         let mut cmd = std::process::Command::new(cmd);
-
         unsafe {
-            use std::os::unix::process::CommandExt;
-
             cmd.pre_exec(|| {
                 // Set up process to be killed when parent dies (Linux only)
                 #[cfg(target_os = "linux")]
                 {
-                    // PR_SET_PDEATHSIG: Send SIGTERM when parent dies
-                    libc::prctl(libc::PR_SET_PDEATHSIG, libc::SIGTERM, 0, 0, 0);
+                    // PR_SET_PDEATHSIG: Send SIGKILL when parent dies
+                    libc::prctl(libc::PR_SET_PDEATHSIG, libc::SIGKILL, 0, 0, 0);
                 }
 
-                #[cfg(target_os = "macos")]
-                {
-                    libc::setpgid(0, 0);
-                }
                 Ok(())
             });
         }
+
+        // set the process group to the current process
+        cmd.process_group(0);
 
         Self { inner: cmd }
     }
