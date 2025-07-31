@@ -4,7 +4,9 @@ fn main() {
     let out_dir = env::var("OUT_DIR").unwrap();
     let dest_path = Path::new(&out_dir).join("file_hashes.rs");
 
-    let file_content = fs::read("../mcp-host/uv.lock").expect("Failed to read file");
+    let manifest_dir = env::var("CARGO_MANIFEST_DIR").unwrap();
+    let uv_lock_path = Path::new(&manifest_dir).join("../mcp-host/uv.lock");
+    let file_content = fs::read(&uv_lock_path).expect("Failed to read file");
     let hash_string = md5::compute(&file_content);
 
     // codegen
@@ -21,7 +23,7 @@ pub const UV_LOCK_MD5: &str = "{}";
     );
 
     fs::write(&dest_path, generated_code).unwrap();
-    println!("cargo:rerun-if-changed=../mcp-host/uv.lock");
+    println!("cargo:rerun-if-changed={}", uv_lock_path.display());
 
     tauri_build::build();
 }
