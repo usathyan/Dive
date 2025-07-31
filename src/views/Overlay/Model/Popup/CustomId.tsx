@@ -14,8 +14,8 @@ const CustomIdPopup = ({ onAddCustomModelID }: Props) => {
   const [customModelID, setCustomModelID] = useState("")
   const [customModelIDError, setCustomModelIDError] = useState("")
   const inputRef = useRef<HTMLInputElement>(null)
-  const { buffer } = useModelsProvider()
-  const { models } = buffer
+  const { getLatestBuffer } = useModelsProvider()
+  const { models } = getLatestBuffer()
 
   useEffect(() => {
     autoFocus()
