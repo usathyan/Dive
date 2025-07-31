@@ -21,6 +21,7 @@
     "retry": "다시 시도",
     "noModelAlert": "사용 가능한 모델이 없습니다",
     "noModelBanner": "사용 가능한 모델이 없습니다. 먼저 모델을 선택해주세요",
+    "onLimit": "{{plan}} 용량 초과로 인해 OAP 모델을 사용할 수 없습니다",
     "modelSettings": "모델 설정",
     "copy": "복사",
     "copied": "복사됨",
@@ -31,10 +32,12 @@
     "toolCalls": "🛠 {{name}} 도구 호출 결과",
     "unsupportTools": "{{model}} 모델은 도구 호출을 지원하지 않습니다",
     "dragFiles": "채팅에 추가하려면 파일을 여기로 드래그하세요",
-    "tools-btn.disable.toast": "도구 호출 비활성화됨",
-    "tools-btn.disable": "도구 호출 임시 비활성화",
-    "tools-btn.enable.toast": "도구 호출 활성화됨",
-    "tools-btn.enable": "도구 호출 활성화"
+    "tools-btn": {
+      "disableToast": "도구 호출 비활성화됨",
+      "disable": "도구 호출 임시 비활성화",
+      "enableToast": "도구 호출 활성화됨",
+      "enable": "도구 호출 활성화"
+    }
   },
   "welcome": {
     "title": "Dive AI에 오신 것을 환영합니다",
@@ -65,13 +68,16 @@
     "settings": "모델 설정",
     "update": "업데이트 가능",
     "models": "모델 설정",
-    "system": "시스템 설정"
+    "system": "시스템 설정",
+    "manageAndSettings": "관리 및 설정",
+    "OAPhub": "OAPhub",
+    "signOut": "로그아웃"
   },
   "tools": {
     "title": "도구 관리 (MCP)",
     "subtitle": "MCP 서버의 도구 및 설정",
     "editConfig": "설정 편집",
-    "editConfig.alt": "MCP 서버 설정 편집",
+    "editConfigAlt": "MCP 서버 설정 편집",
     "configTitle": "MCP 서버 설정",
     "save": "저장",
     "cancel": "취소",
@@ -81,9 +87,9 @@
     "reloadFailed": "{{toolName}}에서 오류가 발생하여 다시 불러오기에 실패했습니다",
     "reloadAllFailed": "{{number}}개의 도구 호출에서 오류가 발생하여 다시 불러오기에 실패했습니다",
     "openConfigFolder": "설정 폴더 열기",
-    "openConfigFolder.alt": "설정 폴더 열기",
+    "openConfigFolderAlt": "설정 폴더 열기",
     "addServer": "추가",
-    "addServer.alt": "MCP 서버 추가",
+    "addServerAlt": "MCP 서버 추가",
     "addServerTitle": "MCP 서버 추가",
     "addServerSubtitle": "MCP 서버 JSON을 직접 붙여넣어 주세요",
     "fetchFailed": "도구 불러오기에 실패했습니다",
@@ -94,10 +100,13 @@
     "installFailed": "설치 실패",
     "startFailed": "실행 실패",
     "reloadMCPServers": "다시 불러오기",
-    "reloadMCPServers.alt": "MCP 도구를 다시 불러오고 업데이트합니다",
-    "toolMenu1": "삭제",
-    "toolMenu2": "편집",
-    "toolMenu3": "다시 불러오기",
+    "reloadMCPServersAlt": "다시 불러오기 및 MCP 도구 업데이트",
+    "toolMenu": {
+      "delete": "삭제",
+      "edit": "편집",
+      "reload": "다시 불러오기",
+      "detail": "설명"
+    },
     "delete": "삭제",
     "jsonCopy": "복사",
     "jsonCopied": "복사됨",
@@ -112,16 +121,18 @@
     "jsonDesc": "MCP 서버 JSON을 입력하거나 붙여넣어 주세요",
     "addArg": "인자 추가",
     "addEnv": "환경 변수 추가",
-    "jsonFormatError": "{{mcp}} 설정 형식 오류입니다. 형식을 확인하고 수정해주세요",
-    "jsonFormatError1": "편집 모드에서는 하나의 도구만 허용됩니다. 다른 항목은 삭제해주세요",
-    "jsonFormatError2": "이름은 비워둘 수 없습니다. 유효한 이름을 입력해주세요",
-    "jsonFormatError3": "도구 {{mcp}}: 이미 존재하는 이름입니다. 다른 이름을 입력해주세요",
-    "jsonFormatError4": "도구 {{mcp}}: 'enabled' 필드는 true 또는 false여야 합니다",
-    "jsonFormatError5": "도구 {{mcp}}: 'command' 필드는 문자열이어야 합니다",
-    "jsonFormatError6": "도구 {{mcp}}: 'args' 필드는 배열이어야 합니다",
-    "jsonFormatError7": "도구 {{mcp}}: 'env' 필드는 객체여야 합니다",
-    "jsonFormatError8": "도구 {{mcp}}: 'url' 필드는 문자열이어야 합니다",
-    "jsonFormatError9": "도구 {{mcp}}: 'transport' 필드는 {{options}} 중 하나여야 합니다",
+    "jsonFormatError": {
+      "format": "{{mcp}} 설정 형식 오류입니다. 형식을 확인하고 수정해주세요",
+      "length": "편집 모드에서는 하나의 도구만 허용됩니다. 다른 항목은 삭제해주세요",
+      "nameEmpty": "이름은 비워둘 수 없습니다. 유효한 이름을 입력해주세요",
+      "nameExist": "도구 {{mcp}}: 이미 존재하는 이름입니다. 다른 이름을 입력해주세요",
+      "enabled": "도구 {{mcp}}: 필드 enabled 는 true 또는 false 여야 합니다",
+      "command": "도구 {{mcp}}: 필드 command 는 문자열이어야 합니다",
+      "args": "도구 {{mcp}}: 필드 args 는 배열이어야 합니다",
+      "env": "도구 {{mcp}}: 필드 env 는 객체여야 합니다",
+      "url": "도구 {{mcp}}: 필드 url 는 문자열이어야 합니다",
+      "transport": "도구 {{mcp}}: 필드 transport 는 {{options}} 중 하나여야 합니다"
+    },
     "namePlaceholder": "이름을 입력하세요...",
     "commandPlaceholder": "명령어를 입력하세요...",
     "argsPlaceholder": "인자를 입력하세요...",
@@ -130,11 +141,45 @@
     "inputKeyError": "{{ name }} 변수 이름이 중복되었습니다",
     "urlPlaceholder": "URL을 입력하세요...",
     "transportPlaceholder": "전송 방식을 선택하세요...",
-    "toogleTool.alt": "MCP 도구 사용 설정",
+    "providerSearchPlaceholder": "Provider 검색...",
+    "noProviderSearchResult": "검색된 Provider가 없습니다",
+    "toogleToolAlt": "MCP 도구 사용 설정",
     "logTitle": "UVX 명령 실행",
     "logProcessing": "처리 중...",
-    "oap.high_cost_title": "고비용 MCP 서버 활성화",
-    "oap.high_cost_desc": "다음 MCP 서버는 많은 토큰을 소비하므로 계획 사용량이 충분한지 확인하세요.",
+    "no_tool_title": "현재 설정된 MCP 서버가 없습니다",
+    "no_oap_tool_message": {
+      "all": "사용할 OAP MCP 서버를 선택하거나 사용자 정의 MCP 서버를 추가하세요.",
+      "oap": "사용할 OAP MCP 서버를 선택하세요.",
+      "local": "사용자 정의 MCP 서버를 추가하세요."
+    },
+    "no_tool_message": "MCP 서버를 추가하세요.",
+    "addOapMcpAlt": "OAP MCP 도구 추가 및 보기",
+    "oap": {
+      "type": {
+        "all": "모든 도구",
+        "base": "Base 만 표시",
+        "pro": "Pro 만 표시"
+      },
+      "sort": {
+        "title": "정렬",
+        "popular": "인기",
+        "new": "최신"
+      },
+      "tag": "태그",
+      "no_search_data_title": "MCP 도구를 찾을 수 없습니다",
+      "no_search_data": "검색 결과가 없습니다. 검색어를 지우거나 필터를 조정하세요.",
+      "clear_filter": "필터 지우기",
+      "hint": "고급 MCP 서버는 Pro 버전으로 업그레이드해야 설치할 수 있습니다",
+      "high_cost_title": "비싼 MCP 서버 활성화",
+      "high_cost_desc": "다음 MCP 서버는 많은 토큰을 소비하므로 계획 사용량이 충분한지 확인하세요.",
+      "pro_only": "Pro 계획 사용자만 설치할 수 있습니다"
+    },
+    "tabAll": "모든 도구",
+    "tabOap": "OAP 도구",
+    "tabLocal": "사용자 정의 도구",
+    "oapStoreLinkAlt": "자세히 보기",
+    "subToolsCount": "도구 활성화: {{count}} / {{total}}",
+    "disabledDescription": "비활성화"
   },
   "modelConfig": {
     "title": "모델 설정",
@@ -152,7 +197,13 @@
     "confirm": "확인",
     "cancel": "취소",
     "copy": "복사",
-    "copySuccess": "성공적으로 복사되었습니다"
+    "copySuccess": "성공적으로 복사되었습니다",
+    "zoomInImage": "이미지 확대",
+    "copyImage": "이미지 복사",
+    "copyImageUrl": "이미지 URL 복사",
+    "downloadImage": "이미지 다운로드",
+    "login": "로그인",
+    "signup": "회원가입"
   },
   "models": {
     "title": "모델 설정",
@@ -199,15 +250,21 @@
     "verifyTitle": "{{count}}개의 미검증 모델이 감지되었습니다!",
     "verifyDesc": "다음 모델은 아직 검증되지 않았습니다. 검증하시겠습니까?",
     "progressVerifying": "모델 검증 중입니다. 잠시만 기다려주세요...",
-    "verifyMenu0": "고급 설정",
-    "verifyMenu1": "모델 검증",
-    "verifyMenu2": "검증 무시",
-    "verifyMenu3": "모델 삭제",
-    "addCustomModelID": "+ 사용자 정의 모델 ID",
-    "customModelIDTitle": "사용자 정의 모델 ID",
-    "customModelIDPlaceholder": "모델 ID를 입력하세요...",
-    "customModelIDError1": "모델 ID는 비워둘 수 없습니다",
-    "customModelIDError2": "이미 존재하는 모델 ID입니다",
+    "verifyMenu": {
+      "advanced": "고급 설정",
+      "verify": "모델 검증",
+      "ignore": "검증 무시",
+      "delete": "모델 삭제"
+    },
+    "customModelID": {
+      "add": "+ 사용자 정의 모델 ID",
+      "title": "사용자 정의 모델 ID",
+      "placeholder": "모델 ID를 입력하세요...",
+      "Error": {
+        "empty": "모델 ID는 비워둘 수 없습니다",
+        "exist": "이미 존재하는 모델 ID입니다"
+      }
+    },
     "copyContent": "내용 복사",
     "editProviderTitle": "{{provider}} 설정 편집",
     "hide": "숨기기",
@@ -240,7 +297,8 @@
     "verifyErrorMsg": "검증 중 모델이 도구를 호출하지 않았습니다. 이는 도구 미지원 또는 트리거되지 않았기 때문일 수 있습니다. 도구 지원 여부를 확인할 수 없습니다.",
     "verifyStatusSuccess": "모델 검증 성공, 기존 설정으로 활성화됨",
     "verifyStatusSuccessInPrompt": "모델 검증 성공, MCP 프롬프트로 활성화됨",
-    "verifyUnexpectedFailed": "모델 검증 실패, 알 수 없는 오류가 발생했습니다. 나중에 다시 시도해주세요"
+    "verifyUnexpectedFailed": "모델 검증 실패, 알 수 없는 오류가 발생했습니다. 나중에 다시 시도해주세요",
+    "oapUsageLimit": "사용량이 초과되어 일시적으로 사용할 수 없습니다"
   },
   "system": {
     "title": "시스템 설정",
@@ -254,13 +312,38 @@
     "autoDownloadDescription": "사용자가 메뉴에서 \"업그레이드\" 버튼을 클릭하거나 재시작할 때 새로운 버전의 DIVE를 자동으로 다운로드하고 활성화합니다.",
     "autoLaunch": "자동 실행",
     "autoLaunchDescription": "시스템 시작 시 Dive AI를 자동으로 실행합니다.",
+    "loginTitle": "OAP 로그인",
+    "loginDescription": "OpenAgentPlatform 로그인, 기술 배경 없이도 LLMs, AI Agents 및 MCP 서버를 쉽게 연결할 수 있습니다 - 지금 똑똑한 솔루션을 경험하세요!",
+    "personalInformationTitle": "개인 정보",
     "minimalToTray": "트레이로 최소화",
     "minimalToTrayDescription": "창을 닫을 때 완전히 종료하지 않고 시스템 트레이로 최소화합니다.",
     "defaultSystemPrompt": "Dive 기본 시스템 프롬프트",
-    "defaultSystemPromptDescription": "Dive 기본 시스템 프롬프트는 채팅에 기본적으로 적용되는 시스템 프롬프트입니다. LLM에게 Dive 채팅이 KaTeX / Markdown / Mermaid 등을 지원한다는 정보를 전달하며, 이 기능은 일부 토큰을 소비하여 응답이 다소 느려질 수 있습니다. 비활성화하면 응답 품질이 낮아질 수 있습니다."
+    "defaultSystemPromptDescription": "Dive 기본 시스템 프롬프트는 채팅에 기본적으로 적용되는 시스템 프롬프트입니다. LLM에게 Dive 채팅이 KaTeX / Markdown / Mermaid 등을 지원한다는 정보를 전달하며, 이 기능은 일부 토큰을 소비하여 응답이 다소 느려질 수 있습니다. 비활성화하면 응답 품질이 낮아질 수 있습니다.",
+    "usageAnalytics": "OAP Hub의 Dashboard 페이지에서 확인",
+    "usageAnalyticsTitle": "사용 분석",
+    "userEdit": "OAP Hub의 Account 페이지에서 확인",
+    "planSectionTitle": "현재 계획 사용량",
+    "subscriptionDate": "구독 일자",
+    "remainingUsage": "남은 사용량",
+    "usageWarningTitle": "토큰 사용량이 초과되었습니다",
+    "usageWarning": "Pro 계획은 다음 달 초기화되거나 토큰 패키지를 구매하여 더 많은 사용량을 얻을 수 있습니다. 기본 모델과 기본 MCP는 여전히 사용할 수 있습니다.",
+    "usageWarningHint": "기본 모델과 기본 MCP는 사용 제한이 없습니다.",
+    "BaseSubscriptionDate": "제한 없음",
+    "BaseRemainingUsage": "제한 없음",
+    "BaseUsageWarning": "기본 계획에는 기본 모델과 기본 MCP의 접근 권한이 포함됩니다. 다른 모델과 MCP를 사용하려면 <planLink>계획 페이지</planLink>에서 계획을 업그레이드하세요.",
+    "customPromptDescription": "추가 사용자 지정 명령이 필요한 경우 아래의 \"사용자 지정 프롬프트\" 기능을 클릭하여 설정으로 이동하세요.",
+    "customPromptButton": "사용자 지정 프롬프트",
+    "tokenPackageTitle": "토큰 패키지 사용량",
+    "tokenPackageHint": "토큰 패키지는 만료일이 없으며, 매월 계획 할당량이 소진된 후 사용됩니다.",
+    "tokenPackageRemainingUsage": "남은 사용량",
+    "tokenPackageWarningTitle": "토큰 사용량이 초과되었습니다.",
+    "tokenPackageWarning": "OAPhub <planLink>Dashboard 페이지</planLink>에서 더 많은 토큰 사용량을 충전할 수 있습니다."
   },
   "toast": {
-    "copiedToClipboard": "클립보드에 복사되었습니다"
+    "copiedToClipboard": "클립보드에 복사되었습니다",
+    "copyFailed": "복사 실패",
+    "copiedImage": "이미지 복사 완료",
+    "downloadedImage": "이미지 다운로드 완료"
   },
   "keymap": {
     "title": "키보드 단축키",
@@ -281,5 +364,21 @@
     "downloading": "다운로드 중",
     "readyToInstall": "설치 준비 완료",
     "clickToInstall": "업데이트 설치하려면 클릭하세요"
+  },
+  "login": {
+    "subtitle": "Dive AI는 개방형 소스 데스크탑 애플리케이션으로, 다양한 기능 호출을 지원하는 대형 언어 모델을 완벽하게 통합합니다. 직관적인 인터페이스를 통해 최고의 AI와 대화할 수 있습니다. 일상적인 질문부터 전문적인 작업까지, 정확한 답변을 얻고 스스로 지능형 도우미가 되세요.",
+    "title1": "사용자 정의 모델 사용",
+    "description1": "고급 AI 전문가를 위한 최적의 선택입니다. 이미 준비된 설정이 있으시다면, 로컬 Ollama, llama.cpp 또는 원격 Openrouter, OpenAI, Anthropic 또는 기타 AI 회사가 제공하는 LLM API 등 어떤 것이든 사용하세요.",
+    "button1": "모델 설정으로 이동",
+    "title2": "OpenAgentPlatform 플랫폼 사용",
+    "description2": "OAP는 모든 사람이 최신 AI 서비스를 쉽게 사용할 수 있도록 설계되었습니다. LLM, AI Agent 및 MCP 서버를 쉽게 연결하고, AI의 무한 가능성을 탐험하세요.",
+    "button2": "OAP 회원가입",
+    "button3": "OAP 로그인"
+  },
+  "InstallHostDependencies": {
+    "title": "모듈 패키지 다운로드 중...",
+    "retry": "다시 시도",
+    "stop": "중지",
+    "tip": "다운로드 중 오류가 발생하면 이 창을 닫고 애플리케이션을 다시 시작하여 다시 시도하세요."
   }
 }

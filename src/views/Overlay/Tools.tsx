@@ -621,7 +621,7 @@ const Tools = () => {
             <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 17 16" fill="none">
               <path d="M3.83333 14C3.46667 14 3.15278 13.8694 2.89167 13.6083C2.63056 13.3472 2.5 13.0333 2.5 12.6667V3.33333C2.5 2.96667 2.63056 2.65278 2.89167 2.39167C3.15278 2.13056 3.46667 2 3.83333 2H7.83333C8.02222 2 8.18056 2.06389 8.30833 2.19167C8.43611 2.31944 8.5 2.47778 8.5 2.66667C8.5 2.85556 8.43611 3.01389 8.30833 3.14167C8.18056 3.26944 8.02222 3.33333 7.83333 3.33333H3.83333V12.6667H13.1667V8.66667C13.1667 8.47778 13.2306 8.31944 13.3583 8.19167C13.4861 8.06389 13.6444 8 13.8333 8C14.0222 8 14.1806 8.06389 14.3083 8.19167C14.4361 8.31944 14.5 8.47778 14.5 8.66667V12.6667C14.5 13.0333 14.3694 13.3472 14.1083 13.6083C13.8472 13.8694 13.5333 14 13.1667 14H3.83333ZM13.1667 4.26667L7.43333 10C7.31111 10.1222 7.15556 10.1833 6.96667 10.1833C6.77778 10.1833 6.62222 10.1222 6.5 10C6.37778 9.87778 6.31667 9.72222 6.31667 9.53333C6.31667 9.34444 6.37778 9.18889 6.5 9.06667L12.2333 3.33333H10.5C10.3111 3.33333 10.1528 3.26944 10.025 3.14167C9.89722 3.01389 9.83333 2.85556 9.83333 2.66667C9.83333 2.47778 9.89722 2.31944 10.025 2.19167C10.1528 2.06389 10.3111 2 10.5 2H13.8333C14.0222 2 14.1806 2.06389 14.3083 2.19167C14.4361 2.31944 14.5 2.47778 14.5 2.66667V6C14.5 6.18889 14.4361 6.34722 14.3083 6.475C14.1806 6.60278 14.0222 6.66667 13.8333 6.66667C13.6444 6.66667 13.4861 6.60278 13.3583 6.475C13.2306 6.34722 13.1667 6.18889 13.1667 6V4.26667Z" fill="currentColor"/>
             </svg>
-            {t("tools.toolMenu4")}
+            {t("tools.toolMenu.detail")}
           </div>,
         onClick: () => {
           openUrl(`${OAP_ROOT_URL}/mcp/${tool.oapId}`)
@@ -641,7 +641,7 @@ const Tools = () => {
                 </clipPath>
               </defs>
             </svg>
-            {t("tools.toolMenu3")}
+            {t("tools.toolMenu.reload")}
           </div>,
         onClick: () => {
           handleReloadMCPServers()
@@ -654,7 +654,7 @@ const Tools = () => {
               <path d="M3 13.6684V18.9998H19" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
               <path d="M2.99991 13.5986L12.5235 4.12082C13.9997 2.65181 16.3929 2.65181 17.869 4.12082V4.12082C19.3452 5.58983 19.3452 7.97157 17.869 9.44058L8.34542 18.9183" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
             </svg>
-            {t("tools.toolMenu2")}
+            {t("tools.toolMenu.edit")}
           </div>,
         onClick: () => {
           setCurrentMcp(tool.name)
@@ -671,7 +671,7 @@ const Tools = () => {
               <path d="M14 10.04L8 16.04" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round"/>
               <path d="M13.5 2H8.5C8.22386 2 8 2.22386 8 2.5V4.5C8 4.77614 8.22386 5 8.5 5H13.5C13.7761 5 14 4.77614 14 4.5V2.5C14 2.22386 13.7761 2 13.5 2Z" stroke="currentColor" strokeWidth="2" strokeLinejoin="round"/>
             </svg>
-            {t("tools.toolMenu1")}
+            {t("tools.toolMenu.delete")}
           </div>,
         onClick: () => {
           setCurrentMcp(tool.name)
@@ -707,7 +707,7 @@ const Tools = () => {
           </div>
           <div className="header-actions">
             {isLoggedInOAP &&
-              <Tooltip content={t("tools.addOapMcp.alt")}>
+              <Tooltip content={t("tools.addOapMcpAlt")}>
                 <button
                   className="edit-btn"
                   onClick={() => {
@@ -720,7 +720,7 @@ const Tools = () => {
               </Tooltip>
             }
 
-            <Tooltip content={t("tools.addServer.alt")}>
+            <Tooltip content={t("tools.addServerAlt")}>
               <button
                 className="add-btn"
                 onClick={() => {
@@ -735,7 +735,7 @@ const Tools = () => {
               </button>
             </Tooltip>
 
-            <Tooltip content={t("tools.editConfig.alt")}>
+            <Tooltip content={t("tools.editConfigAlt")}>
               <button
                 className="edit-btn"
                 onClick={() => {
@@ -748,7 +748,7 @@ const Tools = () => {
               </button>
             </Tooltip>
 
-            <Tooltip content={t("tools.reloadMCPServers.alt")}>
+            <Tooltip content={t("tools.reloadMCPServersAlt")}>
               <button
                 className="reload-btn"
                 onClick={() => handleReloadMCPServers()}
@@ -816,7 +816,7 @@ const Tools = () => {
                         <div className={`tool-tag ${tool.plan}`}>
                           {tool.plan}
                         </div>
-                        <Tooltip content={t("tools.oapStoreLink.alt")}>
+                        <Tooltip content={t("tools.oapStoreLinkAlt")}>
                           <button className="oap-store-link" onClick={(e) => {
                             e.stopPropagation()
                             window.open(`${OAP_ROOT_URL}/mcp/${tool.oapId}`, "_blank")
@@ -1027,28 +1027,28 @@ interface LogType {
 const FieldType = {
   "enabled": {
     type: "boolean",
-    error: "tools.jsonFormatError4"
+    error: "tools.jsonFormatError.enabled"
   },
   "command": {
     type: "string",
-    error: "tools.jsonFormatError5"
+    error: "tools.jsonFormatError.command"
   },
   "args": {
     type: "array",
-    error: "tools.jsonFormatError6"
+    error: "tools.jsonFormatError.args"
   },
   "env": {
     type: "object",
-    error: "tools.jsonFormatError7"
+    error: "tools.jsonFormatError.env"
   },
   "url": {
     type: "string",
-    error: "tools.jsonFormatError8"
+    error: "tools.jsonFormatError.url"
   },
   "transport": {
     type: "select",
     options: ["stdio", "sse", "streamable", "websocket"] as const,
-    error: "tools.jsonFormatError9"
+    error: "tools.jsonFormatError.transport"
   }
 }
 
@@ -1282,7 +1282,7 @@ const McpEditPopup = React.memo(({ _type, _config, _mcpName, onDelete, onCancel,
           mcp.isError ? (
             <Tooltip
               key={index}
-              content={t("tools.jsonFormatError", { mcp: mcp.name })}
+              content={t("tools.jsonFormatError.format", { mcp: mcp.name })}
               side="right"
             >
               <div
@@ -1580,7 +1580,7 @@ const McpEditPopup = React.memo(({ _type, _config, _mcpName, onDelete, onCancel,
             return [{
               from: 0,
               to: doc.length,
-              message: t("tools.jsonFormatError1"),
+              message: t("tools.jsonFormatError.length"),
               severity: "error",
             }]
           }
@@ -1591,7 +1591,7 @@ const McpEditPopup = React.memo(({ _type, _config, _mcpName, onDelete, onCancel,
             return [{
               from: 0,
               to: doc.length,
-              message: t("tools.jsonFormatError2"),
+              message: t("tools.jsonFormatError.nameEmpty"),
               severity: "error",
             }]
           }
@@ -1606,7 +1606,7 @@ const McpEditPopup = React.memo(({ _type, _config, _mcpName, onDelete, onCancel,
             return [{
               from: 0,
               to: doc.length,
-              message: t("tools.jsonFormatError3", { mcp: mcpList[currentMcpIndex].name }),
+              message: t("tools.jsonFormatError.nameExist", { mcp: mcpList[currentMcpIndex].name }),
               severity: "error",
             }]
           }
@@ -1863,7 +1863,7 @@ const McpEditPopup = React.memo(({ _type, _config, _mcpName, onDelete, onCancel,
         <div className="tool-edit-popup-content">
           <div className="tool-edit-header">
             <span>{mcpToolTitle(typeRef.current)}</span>
-            <Tooltip content={t("tools.toogleTool.alt")} side="bottom" disabled={typeRef.current !== "edit"}>
+            <Tooltip content={t("tools.toogleToolAlt")} side="bottom" disabled={typeRef.current !== "edit"}>
               <div className="tool-edit-header-actions">
                 {typeRef.current === "edit" &&
                   <Switch

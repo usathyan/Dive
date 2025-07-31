@@ -30,11 +30,11 @@ const CustomIdPopup = ({ onAddCustomModelID }: Props) => {
     setCustomModelIDError("")
     if (name.length == 0) {
       // check if the model id is empty
-      setCustomModelIDError(t("models.customModelIDError1"))
+      setCustomModelIDError(t("models.customModelID.Error.empty"))
       return
     } else if (models.find((model) => model.model === name)) {
       // check if the model id is already in the list
-      setCustomModelIDError(t("models.customModelIDError2"))
+      setCustomModelIDError(t("models.customModelID.Error.exist"))
       return
     }
 
@@ -60,7 +60,7 @@ const CustomIdPopup = ({ onAddCustomModelID }: Props) => {
         className="model-list-add-key"
         onClick={() => setShowCustomModelID(true)}
       >
-        {t("models.addCustomModelID")}
+        {t("models.customModelID.add")}
       </button>
       {showCustomModelID && (
         <PopupConfirm
@@ -75,14 +75,14 @@ const CustomIdPopup = ({ onAddCustomModelID }: Props) => {
           <div className="model-popup-content">
             <div className="model-option-name-input-content">
               <div className="model-popup-title">
-                {t("models.customModelIDTitle")}
+                {t("models.customModelID.title")}
               </div>
               <div className="model-option-name-input-wrapper">
                 <WrappedInput
                   ref={inputRef}
                   value={customModelID}
                   onChange={(e) => handleCustomModelIDChange(e.target.value)}
-                  placeholder={t("models.customModelIDPlaceholder")}
+                  placeholder={t("models.customModelID.placeholder")}
                   className="model-option-name-input"
                   autoFocus={true}
                 />

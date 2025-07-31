@@ -319,7 +319,7 @@ const OAPServerList = ({
 
           <div className="oap-filter">
             <div className="oap-sorts">
-              <div className="oap-filter-label">{t("tools.oap.sort")}</div>
+              <div className="oap-filter-label">{t("tools.oap.sort.title")}</div>
               <Tabs
                 tabs={[
                   { label: t("tools.oap.sort.popular"), value: "popular" },
