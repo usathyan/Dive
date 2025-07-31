@@ -4,7 +4,7 @@ import os from "node:os"
 import AppState from "./state"
 import { cleanup, initMCPClient } from "./service"
 import { getDarwinSystemPath, modifyPath } from "./util"
-import { binDirList, darwinPathList, __dirname, envPath, VITE_DEV_SERVER_URL, RENDERER_DIST } from "./constant"
+import { binDirList, darwinPathList, __dirname, VITE_DEV_SERVER_URL, RENDERER_DIST, logDir } from "./constant"
 import { update } from "./update"
 import { ipcHandler } from "./ipc"
 import { initTray } from "./tray"
@@ -16,7 +16,7 @@ import { oapClient } from "./oap"
 import electronDl from "electron-dl"
 
 log.initialize()
-log.transports.file.resolvePathFn = () => path.join(envPath.log, "main.log")
+log.transports.file.resolvePathFn = () => path.join(logDir, "main-electron.log")
 Object.assign(console, log.functions)
 
 electronDl()
