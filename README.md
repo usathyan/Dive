@@ -43,7 +43,7 @@ Get the latest version of Dive:
 
 For Windows users: 🪟
 - Download the .exe version
-- Python and Node.js environments are pre-installed
+- Python and Node.js environments will be downloaded automatically after launching
 
 For MacOS users: 🍎
 - Download the .dmg version
