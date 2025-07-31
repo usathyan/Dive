@@ -20,54 +20,87 @@ Dive is an open-source MCP Host Desktop Application that seamlessly integrates w
 - 🌐 **Universal LLM Support**: Compatible with ChatGPT, Anthropic, Ollama and OpenAI-compatible models
 - 💻 **Cross-Platform**: Available for Windows, MacOS, and Linux
 - 🔄 **Model Context Protocol**: Enabling seamless MCP AI agent integration on both stdio and SSE mode
+- ☁️ **OAP Cloud Integration**: One-click access to managed MCP servers via [OAPHub.ai](https://oaphub.ai/) - eliminates complex local deployments
+- 🏗️ **Dual Architecture**: Modern Tauri version alongside traditional Electron version for optimal performance
 - 🌍 **Multi-Language Support**: Traditional Chinese, Simplified Chinese, English, Spanish, Japanese, Korean with more coming soon
-- ⚙️ **Advanced API Management**: Multiple API keys and model switching support
+- ⚙️ **Advanced API Management**: Multiple API keys and model switching support with `model_settings.json`
+- 🛠️ **Granular Tool Control**: Enable/disable individual MCP tools for precise customization
 - 💡 **Custom Instructions**: Personalized system prompts for tailored AI behavior
 - 🔄 **Auto-Update Mechanism**: Automatically checks for and installs the latest application updates
 
-## Recent updates(2025/4/21)
+## Recent updates(2025/7/31) - v0.9.0 🎉
 
-- 🚀 **Dive MCP Host v0.8.0**: DiveHost rewritten in Python is now a separate project at [dive-mcp-host](https://github.com/OpenAgentPlatform/dive-mcp-host)
-- ⚙️ **Enhanced LLM Settings**: Add, modify, delete LLM Provider API Keys and custom Model IDs
-- 🔍 **Model Validation**: Validate or skip validation for models supporting Tool/Function calling
-- 🔧 **Improved MCP Configuration**: Add, edit, and delete MCP tools directly from the UI
-- 🌍 **Japanese Translation**: Added Japanese language support
-- 🤖 **Extended Model Support**: Added Google Gemini and Mistral AI models integration
+### Major Architecture Changes
+- 🏗️ **Dual Architecture Support**: Dive now supports both **Electron** and **Tauri** frameworks simultaneously
+- ⚡ **Tauri Version**: New modern architecture with optimized installer size (Windows < 30MB)
+- 🌐 **OAP Platform Integration**: Native support for [OAPHub.ai](https://oaphub.ai/) cloud services with one-click MCP server deployment
 
-> **Important:** Due to DiveHost migration from TypeScript to Python in v0.8.0, configuration files and chat history records will not be automatically upgraded. If you need to access your old data after upgrading, you can still downgrade to a previous version.
+### New Features & Improvements
+- 🔐 **OAP Authentication**: Comprehensive OAP login and authentication support
+- 📁 **Enhanced Model Configuration**: Complete restructuring with `model_settings.json` for managing multiple models
+- 🛠️ **Granular MCP Control**: Individual tool enable/disable functionality for better customization
+- 🎨 **UI/UX Enhancements**: Various interface improvements across the application
+- 🔄 **Updated dive-mcp-host**: Latest architectural improvements incorporated
+
+### Platform Availability
+- **Windows**: Available in both Electron and Tauri versions ✅
+- **macOS**: Currently Electron only 🔜
+- **Linux**: Currently Electron only 🔜
+
+> **Migration Note:** Existing local MCP/LLM configurations remain fully supported. OAP integration is additive and does not affect current workflows.
 
 ## Download and Install ⬇️
 
 Get the latest version of Dive:
 [![Download](https://img.shields.io/badge/Download-Latest%20Release-blue.svg)](https://github.com/OpenAgentPlatform/Dive/releases/latest)
 
-For Windows users: 🪟
-- Download the .exe version
+### Windows users: 🪟
+Choose between two architectures:
+- **Tauri Version** (Recommended): Smaller installer (<30MB), modern architecture
+- **Electron Version**: Traditional architecture, fully stable
 - Python and Node.js environments will be downloaded automatically after launching
 
-For MacOS users: 🍎
-- Download the .dmg version
+### MacOS users: 🍎
+- **Electron Version**: Download the .dmg version
 - You need to install Python and Node.js (with npx uvx) environments yourself
 - Follow the installation prompts to complete setup
 
-For Linux users: 🐧
-- Download the .AppImage version
+### Linux users: 🐧
+- **Electron Version**: Download the .AppImage version
 - You need to install Python and Node.js (with npx uvx) environments yourself
 - For Ubuntu/Debian users:
   - You may need to add `--no-sandbox` parameter
   - Or modify system settings to allow sandbox
   - Run `chmod +x` to make the AppImage executable
 
-## MCP Tips
+## MCP Setup Options
 
-While the system comes with a default echo MCP Server, your LLM can access more powerful tools through MCP. Here's how to get started with two beginner-friendly tools: Fetch and Youtube-dl.
+Dive offers two ways to access MCP tools: **OAP Cloud Services** (recommended for beginners) and **Local MCP Servers** (for advanced users).
+
+### Option 1: OAP Cloud Services ☁️ (Recommended)
+
+The easiest way to get started! Access enterprise-grade MCP tools instantly:
+
+1. **Sign up** at [OAPHub.ai](https://oaphub.ai/) 
+2. **Connect** to Dive using one-click deep links or configuration files
+3. **Enjoy** managed MCP servers with zero setup - no Python, Docker, or complex dependencies required
+
+Benefits:
+- ✅ Zero configuration needed
+- ✅ Cross-platform compatibility
+- ✅ Enterprise-grade reliability
+- ✅ Automatic updates and maintenance
+
+### Option 2: Local MCP Servers 🛠️
+
+For advanced users who prefer local control. The system comes with a default echo MCP Server, and you can add more powerful tools like Fetch and Youtube-dl.
 
 ![Set MCP](./docs/ToolsManager.png)
 
 
-### Quick Setup
+#### Quick Local Setup
 
-Add this JSON configuration to your Dive MCP settings to enable both tools:
+Add this JSON configuration to your Dive MCP settings to enable local tools:
 
 ```json
  "mcpServers":{
@@ -98,7 +131,7 @@ Add this JSON configuration to your Dive MCP settings to enable both tools:
   }
 ```
 
-### Using SSE Server for MCP
+#### Using SSE Server for Local MCP
 
 You can also connect to an external MCP server via SSE (Server-Sent Events). Add this configuration to your Dive MCP settings:
 
@@ -114,7 +147,7 @@ You can also connect to an external MCP server via SSE (Server-Sent Events). Add
 }
 ```
 
-### Additional Setup for yt-dlp-mcp
+#### Additional Setup for yt-dlp-mcp
 
 yt-dlp-mcp requires the yt-dlp package. Install it based on your operating system:
 
