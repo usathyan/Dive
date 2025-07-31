@@ -157,6 +157,8 @@
     "oap.no_search_data": "検索結果が見つかりません。キーワードをクリアするか、フィルター条件を調整してください。",
     "oap.clear_filter": "フィルター条件をクリア",
     "oap.hint": "高度なMCPサーバーはProバージョンへのアップグレードが必要です",
+    "oap.high_cost_title": "高額のMCPサーバーを有効化",
+    "oap.high_cost_desc": "以下のツールは多くのTokenを消費するため、計画の使用量が十分か確認してください。",
     "tabAll": "すべてのツール",
     "tabOap": "OAPツール",
     "tabLocal": "カスタムツール",

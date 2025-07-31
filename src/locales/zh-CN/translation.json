@@ -157,6 +157,8 @@
     "oap.no_search_data": "没有找到搜索结果，请清除关键字或调整筛选条件。",
     "oap.clear_filter": "清除筛选条件",
     "oap.hint": "高阶 MCP Server 需要升级 Pro 版本方能安装",
+    "oap.high_cost_title": "启用昂贵的MCP Server",
+    "oap.high_cost_desc": "您有勾选到以下使用较多 Token 数量的 MCP Server。 确定要启用吗？",
     "tabAll": "所有工具",
     "tabOap": "OAP工具",
     "tabLocal": "自定义工具",
