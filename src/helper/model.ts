@@ -106,6 +106,13 @@ export function fromRawConfigToModelGroupSetting(rawConfig: RawModelConfig): Mod
           group.extra.azureDeployment = (config as any).azureDeployment
           group.extra.apiVersion = (config as any).apiVersion
           break
+        case "openai":
+        case "openai_compatible":
+        case "ollama":
+          group.apiKey = apiKey
+          group.baseURL = baseURL || configuration?.baseURL
+          group.extra.skip_tls_verify = !!(config as any).skip_tls_verify
+          break
         default:
           group.apiKey = apiKey
           group.baseURL = baseURL || configuration?.baseURL
@@ -433,10 +440,6 @@ export function fieldsToLLMGroup(provider: ModelProvider, obj: Record<string, an
   case "bedrock":
     mutGroup.extra = { credentials: other }
     break
-  case "azure_openai":
-    mutGroup.apiKey = apiKey
-    mutGroup.extra = { ...other }
-    break
   default:
     if (apiKey) {
       mutGroup.apiKey = apiKey
@@ -444,6 +447,8 @@ export function fieldsToLLMGroup(provider: ModelProvider, obj: Record<string, an
     if (baseURL) {
       mutGroup.baseURL = baseURL
     }
+
+    mutGroup.extra = { ...other }
   }
 
   return mutGroup
