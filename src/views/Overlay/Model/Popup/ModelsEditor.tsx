@@ -450,7 +450,7 @@ const ModelPopup = ({ onClose, onSuccess }: Props) => {
             />
             <circle cx="8" cy="15" r="3" stroke="currentColor" strokeWidth="2" />
           </svg>
-          {t("models.verifyMenu0")}
+          {t("models.verifyMenu.advanced")}
         </div>
       ),
       onClick: () => {
@@ -474,7 +474,7 @@ const ModelPopup = ({ onClose, onSuccess }: Props) => {
             <circle cx="15.5" cy="15.5" r="5.5" stroke="currentColor" strokeWidth="2"/>
             <path d="M13 15.1448L14.7014 17L18 14" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
           </svg>
-          {t("models.verifyMenu1")}
+          {t("models.verifyMenu.verify")}
         </div>,
       onClick: () => {
         onVerifyConfirm([model])
@@ -494,7 +494,7 @@ const ModelPopup = ({ onClose, onSuccess }: Props) => {
               <path d="M1 5L7.5 7.5" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
               <path d="M7 2.5L13 4.5" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
             </svg>
-            {t("models.verifyMenu2")}
+            {t("models.verifyMenu.ignore")}
           </div>,
         onClick: () => {
           onVerifyIgnore([model])
@@ -514,7 +514,7 @@ const ModelPopup = ({ onClose, onSuccess }: Props) => {
               <path d="M14 10.04L8 16.04" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round"/>
               <path d="M13.5 2H8.5C8.22386 2 8 2.22386 8 2.5V4.5C8 4.77614 8.22386 5 8.5 5H13.5C13.7761 5 14 4.77614 14 4.5V2.5C14 2.22386 13.7761 2 13.5 2Z" stroke="currentColor" strokeWidth="2" strokeLinejoin="round"/>
             </svg>
-            {t("models.verifyMenu3")}
+            {t("models.verifyMenu.delete")}
           </div>,
         onClick: () => deleteModel(model.model)
       })

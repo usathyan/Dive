@@ -282,12 +282,12 @@ const ChatInput: React.FC<Props> = ({ page, onSendMessage, disabled, onAbort }) 
     saveAllConfig({...config, enableTools: !enableTools})
     if(enableTools){
       showToast({
-        message: t("chat.tools-btn.disable.toast"),
+        message: t("chat.tools-btn.disableToast"),
         type: "success"
       })
     } else {
       showToast({
-        message: t("chat.tools-btn.enable.toast"),
+        message: t("chat.tools-btn.enableToast"),
         type: "success"
       })
     }
