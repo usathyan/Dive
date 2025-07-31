@@ -5,6 +5,12 @@
   "copyright": "Copyright © 2025 Open Agent Platform",
   "asar": true,
   "artifactName": "${productName}-${version}-${os}-${arch}.${ext}",
+  "protocols": {
+    "name": "dive",
+    "schemes": [
+      "dive"
+    ]
+  },
   "electronLanguages": ["en", "es", "zh-TW", "zh-CN", "ja", "ko"],
   "publish": [
     {
@@ -130,6 +136,11 @@
     "target": ["AppImage"],
     "asarUnpack": ["**/*.node"],
     "executableName": "dive",
+    "desktop": {
+      "entry": {
+        "MimeType": "x-scheme-handler/dive;"
+      }
+    },
     "extraResources": [
       {
         "from": "bin/uv/linux-x64/",
@@ -176,11 +187,6 @@
     {
       "from": "prebuilt",
       "to": "prebuilt",
-      "filter": ["**/*"]
-    },
-    {
-      "from": "public/locales",
-      "to": "locales",
       "filter": ["**/*"]
     },
     {

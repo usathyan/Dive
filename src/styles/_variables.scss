@@ -21,8 +21,10 @@ $shadow-dark: 0 2px 6px rgba(0, 0, 0, 0.2);
   --bg-ultraweak: #f0f2f5;
   --bg-weak: #ffffff;
   --bg: #ffffff;
+  --bg-light: #ffffff;
   --bg-medium: #fafafa;
   --bg-dark-ultrastrong: #262633;
+  --bg-light-op-weak: rgba(255, 255, 255, 0.2);
   --bg-hover-dark-ultrastrong: #1e1e1e;
   --bg-op-dark-extremeweak: rgba(0, 0, 0, 0.05);
   --bg-op-dark-ultraweak: rgba(0, 0, 0, 0.1);
@@ -32,14 +34,21 @@ $shadow-dark: 0 2px 6px rgba(0, 0, 0, 0.2);
   --bg-op-dark-strong: rgba(0, 0, 0, 0.5);
   --bg-op-dark-ultrastrong: rgba(0, 0, 0, 0.6);
   --bg-op-dark-extremestrong: rgba(0, 0, 0, 0.7);
+  --bg-no-op-dark-ultraweak: #e5e5e5;
   --bg-inverted-op-dark-ultraweak: rgba(255, 255, 255, 0.1);
   --bg-inverted-op-dark-mediumweak: rgba(255, 255, 255, 0.3);
   --bg-inverted-op-dark-extremestrong: rgba(255, 255, 255, 0.7);
   --bg-pri-green: #00bdc2;
   --bg-hover-green: #03a3a9;
   --bg-pri-blue: #1890ff;
+  --bg-hover-blue-ultraweak: #d3eafd;
+  --bg-pri-blue-mediumweak: #51A2FF;
+  --bg-pri-blue-medium: #2B7FFF;
+  --bg-pri-blue-strong: #1447E6;
   --bg-hover-blue: #40a9ff;
   --bg-active-blue: #096dd9;
+  --bg-blue-ultraweak: #BEDBFF;
+  --bg-blue-weak: #92c3ff;
   --bg-cancel: #fefeff;
   --bg-hover-cancel: rgba(205,211,227,.3);
   --bg-success: #52c41a;
@@ -57,29 +66,40 @@ $shadow-dark: 0 2px 6px rgba(0, 0, 0, 0.2);
   --bg-btn-hover-strong: rgba(29, 161, 242, 0.2);
   --bg-modal: #1e1e1e;
   --bg-modal-header: #2d2d2d;
+  --bg-hover-modal-resize: #d3eafd;
   --bg-overlay: rgba(61,61,77,.3);
   --bg-alert: #FFFCE9;
+  --bg-alert-medium: #D08700;
 
   --text-link: #646cff;
   --text-link-hover: #747bff;
   --text: #213547;
+  --text-dark: #213547;
   --text-light: #FEFEFF;
   --text-inverted-weak: #999;
   --text-inverted: #ffffff;
   --text-pri-green: #00bdc2;
   --text-pri-blue: #1890ff;
+  --text-pri-blue-mediumweak: #51A2FF;
+  --text-pri-blue-medium: #2B7FFF;
+  --text-pri-blue-strong: #1447E6;
   --text-hover-blue: #40a9ff;
   --text-pri-blue-medium: #1C58D9;
+  --text-blue-strong: #1447E6;
   --text-ultraweak: rgba(109, 126, 152, 1);
   --text-weak: #666;
   --text-medium: #4B4C5C;
   --text-error: #ff4d4f;
+  --text-alert-weak: #D08700;
   --text-alert: #A5611A;
 
   --border-weak: rgba(0, 0, 0, 0.1);
   --border-inverted-op-ultraweak: rgba(255, 255, 255, 0.1);
   --border-inverted-op-weak: rgba(255, 255, 255, 0.2);
   --border-inverted-op-mediumweak: rgba(255, 255, 255, 0.3);
+  --border-op-ultraweak: rgba(0, 0, 0, 0.1);
+  --border-op-weak: rgba(0, 0, 0, 0.2);
+  --border-op-mediumweak: rgba(0, 0, 0, 0.3);
   --border: #d9d9d9;
   --border-light: #FEFEFF;
   --border-pri-green-weak: #d4f4f5;
@@ -110,6 +130,8 @@ $shadow-dark: 0 2px 6px rgba(0, 0, 0, 0.2);
   --filter-dark: brightness(300%);
 
   --theme-btn: rgba(3, 163, 169, 0.36);
+
+  --code-modal-width: 50%;
 }
 
 [data-theme='dark'],
@@ -118,8 +140,10 @@ $shadow-dark: 0 2px 6px rgba(0, 0, 0, 0.2);
   --bg-ultraweak: #273340;
   --bg-weak: #2d2d2d;
   --bg: #15202b;
+  --bg-light: #ffffff;
   --bg-medium: #252525;
   --bg-dark-ultrastrong: #0D0F12;
+  --bg-light-op-weak: rgba(255, 255, 255, 0.2);
   --bg-hover-dark-ultrastrong: #1e1e1e;
   --bg-op-dark-extremeweak: rgba(255, 255, 255, 0.05);
   --bg-op-dark-ultraweak: rgba(255, 255, 255, 0.1);
@@ -129,12 +153,19 @@ $shadow-dark: 0 2px 6px rgba(0, 0, 0, 0.2);
   --bg-op-dark-strong: rgba(255, 255, 255, 0.5);
   --bg-op-dark-ultrastrong: rgba(255, 255, 255, 0.6);
   --bg-op-dark-extremestrong: rgba(255, 255, 255, 0.7);
+  --bg-no-op-dark-ultraweak: #2d3741;
   --bg-inverted-op-dark-ultraweak: rgba(0, 0, 0, 0.1);
   --bg-inverted-op-dark-mediumweak: rgba(0, 0, 0, 0.3);
   --bg-inverted-op-dark-extremestrong: rgba(0, 0, 0, 0.7);
   --bg-pri-green: #09828b;
   --bg-hover-green: #069aa1;
+  --bg-blue-ultraweak: #BEDBFF;
+  --bg-blue-weak: #92c3ff;
   --bg-pri-blue: #1890ff;
+  --bg-hover-blue-ultraweak: #d3eafd;
+  --bg-pri-blue-mediumweak: #51A2FF;
+  --bg-pri-blue-medium: #2B7FFF;
+  --bg-pri-blue-strong: #1447E6;
   --bg-hover-blue: #40a9ff;
   --bg-active-blue: #096dd9;
   --bg-cancel: #262633;
@@ -154,29 +185,40 @@ $shadow-dark: 0 2px 6px rgba(0, 0, 0, 0.2);
   --bg-btn-hover-strong: rgba(29, 161, 242, 0.2);
   --bg-modal: #1e1e1e;
   --bg-modal-header: #2d2d2d;
+  --bg-hover-modal-resize: #2d2d2d;
   --bg-overlay: rgba(61,61,77,.6);
   --bg-alert: #FFFCE9;
+  --bg-alert-medium: #D08700;
 
   --text-link: #646cff;
   --text-link-hover: #747bff;
   --text: #ffffff;
+  --text-dark: #213547;
   --text-light: #FEFEFF;
   --text-inverted-weak: #666;
   --text-inverted: #000000;
   --text-pri-green: #09828b;
   --text-pri-blue: #1890ff;
+  --text-pri-blue-mediumweak: #51A2FF;
+  --text-pri-blue-medium: #2B7FFF;
+  --text-pri-blue-strong: #1447E6;
   --text-hover-blue: #40a9ff;
   --text-pri-blue-medium: #1C58D9;
+  --text-blue-strong: #1447E6;
   --text-ultraweak: rgba(109, 126, 152, 1);
   --text-weak: #999;
   --text-medium: #CDD3E3;
   --text-error: #ff4d4f;
+  --text-alert-weak: #D08700;
   --text-alert: #A5611A;
 
   --border-weak: rgba(255, 255, 255, 0.1);
   --border-inverted-op-ultraweak: rgba(0, 0, 0, 0.1);
   --border-inverted-op-weak: rgba(0, 0, 0, 0.2);
   --border-inverted-op-mediumweak: rgba(0, 0, 0, 0.3);
+  --border-op-ultraweak: rgba(255, 255, 255, 0.1);
+  --border-op-weak: rgba(255, 255, 255, 0.2);
+  --border-op-mediumweak: rgba(255, 255, 255, 0.3);
   --border: #404040;
   --border-light: #FEFEFF;
   --border-pri-green-weak: #104349;
@@ -211,9 +253,12 @@ $shadow-dark: 0 2px 6px rgba(0, 0, 0, 0.2);
 //window size
 $breakpoint-s: 768px;
 $breakpoint-m: 900px;
+$breakpoint-l: 1230px;
+$breakpoint-xl: 1600px;
 
 // Layout
 $chat-width: 740px;
+$outlet-container-width: 330px;
 $page-h-padding: 20px;
 $header-height: 45px;
 $sidebar-width: 300px;
@@ -234,11 +279,11 @@ $z-sidebar: 200;
     width: 8px;
     height: 8px;
   }
-  
+
   &::-webkit-scrollbar-track {
     background: transparent;
   }
-  
+
   &::-webkit-scrollbar-thumb {
     background: var(--bg-op-dark-weak);
     border-radius: 4px;
@@ -250,11 +295,11 @@ $z-sidebar: 200;
     width: 8px;
     height: 8px;
   }
-  
+
   &::-webkit-scrollbar-track {
     background: transparent;
   }
-  
+
   &::-webkit-scrollbar-thumb {
     background: rgba(255, 255, 255, 0.2);
     border-radius: 4px;

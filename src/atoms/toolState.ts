@@ -1,5 +1,20 @@
 import { atom } from "jotai"
 
+export interface MCP {
+  type: "oap" | "local"
+  plan?: string
+  description: string
+  icon?: string
+  disabled?: boolean
+  enabled?: boolean
+  error?: string
+  env?: Record<string, unknown>
+}
+
+export interface MCPConfig {
+  [key: string]: MCP
+}
+
 export interface SubTool {
   name: string
   description?: string
@@ -8,6 +23,8 @@ export interface SubTool {
 
 export interface Tool {
   name: string
+  oapId?: string
+  type?: "oap" | "local"
   description?: string
   icon?: string
   tools?: SubTool[]
@@ -19,7 +36,7 @@ export interface Tool {
 export const toolsAtom = atom<Tool[]>([])
 
 export const enabledToolsAtom = atom<Tool[]>(
-  (get, set) => {
+  (get) => {
     const tools = get(toolsAtom)
     return tools.filter((tool) => tool.enabled)
   }
@@ -30,10 +47,38 @@ export const loadToolsAtom = atom(
   async (get, set) => {
     const response = await fetch("/api/tools")
     const data = await response.json()
+    const mcpserverResponse = await fetch("/api/config/mcpserver")
+    const mcpserverData = await mcpserverResponse.json()
     if (data.success) {
-      set(toolsAtom, data.tools)
+      let tools = data.tools
+      if (mcpserverData.success) {
+        tools = tools.filter((tool: Tool) => {
+          const mcpserver = Object.keys(mcpserverData.config.mcpServers).find((mcpServer: string) => mcpServer === tool.name)
+          return mcpserver ? { ...tool, type: "oap" } : null
+        })
+      }
+      set(toolsAtom, tools)
     }
 
     return data
   }
 )
+
+export const mcpConfigAtom = atom<{mcpServers: MCPConfig}>({mcpServers: {}})
+
+export const loadMcpConfigAtom = atom(
+  null,
+  async (get, set) => {
+    const response = await fetch("/api/config/mcpserver")
+    const data = await response.json()
+    if (data.success) {
+      set(mcpConfigAtom, data.config)
+    } else {
+      set(mcpConfigAtom, {mcpServers: {}})
+    }
+
+    return data
+  }
+)
+
+export const installToolBufferAtom = atom<{name: string, config: Record<string, MCP>}[]>([])

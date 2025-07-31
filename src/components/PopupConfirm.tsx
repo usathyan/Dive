@@ -1,8 +1,8 @@
-import { useEffect } from "react";
-import { Behavior, useLayer } from "../hooks/useLayer";
-import PopupWindow, { PopupStylePorps } from "./PopupWindow";
+import { useEffect } from "react"
+import { Behavior, useLayer } from "../hooks/useLayer"
+import PopupWindow, { PopupStylePorps } from "./PopupWindow"
 import { useTranslation } from "react-i18next"
-import Tooltip from "./Tooltip";
+import Tooltip from "./Tooltip"
 
 type PopupConfirmProps = PopupStylePorps & {
 	title?: string
@@ -25,13 +25,13 @@ type PopupConfirmProps = PopupStylePorps & {
 
 export default function PopupConfirm({ title, children, zIndex, noBackground, className, noBorder, showClose, onClickOutside, onConfirm, confirmText, confirmTooltip, disabled, onCancel, cancelText, cancelTooltip, footerHint, footerType, listenHotkey=true }: PopupConfirmProps) {
 	const { t } = useTranslation()
-  
+
   useEffect(() => {
     if (document.activeElement instanceof HTMLElement) {
       document.activeElement.blur()
     }
   }, [])
-	
+
 	useEffect(() => {
 		const handleKeyDown = (e: KeyboardEvent) => {
 			if (e.key === "Enter") {
@@ -46,7 +46,7 @@ export default function PopupConfirm({ title, children, zIndex, noBackground, cl
 		}
 		return () => window.removeEventListener("keydown", handleKeyDown)
 	}, [onConfirm])
-  
+
   useLayer({
     type: "Modal",
     behavior: Behavior.autoPush,
@@ -54,7 +54,7 @@ export default function PopupConfirm({ title, children, zIndex, noBackground, cl
       onCancel ? onCancel() : onClickOutside?.()
     }
   })
-	
+
 	const windowProps = {
 		onClickOutside,
 		zIndex,

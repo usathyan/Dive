@@ -1,20 +1,50 @@
 import { RouterProvider } from "react-router-dom"
 import { router } from "./router"
-import { useSetAtom } from "jotai"
-import { modelVerifyListAtom } from "./atoms/configState"
+import { useAtom, useAtomValue, useSetAtom } from "jotai"
+import { removeOapConfigAtom, writeOapConfigAtom } from "./atoms/configState"
 import { useEffect } from "react"
 import { handleGlobalHotkey } from "./atoms/hotkeyState"
 import { handleWindowResizeAtom } from "./atoms/sidebarState"
 import { systemThemeAtom } from "./atoms/themeState"
 import Updater from "./updater"
-import { NewVerifyStatus, OldVerifyStatus } from "./atoms/configState"
+import { loadOapToolsAtom, oapUsageAtom, oapUserAtom, updateOAPUsageAtom } from "./atoms/oapState"
+import { queryGroup } from "./helper/model"
+import { modelGroupsAtom, modelSettingsAtom } from "./atoms/modelState"
+import { installToolBufferAtom, loadMcpConfigAtom, loadToolsAtom } from "./atoms/toolState"
 import { useTranslation } from "react-i18next"
+import { setModelSettings } from "./ipc/config"
+import { oapGetMe, oapGetToken, oapLogout, registBackendEvent } from "./ipc"
+import { refreshConfig } from "./ipc/host"
+import { openOverlayAtom } from "./atoms/layerState"
 
 function App() {
   const setSystemTheme = useSetAtom(systemThemeAtom)
   const handleWindowResize = useSetAtom(handleWindowResizeAtom)
-  const setAllVerifiedList = useSetAtom(modelVerifyListAtom)
+  const setOAPUser = useSetAtom(oapUserAtom)
+  const setOAPUsage = useSetAtom(oapUsageAtom)
+  const updateOAPUsage = useSetAtom(updateOAPUsageAtom)
+  const writeOapConfig = useSetAtom(writeOapConfigAtom)
+  const removeOapConfig = useSetAtom(removeOapConfigAtom)
+  const [modelSetting] = useAtom(modelSettingsAtom)
+  const modelGroups = useAtomValue(modelGroupsAtom)
+  const loadTools = useSetAtom(loadToolsAtom)
   const { i18n } = useTranslation()
+  const loadMcpConfig = useSetAtom(loadMcpConfigAtom)
+  const loadOapTools = useSetAtom(loadOapToolsAtom)
+  const openOverlay = useSetAtom(openOverlayAtom)
+  const setInstallToolBuffer = useSetAtom(installToolBufferAtom)
+
+  useEffect(() => {
+    console.log("set model setting", modelSetting)
+    if (modelSetting) {
+      setModelSettings(modelSetting)
+    }
+  }, [modelSetting])
+
+  useEffect(() => {
+    loadTools()
+    loadMcpConfig()
+  }, [])
 
   // init app
   useEffect(() => {
@@ -25,6 +55,89 @@ function App() {
       window.removeEventListener("resize", handleWindowResize)
       window.removeEventListener("keydown", handleGlobalHotkey)
     }
+  }, [])
+
+  const updateOAPUser = async () => {
+    const token = await oapGetToken()
+    if (token) {
+      const user = await oapGetMe()
+      setOAPUser(user.data)
+      await updateOAPUsage()
+      console.log("oap user", user.data)
+    }
+  }
+
+  // handle backend event
+  useEffect(() => {
+    const unregistLogin = registBackendEvent("login", () => {
+      console.info("oap login")
+      updateOAPUser()
+        .catch(console.error)
+        .then(removeOapConfig)
+        .catch(console.error)
+        .then(writeOapConfig)
+        .catch(console.error)
+    })
+
+    const unregistLogout = registBackendEvent("logout", () => {
+      console.info("oap logout")
+      removeOapConfig()
+      setOAPUser(null)
+      setOAPUsage(null)
+    })
+
+    const unlistenRefresh = registBackendEvent("refresh", () => {
+      console.info("oap refresh")
+      refreshConfig()
+        .then(loadTools)
+        .catch(console.error)
+
+      updateOAPUser()
+        .catch(console.error)
+        .then(removeOapConfig)
+        .then(writeOapConfig)
+        .catch(console.error)
+    })
+
+    const unlistenMcpInstall = registBackendEvent("mcp.install", (data: { name: string, config: string }) => {
+      try {
+        const { name } = data
+        const config = JSON.parse(atob(data.config))
+        console.log(config)
+        setInstallToolBuffer(prev => [...prev, { name, config }])
+        openOverlay("Tools")
+      } catch(e) {
+        console.error("oap mcp install error", e)
+      }
+    })
+
+    return () => {
+      unregistLogin()
+      unregistLogout()
+      unlistenRefresh()
+      unlistenMcpInstall()
+    }
+  }, [])
+
+  // init oap user
+  useEffect(() => {
+    updateOAPUser().then(() => {
+      setOAPUser(user => {
+        if (!user) {
+          console.warn("no user found, logout")
+          oapLogout()
+          return null
+        }
+
+        if (user && queryGroup({ modelProvider: "oap" }, modelGroups).length === 0) {
+          writeOapConfig().catch(console.error)
+        }
+
+        return user
+      })
+    })
+    .then(loadOapTools)
+    .catch(console.error)
   }, [])
 
   // set system theme
@@ -38,50 +151,6 @@ function App() {
     return () => {
       mediaQuery.removeEventListener("change", handleChange)
     }
-  }, [])
-
-  // convert old model verify status to new model verify status
-  //TODO: remove this after all verified list is converted in future version
-  useEffect(() => {
-    const result: Record<string, Record<string, NewVerifyStatus | string>> = {}
-    const allVerifiedListString = localStorage.getItem("modelVerify")
-    const allVerifiedList = JSON.parse(allVerifiedListString || "{}") as Record<string, Record<string, NewVerifyStatus | string>>
-    for (const [apiKey, models] of Object.entries({ ...allVerifiedList })) {
-      result[apiKey] = {} as Record<string, NewVerifyStatus | string>
-
-      for (const [modelName, status] of Object.entries(models)) {
-        if (status === "ignore") {
-          result[apiKey][modelName] = "ignore"
-          continue
-        }
-
-        if ((status as NewVerifyStatus).connecting?.final_state || (status as NewVerifyStatus).supportTools?.final_state) {
-          result[apiKey][modelName] = status as NewVerifyStatus
-          continue
-        }
-
-        const oldStatus = status as unknown as OldVerifyStatus
-        result[apiKey][modelName] = {
-          success: oldStatus.success,
-          connecting: {
-            success: oldStatus.connectingSuccess,
-            final_state: oldStatus.connectingSuccess ? "CONNECTED" : "ERROR",
-            error_msg: oldStatus.connectingSuccess ? null : (oldStatus.connectingResult ?? "Connection failed")
-          },
-          supportTools: {
-            success: oldStatus.supportTools,
-            final_state: oldStatus.supportTools ? "TOOL_RESPONDED" : "ERROR",
-            error_msg: oldStatus.supportTools ? null : (oldStatus.supportToolsResult ?? "Tool verification failed")
-          },
-          supportToolsInPrompt: {
-            success: false,
-            final_state: "ERROR",
-            error_msg: "Tool verification failed"
-          }
-        }
-      }
-    }
-    setAllVerifiedList(result)
   }, [])
 
   useEffect(() => {

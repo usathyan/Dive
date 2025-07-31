@@ -69,12 +69,14 @@ const UpdateButton = () => {
   }
 
   return (
-    <button
-      className={`sidebar-footer-btn update-btn ${progress === 0 ? "available" : "downloading"}`}
-      onClick={update}
-    >
-      {progress === 0 ? <AvailableButton newVersion={newVersion} /> : <DownloadingButton progress={progress} isCompleted={isCompleted} />}
-    </button>
+    <div className="update-btn-container">
+      <button
+        className={`sidebar-footer-btn update-btn ${progress === 0 ? "available" : "downloading"}`}
+        onClick={update}
+      >
+        {progress === 0 ? <AvailableButton newVersion={newVersion} /> : <DownloadingButton progress={progress} isCompleted={isCompleted} />}
+      </button>
+    </div>
   )
 }
 

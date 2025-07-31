@@ -1,5 +1,6 @@
 import * as DropdownMenu from "@radix-ui/react-dropdown-menu"
-import { forwardRef, useLayoutEffect, useRef, useState } from "react"
+import { forwardRef, useLayoutEffect, useMemo, useRef, useState } from "react"
+import isEqual from "lodash/isEqual"
 
 interface Props<T = string>{
   options: {
@@ -48,7 +49,7 @@ const Select = forwardRef<HTMLButtonElement|null, Props>(({
   leftSlotType = "col",
   ...rest
 }, ref) => {
-  const currentOption = options.find((option) => option.value === value) || null
+  const currentOption = useMemo(() => options.find((option) => typeof value === "string" ? option.value === value : isEqual(option.value, value)) || null, [options, value])
   const displayLabel = currentOption && currentOption.label || placeholder || "Select..."
   const triggerRef = useRef<HTMLButtonElement>(null)
   const [width, setWidth] = useState<number | undefined>(undefined)

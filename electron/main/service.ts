@@ -14,6 +14,7 @@ import {
   legacyConfigDir,
   envPath,
   VITE_DEV_SERVER_URL,
+  DEF_PLUGIN_CONFIG,
 } from "./constant.js"
 import spawn from "cross-spawn"
 import { ChildProcess, SpawnOptions, StdioOptions } from "node:child_process"
@@ -24,7 +25,12 @@ import { hostCache } from "./store.js"
 
 const baseConfigDir = app.isPackaged ? configDir : path.join(__dirname, "..", "..", ".config")
 
+const onServiceUpCallbacks: ((ip: string, port: number) => Promise<void>)[] = []
+export const clearServiceUpCallbacks = () => onServiceUpCallbacks.length = 0
+export const setServiceUpCallback = (callback: (ip: string, port: number) => Promise<void>) => onServiceUpCallbacks.push(callback)
+
 export const serviceStatus = {
+  ip: "localhost",
   port: 0,
 }
 
@@ -59,6 +65,10 @@ async function initApp() {
   const diveHttpdConfigPath = path.join(baseConfigDir, "dive_httpd.json")
   await createFileIfNotExists(diveHttpdConfigPath, JSON.stringify(DEF_DIVE_HTTPD_CONFIG, null, 2))
 
+  // create plugin config file if not exists
+  const pluginConfigPath = path.join(baseConfigDir, "plugin_config.json")
+  await createFileIfNotExists(pluginConfigPath, JSON.stringify(DEF_PLUGIN_CONFIG, null, 2))
+
   // create command alias file if not exists
   const commandAliasPath = path.join(baseConfigDir, "command_alias.json")
   await createFileIfNotExists(commandAliasPath, JSON.stringify(process.platform === "win32" && app.isPackaged ? {
@@ -78,9 +88,19 @@ async function createFileIfNotExists(_path: string, content: string) {
 export async function initMCPClient(win: BrowserWindow) {
   const handler = (message: any) => {
     if (message.server.listen.port) {
+      serviceStatus.ip = message.server.listen.ip
       serviceStatus.port = message.server.listen.port
       win.webContents.send("app-port", message.server.listen.port)
       ipcEventEmitter.off("ipc", handler)
+
+      // wait for the service to be ready
+      setTimeout(() => {
+        // call the callback
+        onServiceUpCallbacks.forEach((callback) =>
+          callback(message.server.listen.ip, message.server.listen.port)
+            .catch((error) => console.error("Failed to call service up callback:", error)))
+        clearServiceUpCallbacks()
+      }, 100)
     }
   }
   ipcEventEmitter.on("ipc", handler)
@@ -254,8 +274,8 @@ async function startHostService() {
     "*",
     "--log_dir",
     path.join(envPath.log, "host"),
-    "--log_level",
-    "DEBUG",
+    "--plugin_config",
+    path.join(baseConfigDir, "plugin_config.json")
   ]
 
   const options: SpawnOptions = {

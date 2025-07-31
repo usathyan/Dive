@@ -1,32 +1,25 @@
 import { useEffect, useState } from "react"
 import { useTranslation } from "react-i18next"
-import { useAtom } from "jotai"
+import { useAtom, useSetAtom } from "jotai"
 import PopupConfirm from "../../../components/PopupConfirm"
 import InfoTooltip from "../../../components/InfoTooltip"
 import WrappedInput from "../../../components/WrappedInput"
 import WrappedTextarea from "../../../components/WrappedTextarea"
-import { useModelsProvider } from "./ModelsProvider"
 import { showToastAtom } from "../../../atoms/toastState"
+import { modelSettingsAtom } from "../../../atoms/modelState"
 
-const ParameterPopup = ({
-  onClose,
-}: {
-  onClose: () => void
-}) => {
+const ParameterPopup = ({ onClose }: { onClose: () => void }) => {
   const { t } = useTranslation()
-  const [, showToast] = useAtom(showToastAtom)
-  const { setMultiModelConfigList, multiModelConfigList, saveConfig } = useModelsProvider()
+  const showToast = useSetAtom(showToastAtom)
+  const [settings, setSettings] = useAtom(modelSettingsAtom)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [instructions, setInstructions] = useState("")
-  const [initialParams, setInitialParams] = useState<Record<string, number>>({})
+  const [initialParams, setInitialParams] = useState(settings.common)
   const [initialInstructions, setInitialInstructions] = useState("")
-  const { parameter, setParameter } = useModelsProvider()
-  const changed = instructions !== initialInstructions || parameter.topP !== initialParams.topP || parameter.temperature !== initialParams.temperature
+  const changed = instructions !== initialInstructions || settings.common.topP !== initialParams.topP || settings.common.temperature !== initialParams.temperature
 
   useEffect(() => {
-    if(!multiModelConfigList) return
     fetchInstructions()
-    setInitialParams({ ...parameter })
   }, [])
 
   const fetchInstructions = async () => {
@@ -62,11 +55,6 @@ const ParameterPopup = ({
   }
 
   const onConfirm = async () => {
-    setParameter(initialParams)
-    if(!multiModelConfigList?.length){
-      localStorage.setItem("ConfigParameter", JSON.stringify(initialParams))
-    }
-    const _multiModelConfigList = JSON.parse(JSON.stringify(multiModelConfigList))
     try {
       setIsSubmitting(true)
       const response = await fetch("/api/config/customrules", {
@@ -74,15 +62,23 @@ const ParameterPopup = ({
         body: instructions
       })
       const data = await response.json()
-      const _data = await saveConfig()
-
-      if (data.success && _data.success) {
+      if (data.success) {
         showToast({
           message: t("models.parameterSaved"),
           type: "success"
         })
         setInitialInstructions(instructions)
         setIsSubmitting(false)
+
+        setSettings(prev => ({
+          ...prev,
+          common: {
+            ...prev.common,
+            topP: initialParams.topP,
+            temperature: initialParams.temperature,
+          }
+        }))
+
         onClose()
       }
     } catch (error) {
@@ -91,7 +87,6 @@ const ParameterPopup = ({
         message: t("models.parameterSaveFailed"),
         type: "error"
       })
-      setMultiModelConfigList(_multiModelConfigList)
     } finally {
       setIsSubmitting(false)
     }

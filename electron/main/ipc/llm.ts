@@ -1,14 +1,14 @@
 import { Anthropic } from "@anthropic-ai/sdk"
 import { ipcMain, BrowserWindow } from "electron"
 import { Ollama } from "ollama"
-import OpenAI from "openai"
+import OpenAI, { AzureOpenAI } from "openai"
 import { Mistral } from "@mistralai/mistralai"
 import {
   BedrockClient,
   ListFoundationModelsCommand,
 } from "@aws-sdk/client-bedrock"
 
-export function ipcLlmHandler(win: BrowserWindow) {
+export function ipcLlmHandler(_win: BrowserWindow) {
   ipcMain.handle("llm:openaiModelList", async (_, apiKey: string) => {
     try {
       const client = new OpenAI({ apiKey })
@@ -18,12 +18,22 @@ export function ipcLlmHandler(win: BrowserWindow) {
       return { results: [], error: (error as Error).message }
     }
   })
+  
+  ipcMain.handle("llm:azureOpenaiModelList", async (_, apiKey: string, azureEndpoint: string, azureDeployment: string, apiVersion: string) => {
+    try {
+      const client = new AzureOpenAI({ apiKey, endpoint: azureEndpoint, deployment: azureDeployment, apiVersion })
+      const models = await client.models.list()
+      return { results: models.data?.map((model) => model.id) ?? [], error: null }
+    } catch (error) {
+      return { results: [], error: (error as Error).message }
+    }
+  })
 
   ipcMain.handle("llm:anthropicModelList", async (_, apiKey: string, baseURL: string) => {
     try {
       const client = new Anthropic({ apiKey, baseURL })
       const models = await client.models.list()
-      return { results: models.data.map((model) => model.id), error: null }
+      return { results: models.data.map((model: any) => model.id), error: null }
     } catch (error) {
       return { results: [], error: (error as Error).message }
     }
@@ -94,7 +104,7 @@ export function ipcLlmHandler(win: BrowserWindow) {
       const command = new ListFoundationModelsCommand({})
       const response = await client.send(command)
       const models = response.modelSummaries
-      return { results: models?.map((model) => `${modelPrefix}${model.modelId}`) ?? [], error: null }
+      return { results: models?.map((model: any) => `${modelPrefix}${model.modelId}`) ?? [], error: null }
     } catch (error) {
       return { results: [], error: (error as Error).message }
     }

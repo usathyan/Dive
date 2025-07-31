@@ -4,46 +4,21 @@ import App from "./App"
 import { loadConfigAtom } from "./atoms/configState"
 import { useSetAtom } from "jotai"
 import { loadHotkeyMapAtom } from "./atoms/hotkeyState"
+import { modelSettingsAtom } from "./atoms/modelState"
+import { fromRawConfigToModelGroupSetting } from "./helper/model"
+import { initFetch } from "./ipc"
+import { getModelSettings, setModelSettings } from "./ipc/config"
 
 function Root() {
   const loadConfig = useSetAtom(loadConfigAtom)
   const loadHotkeyMap = useSetAtom(loadHotkeyMapAtom)
+  const setModelSetting = useSetAtom(modelSettingsAtom)
   const [loading, setLoading] = useState(true)
   const [downloading, setDownloading] = useState(window.PLATFORM !== "darwin")
   const init = useRef(false)
 
   const initHost = useCallback(async () => {
-    const port = await new Promise<number>((resolve) => {
-      window.ipcRenderer.onReceivePort((port) => {
-        resolve(port)
-      })
-
-      const i = setInterval(() => {
-        window.ipcRenderer.port().then(port => {
-          if (+port) {
-            resolve(port)
-            clearInterval(i)
-          }
-        })
-      }, 1000)
-    })
-
-    console.log("host port", port)
-
-    const originalFetch = window.fetch
-    window.fetch = async (input: RequestInfo | URL, init?: RequestInit) => {
-      if (typeof input !== "string" || (typeof input === "string" && !input.startsWith("/api")) && input !== "/model_verify") {
-        return originalFetch(input, init)
-      }
-
-      return originalFetch(`http://localhost:${port}${input}`, {
-        ...init,
-        headers: {
-          ...init?.headers,
-          "X-Requested-With": "dive-desktop",
-        },
-      })
-    }
+    await initFetch()
 
     // wait for host to start
     await new Promise(resolve => {
@@ -63,19 +38,22 @@ function Root() {
 
     init.current = true
 
-    window.ipcRenderer.getInstallHostDependenciesLog().then(logs => {
-      if (logs.includes("finish")) {
-        setDownloading(false)
-      }
-    })
-
-    if (!window.ipcRenderer) {
-      return
-    }
-
     initHost()
       .then(loadHotkeyMap)
       .then(loadConfig)
+      .then(async (res) => {
+        const existsSetting = await getModelSettings()
+        if (existsSetting) {
+          setModelSetting(existsSetting)
+          return
+        }
+
+        if (res) {
+          const settings = fromRawConfigToModelGroupSetting(res)
+          setModelSetting(settings)
+          return setModelSettings(settings)
+        }
+      })
       .finally(() => {
         setDownloading(false)
         setLoading(false)
@@ -86,8 +64,10 @@ function Root() {
     setDownloading(false)
   }
 
-  const onUpdate = (_log: string) => {
-    window.postMessage({ payload: "removeLoading" }, "*")
+  const onUpdate = (log: string) => {
+    if (log) {
+      window.postMessage({ payload: "removeLoading" }, "*")
+    }
   }
 
   if (downloading || loading) {

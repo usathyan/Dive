@@ -1,200 +1,189 @@
-import { Dispatch, ReactNode, SetStateAction, createContext, useContext, useEffect, useState } from "react"
-import { configAtom, configDictAtom, loadConfigAtom, MultiModelConfig, writeRawConfigAtom, InterfaceModelConfig, prepareModelConfig, modelVerifyListAtom } from "../../../atoms/configState"
-import { useAtomValue, useSetAtom } from "jotai"
-import { FieldDefinition, InterfaceProvider } from "../../../atoms/interfaceState"
-import { compressData, extractData } from "../../../helper/config"
-import { getVerifyStatus, ModelVerifyStatus } from "./ModelVerify"
-
-export type ListOption = {
-  name: string
-  checked: boolean
-  verifyStatus: ModelVerifyStatus
-  isCustom: boolean
-}
+import { ReactNode, createContext, useCallback, useContext, useRef } from "react"
+import { BaseModel, LLMGroup, ModelProvider } from "../../../../types/model"
+import { defaultBaseModel, defaultModelGroup, fieldsToLLMGroup, getGroupTerm, getModelTerm, intoRawModelConfigWithQuery, queryGroup } from "../../../helper/model"
+import { modelGroupsAtom, modelSettingsAtom } from "../../../atoms/modelState"
+import { useAtom, useAtomValue, useSetAtom } from "jotai"
+import { fetchModels as _fetchModels } from "../../../ipc/llm"
+import { getVerifyKey } from "../../../helper/verify"
+import isMatch from "lodash/isMatch"
+import { writeRawConfigAtom } from "../../../atoms/configState"
 
 type ContextType = {
-  multiModelConfigList?: MultiModelConfig[]
-  setMultiModelConfigList: Dispatch<SetStateAction<MultiModelConfig[]>>
-  parameter: Record<string, number>
-  setParameter: (parameter: Record<string, number>) => void
-  currentIndex: number
-  setCurrentIndex: (currentIndex: number) => void
-  listOptions: ListOption[]
-  setListOptions: Dispatch<SetStateAction<ListOption[]>>
-  fetchListOptions: (multiModelConfig: MultiModelConfig, fields: Record<string, FieldDefinition>) => Promise<ListOption[]>
-  prepareModelConfig: (config: InterfaceModelConfig, provider: InterfaceProvider) => InterfaceModelConfig
-  saveConfig: (activeProvider?: InterfaceProvider) => Promise<{ success: boolean, error?: string }>
+  buffer: { group: LLMGroup, models: BaseModel[] }
+  getLatestBuffer: () => { group: LLMGroup, models: BaseModel[] }
+  reset: () => void
+  flush: () => Promise<void>
+  verifyKey: () => string
+  writeGroupBuffer: (group: LLMGroup) => void
+  writeGroupBufferWithFields: (provider: ModelProvider, obj: Record<string, any>) => void
+  writeModelsBuffer: (models: BaseModel[]) => void
+  writeModelsBufferWithModelNames: (models: string[], customModels?: string[]) => void
+  pushModelBufferWithModelNames: (models: string[], customModels?: string[]) => void
+  isGroupExist: (group: LLMGroup) => boolean
+  groupToFields: (group: LLMGroup) => Record<string, any>
+  fetchModels: () => Promise<BaseModel[]>
+  modelToBaseModel: (modelName: string, isCustomModel: boolean) => BaseModel
 }
 
 const context = createContext<ContextType>({} as ContextType)
 
-export default function ModelsProvider({
-  children,
-}:{
-  children: ReactNode
-}) {
-  const configList = useAtomValue(configDictAtom)
-  const config = useAtomValue(configAtom)
-  const loadConfig = useSetAtom(loadConfigAtom)
-  const saveAllConfig = useSetAtom(writeRawConfigAtom)
-  const [currentIndex, setCurrentIndex] = useState(0)
-  const [listOptions, setListOptions] = useState<ListOption[]>([])
-  const [multiModelConfigList, setMultiModelConfigList] = useState<MultiModelConfig[]>([])
-  const [parameter, setParameter] = useState<Record<string, number>>(JSON.parse(localStorage.getItem("ConfigParameter") || "{}"))
-  const allVerifiedList = useAtomValue(modelVerifyListAtom)
+export default function ModelsProvider({ children }: { children: ReactNode }) {
+  const [settings, setSettings] = useAtom(modelSettingsAtom)
+  const modelGroups = useAtomValue(modelGroupsAtom)
+  const modelGroupBuffer = useRef<LLMGroup>(defaultModelGroup())
+  const modelsBuffer = useRef<BaseModel[]>([])
+  const writeRawConfig = useSetAtom(writeRawConfigAtom)
 
-  const getMultiModelConfigList = () => {
-    return new Promise((resolve, reject) => {
-      setMultiModelConfigList(prev => {
-        resolve(prev)
-        return prev
-      })
-    }) as Promise<MultiModelConfig[]>
-  }
-  const getParameter = () => {
-    return new Promise((resolve, reject) => {
-      setParameter(prev => {
-        resolve(prev)
-        return prev
-      })
-    }) as Promise<Record<string, number>>
-  }
+  const getLatestBuffer = useCallback(() => {
+    return {
+      group: modelGroupBuffer.current,
+      models: modelsBuffer.current,
+    }
+  }, [])
 
-  useEffect(() => {
-    const fetchData = async () => {
-      const data = await loadConfig()
-      if (!data || Object.keys(data.configs).length === 0) {
-        const _parameter = localStorage.getItem("ConfigParameter")
-        if(_parameter){
-          setParameter(JSON.parse(_parameter))
+  const verifyKey = useCallback(() => {
+    return getVerifyKey(modelGroupBuffer.current)
+  }, [])
+
+  const reset = useCallback(() => {
+    modelGroupBuffer.current = defaultModelGroup()
+    modelsBuffer.current = []
+  }, [])
+
+  const groupToFields = useCallback((group: LLMGroup) => {
+    switch(group.modelProvider){
+      case "bedrock":
+        return {
+          ...group.extra.credentials,
+          region: group.extra.region,
         }
-        return
-      }
-      let providerConfigList: MultiModelConfig[] = []
-      providerConfigList = extractData(data.configs)
-      setMultiModelConfigList(providerConfigList)
-      if(providerConfigList){
-        const _topP = providerConfigList.find(config => config.topP)
-        const _temperature = providerConfigList.find(config => config.temperature)
-        setParameter({
-          topP: _topP?.topP ?? 0,
-          temperature: _temperature?.temperature ?? 0
-        })
-      } else {
-        const parameter = localStorage.getItem("ConfigParameter")
-        if(parameter){
-          setParameter(JSON.parse(parameter))
+      case "azure_openai":
+        return {
+          ...group.extra,
+          apiKey: group.apiKey || "",
         }
-        return
-      }
-    }
-    fetchData()
-  }, [config?.activeProvider])
-
-  useEffect(() => {
-    if(multiModelConfigList && multiModelConfigList?.length > 0){
-      localStorage.removeItem("ConfigParameter")
-    }
-  }, [multiModelConfigList])
-
-  const fetchListOptions = async (multiModelConfig: MultiModelConfig, fields: Record<string, FieldDefinition>) => {
-    const verifyList = allVerifiedList[multiModelConfig.apiKey || multiModelConfig.baseURL]
-    const newListOptions: ListOption[] = []
-
-    //get local custom model list
-    const customModelListText = localStorage.getItem("customModelList")
-    if(customModelListText){
-      const customModelList = JSON.parse(customModelListText)
-      const _customModelList = customModelList[`${multiModelConfig.apiKey || multiModelConfig.baseURL || multiModelConfig.accessKeyId}`]
-      if(_customModelList){
-        _customModelList.forEach((option: string) => {
-          newListOptions.push({
-            name: option,
-            checked: multiModelConfig.models.includes(option),
-            verifyStatus:  getVerifyStatus(verifyList?.[option]) ?? "unVerified",
-            isCustom: true
-          })
-        })
-      }
-    }
-
-
-    try {
-      let options: string[] = []
-      for (const [key, field] of Object.entries(fields)) {
-        if (field.type === "list" && field.listCallback && field.listDependencies) {
-          const deps = field.listDependencies.reduce((acc, dep) => ({
-            ...acc,
-            [dep]: multiModelConfig[dep as keyof MultiModelConfig] || (multiModelConfig as any).credentials?.[dep] || ""
-          }), {})
-
-          options = await field.listCallback!(deps)
+      default:
+        return {
+          apiKey: group.apiKey,
+          baseURL: group.baseURL,
         }
-      }
+    }
+  }, [])
 
-      options.forEach((option: string) => {
-        newListOptions.push({
-          name: option,
-          checked: multiModelConfig.models.includes(option),
-          verifyStatus: getVerifyStatus(verifyList?.[option]) ?? "unVerified",
-          isCustom: false
-        })
+  const writeGroupBuffer = useCallback((group: LLMGroup) => {
+    modelGroupBuffer.current = group
+  }, [])
+
+  const writeModelsBuffer = useCallback((models: BaseModel[]) => {
+    modelsBuffer.current = models
+  }, [])
+
+  const writeGroupBufferWithFields = useCallback((provider: ModelProvider, obj: Record<string, any>) => {
+    modelGroupBuffer.current = fieldsToLLMGroup(provider, obj)
+  }, [])
+
+  const modelToBaseModel = useCallback((modelName: string, isCustomModel: boolean = false) => {
+    return {
+      ...defaultBaseModel(),
+      model: modelName,
+      active: false,
+      isCustomModel,
+    }
+  }, [])
+
+  const writeModelsBufferWithModelNames = useCallback((models: string[], customModels: string[] = []) => {
+    modelsBuffer.current = [
+      ...customModels.map(m => modelToBaseModel(m, true)),
+      ...models.map(m => modelToBaseModel(m)),
+    ]
+  }, [modelToBaseModel])
+
+  const pushModelBufferWithModelNames = useCallback((models: string[], customModels: string[] = []) => {
+    modelsBuffer.current = [
+      ...customModels.map(m => modelToBaseModel(m, true)),
+      ...modelsBuffer.current,
+      ...models.map(m => modelToBaseModel(m)),
+    ]
+  }, [modelToBaseModel])
+
+  const fetchModels = useCallback(async () => {
+    const group = modelGroupBuffer.current
+    let extra: string[] = []
+
+    if (group.modelProvider === "bedrock") {
+      extra = [group.extra.credentials.accessKeyId, group.extra.credentials.secretAccessKey, group.extra.credentials.sessionToken, group.extra.credentials.region]
+    }
+
+    if (group.modelProvider === "azure_openai") {
+      extra = [group.extra.azureEndpoint, group.extra.azureDeployment, group.extra.apiVersion]
+    }
+
+    const result = await _fetchModels(group.modelProvider, group.apiKey || "", group.baseURL || "", extra).catch(() => ({ error: "fetch models failed" }))
+    if (result.error || !("results" in result)) {
+      return []
+    }
+
+    return result.results.map(m => modelToBaseModel(m, false))
+  }, [modelToBaseModel])
+
+  const getGroups = useCallback((group: LLMGroup) => {
+    const term = getGroupTerm(group)
+    return queryGroup(term, modelGroups)
+  }, [modelGroups])
+
+  const isGroupExist = useCallback((group: LLMGroup) => {
+    return getGroups(group).length > 0
+  }, [getGroups])
+
+  const flush = useCallback(async () => {
+    const { group, models } = getLatestBuffer()
+    group.models = models
+
+    const exitsGroups = getGroups(group)
+    if (exitsGroups.length === 0) {
+      setSettings(settings => {
+        return {
+          ...settings,
+          groups: [...settings.groups, { ...group, active: true }],
+        }
       })
-    } catch (error) {
-      // if listCallback failed and custom model list is empty, throw error
-      if(!customModelListText) {
-        throw error
-      }
-      const customModelList = JSON.parse(customModelListText)
-      const _customModelList = customModelList[`${multiModelConfig.apiKey || multiModelConfig.baseURL || multiModelConfig.accessKeyId}`]
-      if(!_customModelList || !_customModelList.length) {
-        throw error
-      }
     }
-    return newListOptions
-  }
 
-  const saveConfig = async (newActiveProvider?: InterfaceProvider) => {
-    let compressedData: Record<string, InterfaceModelConfig> = {}
-    const _multiModelConfigList = await getMultiModelConfigList()
-    const _parameter = await getParameter()
-    _multiModelConfigList.forEach((multiModelConfig, index) => {
-      compressedData = Object.assign(compressedData, compressData(multiModelConfig, index, _parameter))
-    })
-    Object.entries(compressedData).forEach(([key, value]) => {
-      if (value !== undefined) {
-        compressedData[key] = prepareModelConfig(value, value.modelProvider)
+    setSettings(settings => {
+      return {
+        ...settings,
+        groups: settings.groups.map(og => {
+          return isMatch(getGroupTerm(og), getGroupTerm(group)) ? { ...group, active: og.active } : og
+        }),
       }
     })
 
-    let _activeProvider: InterfaceProvider = newActiveProvider ?? config?.activeProvider as any ?? ""
-    const model = configList?.[_activeProvider]?.model
-    const existModel = Object.keys(compressedData).find(key => compressedData[key].active && compressedData[key].model === model) as InterfaceProvider
-    const activeModel = Object.keys(compressedData).filter(key => compressedData[key].active)
-    _activeProvider = existModel ?? "none"
-    _activeProvider = activeModel?.length == 1 ? activeModel[0] as InterfaceProvider : _activeProvider
-
-    if(!_multiModelConfigList?.length){
-      const _parameter = await getParameter()
-      localStorage.setItem("ConfigParameter", JSON.stringify(_parameter))
+    if (settings.groups.length === 0) {
+      const rawConfig = intoRawModelConfigWithQuery(settings, getGroupTerm(group), getModelTerm(group.models[0]))
+      if (rawConfig) {
+        writeRawConfig(rawConfig)
+      }
     }
 
-    return await saveAllConfig({ providerConfigs: compressedData, activeProvider: _activeProvider as InterfaceProvider })
-  }
+    reset()
+  }, [getGroups, reset, setSettings, getLatestBuffer, settings, writeRawConfig])
 
   return (
     <context.Provider value={{
-      multiModelConfigList,
-      setMultiModelConfigList,
-      parameter,
-      setParameter,
-      currentIndex,
-      setCurrentIndex,
-      listOptions,
-      setListOptions,
-      fetchListOptions,
-      prepareModelConfig,
-      saveConfig
+      buffer: getLatestBuffer(),
+      getLatestBuffer,
+      reset,
+      flush,
+      verifyKey,
+      writeGroupBuffer,
+      writeModelsBuffer,
+      writeGroupBufferWithFields,
+      writeModelsBufferWithModelNames,
+      pushModelBufferWithModelNames,
+      isGroupExist,
+      groupToFields,
+      fetchModels,
+      modelToBaseModel,
     }}>
       {children}
     </context.Provider>

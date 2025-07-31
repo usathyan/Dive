@@ -1,8 +1,8 @@
-// @ts-ignore
+// @ts-nocheck
 import jsonlint from "jsonlint-mod"
 import React, { useEffect, useState, useRef, useMemo, useCallback, memo } from "react"
 import { useTranslation } from "react-i18next"
-import { useAtomValue, useSetAtom } from "jotai"
+import { useAtom, useAtomValue, useSetAtom } from "jotai"
 import { showToastAtom } from "../../atoms/toastState"
 import CodeMirror, { EditorView } from "@uiw/react-codemirror"
 import { json } from "@codemirror/lang-json"
@@ -10,18 +10,31 @@ import { linter, lintGutter } from "@codemirror/lint"
 import { systemThemeAtom, themeAtom } from "../../atoms/themeState"
 import { closeOverlayAtom } from "../../atoms/layerState"
 import Switch from "../../components/Switch"
-import { loadToolsAtom, Tool, toolsAtom } from "../../atoms/toolState"
+import { loadMcpConfigAtom, loadToolsAtom, MCPConfig, mcpConfigAtom, Tool, toolsAtom, installToolBufferAtom } from "../../atoms/toolState"
 import Tooltip from "../../components/Tooltip"
 import PopupConfirm from "../../components/PopupConfirm"
 import Dropdown from "../../components/DropDown"
+import { imgPrefix } from "../../ipc"
+import OAPServerList from "./Model/Popup/OAPServerList"
+import Tabs from "../../components/Tabs"
+import { OAPMCPServer } from "../../../types/oap"
+import { isLoggedInOAPAtom, loadOapToolsAtom, oapToolsAtom } from "../../atoms/oapState"
+import { OAP_ROOT_URL } from "../../../shared/oap"
+import { openUrl } from "../../ipc/util"
+import { oapApplyMCPServer } from "../../ipc"
+import cloneDeep from "lodash/cloneDeep"
 
 interface ToolsCache {
   [key: string]: {
+    type: "oap" | "local"
+    oapId?: string
+    plan?: string
     description: string
     icon?: string
     subTools: {
       name: string
       description: string
+      enabled: boolean
     }[]
     disabled: boolean
   }
@@ -39,8 +52,9 @@ const ToolLog = memo(({ toolLog }: { toolLog: string }) => {
 
 const Tools = () => {
   const { t } = useTranslation()
-  const tools = useAtomValue(toolsAtom)
-  const [mcpConfig, setMcpConfig] = useState<Record<string, any>>({})
+  const [tools, setTools] = useAtom(toolsAtom)
+  const [oapTools, setOapTools] = useAtom(oapToolsAtom)
+  const [mcpConfig, setMcpConfig] = useAtom(mcpConfigAtom)
   const [isLoading, setIsLoading] = useState(false)
   const showToast = useSetAtom(showToastAtom)
   const closeOverlay = useSetAtom(closeOverlayAtom)
@@ -50,18 +64,56 @@ const Tools = () => {
   const [showMcpEditPopup, setShowMcpEditPopup] = useState(false)
   const [showMcpAddPopup, setShowMcpAddPopup] = useState(false)
   const [showMcpEditJsonPopup, setShowMcpEditJsonPopup] = useState(false)
+  const [showOapMcpPopup, setShowOapMcpPopup] = useState(false)
   const [currentMcp, setCurrentMcp] = useState<string>("")
   const abortControllerRef = useRef<AbortController | null>(null)
   const [toolLog, setToolLog] = useState<LogType[]>([])
+  const [toolType, setToolType] = useState<"all" | "oap" | "local">("all")
+  const isLoggedInOAP = useAtomValue(isLoggedInOAPAtom)
+  const loadMcpConfig = useSetAtom(loadMcpConfigAtom)
+  const loadOapTools = useSetAtom(loadOapToolsAtom)
+  const [isResort, setIsResort] = useState(true)
+  const sortedConfigOrderRef = useRef<string[]>([])
+  const [expandedSections, setExpandedSections] = useState<string[]>([])
+  const [installToolBuffer, setInstallToolBuffer] = useAtom(installToolBufferAtom)
 
+  // consume install tool buffer
   useEffect(() => {
-    const cachedTools = localStorage.getItem("toolsCache")
-    if (cachedTools) {
-      toolsCacheRef.current = JSON.parse(cachedTools)
+    if (!installToolBuffer.length) {
+      return
     }
 
-    fetchTools()
-    fetchMCPConfig()
+    const cfg = cloneDeep(mcpConfig.mcpServers)
+    const install = ({ name, config }: { name: string, config: Record<string, MCP> }) => {
+      if (name in cfg) {
+        cfg[name] = {
+          ...mcpConfig.mcpServers[name],
+          enabled: true,
+        }
+
+        return
+      }
+
+      cfg[name] = {
+        ...config,
+        enabled: true,
+      }
+    }
+
+    installToolBuffer.forEach(install)
+    setInstallToolBuffer([])
+    handleConfigSubmit({ mcpServers: cfg })
+  }, [installToolBuffer.length])
+
+  useEffect(() => {
+    (async () => {
+      const cachedTools = localStorage.getItem("toolsCache")
+      if (cachedTools) {
+        toolsCacheRef.current = JSON.parse(cachedTools)
+      }
+
+      await updateToolsCache()
+    })()
 
     return () => {
       if (abortControllerRef.current) {
@@ -70,38 +122,40 @@ const Tools = () => {
     }
   }, [showMcpEditPopup, showMcpAddPopup, showMcpEditJsonPopup])
 
-  const fetchTools = async () => {
-    try {
-      const data = await loadTools()
+  const isOapTool = (toolName: string) => {
+    return oapTools?.find(oapTool => oapTool.name === toolName) ? true : false
+  }
 
-      if (data.success) {
-        const newCache: ToolsCache = {}
-        data.tools.forEach((tool: Tool) => {
-          newCache[tool.name] = {
-            description: tool.description || "",
-            icon: tool.icon,
-            subTools: tool.tools?.map(subTool => ({
-              name: subTool.name,
-              description: subTool.description || ""
-            })) || [],
-            disabled: tool.error ? true : false
-          }
-        })
+  const updateToolsCache = async () => {
+    await loadTools()
 
-        toolsCacheRef.current = {...toolsCacheRef.current, ...newCache}
-        localStorage.setItem("toolsCache", JSON.stringify(toolsCacheRef.current))
-      } else {
-        showToast({
-          message: data.message || t("tools.fetchFailed"),
-          type: "error"
-        })
-      }
-    } catch (error) {
-      showToast({
-        message: error instanceof Error ? error.message : t("tools.fetchFailed"),
-        type: "error"
+    let _oapTools: OAPMCPServer[] = []
+    setOapTools((oapTools) => {
+      _oapTools = oapTools
+      return oapTools
+    })
+
+    const newCache: ToolsCache = {}
+    setTools(prevTools => {
+      prevTools.forEach((tool: Tool) => {
+        newCache[tool.name] = {
+          type: _oapTools && _oapTools.find(oapTool => oapTool.name === tool.name) ? "oap" : "local",
+          plan: _oapTools && _oapTools.find(oapTool => oapTool.name === tool.name)?.plan,
+          description: tool.description || "",
+          icon: tool.icon,
+          subTools: tool.tools?.map(subTool => ({
+            name: subTool.name,
+            description: subTool.description || "",
+            enabled: subTool.enabled
+          })) || [],
+          disabled: tool.error ? true : false
+        }
       })
-    }
+
+      toolsCacheRef.current = {...toolsCacheRef.current, ...newCache}
+      localStorage.setItem("toolsCache", JSON.stringify(toolsCacheRef.current))
+      return prevTools
+    })
   }
 
   const updateMCPConfig = async (newConfig: Record<string, any> | string, force = false) => {
@@ -136,6 +190,10 @@ const Tools = () => {
       if (!("enabled" in config.mcpServers[key])) {
         config.mcpServers[key].enabled = true
       }
+
+      if (!("exclude_tools" in config.mcpServers[key])) {
+        config.mcpServers[key].exclude_tools = []
+      }
     })
 
     return await fetch(`/api/config/mcpserver${force ? "?force=1" : ""}`, {
@@ -164,26 +222,6 @@ const Tools = () => {
       })
   }
 
-  const fetchMCPConfig = async () => {
-    try {
-      const response = await fetch("/api/config/mcpserver")
-      const data = await response.json()
-      if (data.success) {
-        setMcpConfig(data.config || {})
-      } else {
-        showToast({
-          message: data.message || t("tools.configFetchFailed"),
-          type: "error"
-        })
-      }
-    } catch (error) {
-      showToast({
-        message: error instanceof Error ? error.message : t("tools.configFetchFailed"),
-        type: "error"
-      })
-    }
-  }
-
   const handleUpdateConfigResponse = (data: { errors: { error: string; serverName: string }[] }, isShowToast = false) => {
     if (data.errors && data.errors.length && Array.isArray(data.errors)) {
       data.errors.forEach(({ error, serverName }: { error: string; serverName: string }) => {
@@ -196,7 +234,9 @@ const Tools = () => {
         }
         setMcpConfig(prevConfig => {
           const newConfig = {...prevConfig}
-          newConfig.mcpServers[serverName].disabled = true
+          if((newConfig.mcpServers as Record<string, any>)[serverName]) {
+            (newConfig.mcpServers as Record<string, any>)[serverName].disabled = true
+          }
           return newConfig
         })
       })
@@ -208,15 +248,19 @@ const Tools = () => {
     }
   }
 
-  const handleConfigSubmit = async (newConfig: Record<string, any>) => {
+  const handleConfigSubmit = async (newConfig: {mcpServers: MCPConfig}) => {
+    setIsLoading(true)
     try {
-      const filledConfig = await window.ipcRenderer.fillPathToConfig(JSON.stringify(newConfig))
+      // const filledConfig = await window.ipcRenderer.fillPathToConfig(JSON.stringify(newConfig))
+      const filledConfig = { ...newConfig }
       const data = await updateMCPConfig(filledConfig)
-      if (data.errors && Array.isArray(data.errors) && data.errors.length) {
+      if (data?.errors && Array.isArray(data.errors) && data.errors.length) {
         data.errors
           .map((e: any) => e.serverName)
           .forEach((serverName: string) => {
-            newConfig.mcpServers[serverName].disabled = true
+            if(newConfig.mcpServers[serverName]) {
+              newConfig.mcpServers[serverName].disabled = true
+            }
           })
 
         // reset enable
@@ -233,12 +277,14 @@ const Tools = () => {
             })
           })
       }
-      if (data.success) {
+      if (data?.success) {
         setMcpConfig(newConfig)
         setShowMcpEditJsonPopup(false)
         setShowMcpEditPopup(false)
-        fetchTools()
+        await loadMcpConfig()
+        await updateToolsCache()
         handleUpdateConfigResponse(data)
+        setIsResort(true)
       }
     } catch (error) {
       console.error("Failed to update MCP config:", error)
@@ -248,6 +294,8 @@ const Tools = () => {
       })
       setShowMcpEditJsonPopup(false)
       setShowMcpEditPopup(false)
+    } finally {
+      setIsLoading(false)
     }
   }
 
@@ -257,19 +305,33 @@ const Tools = () => {
   }
 
   const deleteTool = async (toolName: string) => {
+    setIsLoading(true)
+    if(isOapTool(toolName)) {
+      await oapApplyMCPServer(oapTools.filter(oapTool => oapTool.name !== toolName).map(oapTool => oapTool.id))
+    }
     const newConfig = JSON.parse(JSON.stringify(mcpConfig))
     delete newConfig.mcpServers[toolName]
+    await fetch("/api/plugins/oap-platform/config/refresh", {
+      method: "POST",
+    })
+    await loadOapTools()
+    await updateToolsCache()
     await updateMCPConfig(newConfig)
     setMcpConfig(newConfig)
-    await fetchTools()
+    setIsResort(true)
+    setIsLoading(false)
   }
 
   const deleteAllTools = async () => {
+    setIsLoading(true)
     const newConfig = JSON.parse(JSON.stringify(mcpConfig))
     newConfig.mcpServers = {}
     await updateMCPConfig(newConfig)
     setMcpConfig(newConfig)
-    await fetchTools()
+    await loadOapTools()
+    await updateToolsCache()
+    setIsResort(true)
+    setIsLoading(false)
   }
 
   const toggleTool = async (tool: Tool) => {
@@ -284,7 +346,9 @@ const Tools = () => {
         data.errors
           .map((e: any) => e.serverName)
           .forEach((serverName: string) => {
-            newConfig.mcpServers[serverName].disabled = true
+            if(newConfig.mcpServers[serverName]) {
+              newConfig.mcpServers[serverName].disabled = true
+            }
           })
 
         // reset enable
@@ -305,7 +369,8 @@ const Tools = () => {
 
       if (data.success) {
         setMcpConfig(newConfig)
-        await fetchTools()
+        await loadOapTools()
+        await updateToolsCache()
         handleUpdateConfigResponse(data, false)
       }
     } catch (error) {
@@ -318,17 +383,45 @@ const Tools = () => {
     }
   }
 
-  const toggleToolSection = (index: number) => {
-    const toolElement = document.getElementById(`tool-${index}`)
-    toolElement?.classList.toggle("expanded")
+  const toggleToolSection = (name: string) => {
+    setExpandedSections(prev =>
+      prev.includes(name)
+        ? prev.filter(n => n !== name)
+        : [...prev, name]
+    )
+  }
+
+  const toggleSubTool = async (toolName: string, subToolName: string, action: "add" | "remove") => {
+    setIsLoading(true)
+    const newConfig = JSON.parse(JSON.stringify(mcpConfig))
+    if(action === "add" && !newConfig.mcpServers[toolName].exclude_tools?.includes(subToolName)) {
+      if(toolsCacheRef.current[toolName].subTools?.length === 1) {
+        newConfig.mcpServers[toolName].enabled = false
+      } else {
+        newConfig.mcpServers[toolName].exclude_tools = [...(newConfig.mcpServers[toolName].exclude_tools || []), subToolName]
+        if(newConfig.mcpServers[toolName].exclude_tools.length === toolsCacheRef.current[toolName].subTools.length) {
+          newConfig.mcpServers[toolName].enabled = false
+        }
+      }
+    } else {
+      newConfig.mcpServers[toolName].enabled = true
+      newConfig.mcpServers[toolName].exclude_tools = newConfig.mcpServers[toolName].exclude_tools?.filter((tool: string) => tool !== subToolName)
+    }
+    setMcpConfig(newConfig)
+    await updateMCPConfig(newConfig)
+    await loadTools()
+    setIsLoading(false)
   }
 
   const handleReloadMCPServers = async () => {
     setIsLoading(true)
-    const disabledTools = Object.keys(toolsCacheRef.current).filter(tool => toolsCacheRef.current[tool].disabled && mcpConfig?.mcpServers?.[tool]?.enabled)
+    await fetch("/api/plugins/oap-platform/config/refresh", {
+      method: "POST",
+    })
     await updateMCPConfig(mcpConfig, true)
-    await fetchTools()
-    const newDisabledTools = Object.keys(toolsCacheRef.current).filter(tool => toolsCacheRef.current[tool].disabled && mcpConfig?.mcpServers?.[tool]?.enabled)
+    const mcpServers = (mcpConfig.mcpServers as Record<string, any>)
+    const disabledTools = Object.keys(toolsCacheRef.current).filter(tool => toolsCacheRef.current[tool]?.disabled && mcpServers[tool]?.enabled)
+    const newDisabledTools = Object.keys(toolsCacheRef.current).filter(tool => toolsCacheRef.current[tool]?.disabled && mcpServers[tool]?.enabled)
     const hasToolsEnabled = disabledTools.some(tool => !newDisabledTools.includes(tool))
 
     if (hasToolsEnabled) {
@@ -353,6 +446,10 @@ const Tools = () => {
         })
       }
     }
+    await loadOapTools()
+    await loadMcpConfig()
+    await updateToolsCache()
+    setIsResort(true)
     setIsLoading(false)
   }
 
@@ -379,7 +476,7 @@ const Tools = () => {
 
     mergedConfig.mcpServers = configKeys.reduce((acc, key) => {
       if (("command" in newConfig[key] && "args" in newConfig[key]) || "url" in newConfig[key]) {
-        acc[key] = { ...(mergedConfig.mcpServers[key] || {}), ...newConfig[key] }
+        acc[key] = { ...(mergedConfig.mcpServers?.[key as any] as any || {}), ...newConfig[key] }
       }
       return acc
     }, mergedConfig.mcpServers)
@@ -441,18 +538,49 @@ const Tools = () => {
 
   const sortedTools = useMemo(() => {
     const configOrder = mcpConfig.mcpServers ? Object.keys(mcpConfig.mcpServers) : []
-    const toolMap = new Map(tools.map(tool => [tool.name, tool]))
+    const toolSort = (a: string, b: string) => {
+      const aIsOap = oapTools?.find(oapTool => oapTool.name === a)
+      const aEnabled = tools.find(tool => tool.name === a)?.enabled
+      const bEnabled = tools.find(tool => tool.name === b)?.enabled
+      if (isResort) {
+        if (aEnabled && !bEnabled)
+          return -1
+        if (!aEnabled && bEnabled)
+          return 1
+        return aIsOap ? -1 : 1
+      } else {
+        const aIndex = sortedConfigOrderRef.current.indexOf(a)
+        const bIndex = sortedConfigOrderRef.current.indexOf(b)
+        return aIndex - bIndex
+      }
 
-    return configOrder.map(name => {
+      return 0
+    }
+
+    const sortedConfigOrder = configOrder.sort(toolSort)
+    if(isResort) {
+      sortedConfigOrderRef.current = sortedConfigOrder
+    }
+    setIsResort(false)
+    const toolMap = new Map(
+      tools.filter(tool => !(isOapTool(tool.name) && !isLoggedInOAP))
+          .map(tool => [tool.name, tool])
+    )
+
+    const configTools = sortedConfigOrder.map(name => {
       if (toolMap.has(name)) {
         const tool = toolMap.get(name)!
         return {
           ...tool,
-          disabled: Boolean(tool?.error)
+          disabled: Boolean(tool?.error),
+          type: isOapTool(name) ? "oap" : "local" as const,
+          plan: isOapTool(name) ? oapTools?.find(oapTool => oapTool.name === name)?.plan : undefined,
+          oapId: isOapTool(name) ? oapTools?.find(oapTool => oapTool.name === name)?.id : undefined,
         }
       }
 
       const cachedTool = toolsCacheRef.current[name]
+      const mcpServers = (mcpConfig.mcpServers as Record<string, any>)
       if (cachedTool) {
         return {
           name,
@@ -462,10 +590,13 @@ const Tools = () => {
           tools: cachedTool.subTools.map(subTool => ({
             name: subTool.name,
             description: subTool.description,
-            enabled: false,
+            enabled: subTool.enabled,
           })),
-          error: mcpConfig.mcpServers[name]?.error,
-          disabled: Boolean(mcpConfig.mcpServers[name]?.disabled || mcpConfig.mcpServers[name]?.error),
+          error: mcpServers[name]?.error,
+          disabled: Boolean(mcpServers[name]?.disabled || mcpServers[name]?.error),
+          type: isOapTool(name) ? "oap" : "local" as const,
+          plan: isOapTool(name) ? oapTools?.find(oapTool => oapTool.name === name)?.plan : undefined,
+          oapId: isOapTool(name) ? oapTools?.find(oapTool => oapTool.name === name)?.id : undefined
         }
       }
 
@@ -473,10 +604,89 @@ const Tools = () => {
         name,
         description: "",
         enabled: false,
-        disabled: Boolean(mcpConfig.mcpServers[name]?.disabled || mcpConfig.mcpServers[name]?.error),
+        disabled: Boolean(mcpServers[name]?.disabled || mcpServers[name]?.error),
+        type: isOapTool(name) ? "oap" : "local" as const,
+        plan: isOapTool(name) ? oapTools?.find(oapTool => oapTool.name === name)?.plan : undefined,
+        oapId: isOapTool(name) ? oapTools?.find(oapTool => oapTool.name === name)?.id : undefined
       }
     })
-  }, [tools, mcpConfig.mcpServers])
+
+    return [...configTools].filter(tool => toolType === "all" || tool.type === toolType)
+  }, [tools, oapTools, mcpConfig.mcpServers, toolType])
+
+  const toolMenu = (tool: Tool & { type: string }) => {
+    return [
+      { label:
+          <div className="tool-edit-menu-item">
+            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 17 16" fill="none">
+              <path d="M3.83333 14C3.46667 14 3.15278 13.8694 2.89167 13.6083C2.63056 13.3472 2.5 13.0333 2.5 12.6667V3.33333C2.5 2.96667 2.63056 2.65278 2.89167 2.39167C3.15278 2.13056 3.46667 2 3.83333 2H7.83333C8.02222 2 8.18056 2.06389 8.30833 2.19167C8.43611 2.31944 8.5 2.47778 8.5 2.66667C8.5 2.85556 8.43611 3.01389 8.30833 3.14167C8.18056 3.26944 8.02222 3.33333 7.83333 3.33333H3.83333V12.6667H13.1667V8.66667C13.1667 8.47778 13.2306 8.31944 13.3583 8.19167C13.4861 8.06389 13.6444 8 13.8333 8C14.0222 8 14.1806 8.06389 14.3083 8.19167C14.4361 8.31944 14.5 8.47778 14.5 8.66667V12.6667C14.5 13.0333 14.3694 13.3472 14.1083 13.6083C13.8472 13.8694 13.5333 14 13.1667 14H3.83333ZM13.1667 4.26667L7.43333 10C7.31111 10.1222 7.15556 10.1833 6.96667 10.1833C6.77778 10.1833 6.62222 10.1222 6.5 10C6.37778 9.87778 6.31667 9.72222 6.31667 9.53333C6.31667 9.34444 6.37778 9.18889 6.5 9.06667L12.2333 3.33333H10.5C10.3111 3.33333 10.1528 3.26944 10.025 3.14167C9.89722 3.01389 9.83333 2.85556 9.83333 2.66667C9.83333 2.47778 9.89722 2.31944 10.025 2.19167C10.1528 2.06389 10.3111 2 10.5 2H13.8333C14.0222 2 14.1806 2.06389 14.3083 2.19167C14.4361 2.31944 14.5 2.47778 14.5 2.66667V6C14.5 6.18889 14.4361 6.34722 14.3083 6.475C14.1806 6.60278 14.0222 6.66667 13.8333 6.66667C13.6444 6.66667 13.4861 6.60278 13.3583 6.475C13.2306 6.34722 13.1667 6.18889 13.1667 6V4.26667Z" fill="currentColor"/>
+            </svg>
+            {t("tools.toolMenu4")}
+          </div>,
+        onClick: () => {
+          openUrl(`${OAP_ROOT_URL}/mcp/${tool.oapId}`)
+        },
+        active: isOapTool(tool.name)
+      },
+      { label:
+          <div className="tool-edit-menu-item">
+            <svg width="22" height="22" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <g clipPath="url(#clip0_6_586)">
+                <path d="M11 5C9.41775 5 7.87103 5.46919 6.55544 6.34824C5.23985 7.22729 4.21446 8.47672 3.60896 9.93853C3.00346 11.4003 2.84504 13.0089 3.15372 14.5607C3.4624 16.1126 4.22433 17.538 5.34315 18.6569C6.46197 19.7757 7.88743 20.5376 9.43928 20.8463C10.9911 21.155 12.5997 20.9965 14.0615 20.391C15.5233 19.7855 16.7727 18.7602 17.6518 17.4446C18.5308 16.129 19 14.5823 19 13" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+                <path d="M16.4382 5.40544C16.7147 5.20587 16.7147 4.79413 16.4382 4.59456L11.7926 1.24188C11.4619 1.00323 11 1.23952 11 1.64733L11 8.35267C11 8.76048 11.4619 8.99676 11.7926 8.75812L16.4382 5.40544Z" fill="currentColor"/>
+              </g>
+              <defs>
+                <clipPath id="clip0_6_586">
+                <rect width="22" height="22" fill="currentColor" transform="matrix(-1 0 0 1 22 0)"/>
+                </clipPath>
+              </defs>
+            </svg>
+            {t("tools.toolMenu3")}
+          </div>,
+        onClick: () => {
+          handleReloadMCPServers()
+        },
+        active: tool.enabled && tool.disabled
+      },
+      { label:
+          <div className="tool-edit-menu-item">
+            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 22 22" fill="none">
+              <path d="M3 13.6684V18.9998H19" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+              <path d="M2.99991 13.5986L12.5235 4.12082C13.9997 2.65181 16.3929 2.65181 17.869 4.12082V4.12082C19.3452 5.58983 19.3452 7.97157 17.869 9.44058L8.34542 18.9183" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+            {t("tools.toolMenu2")}
+          </div>,
+        onClick: () => {
+          setCurrentMcp(tool.name)
+          setShowMcpEditPopup(true)
+        },
+        active: tool.type !== "oap"
+      },
+      { label:
+          <div className="tool-edit-menu-item">
+            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 22 22" fill="none">
+              <path d="M3 5H19" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+              <path d="M17 7V18.2373C16.9764 18.7259 16.7527 19.1855 16.3778 19.5156C16.0029 19.8457 15.5075 20.0192 15 19.9983H7C6.49249 20.0192 5.99707 19.8457 5.62221 19.5156C5.24735 19.1855 5.02361 18.7259 5 18.2373V7" stroke="currentColor" strokeWidth="2" strokeLinejoin="round"/>
+              <path d="M8 10.04L14 16.04" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round"/>
+              <path d="M14 10.04L8 16.04" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round"/>
+              <path d="M13.5 2H8.5C8.22386 2 8 2.22386 8 2.5V4.5C8 4.77614 8.22386 5 8.5 5H13.5C13.7761 5 14 4.77614 14 4.5V2.5C14 2.22386 13.7761 2 13.5 2Z" stroke="currentColor" strokeWidth="2" strokeLinejoin="round"/>
+            </svg>
+            {t("tools.toolMenu1")}
+          </div>,
+        onClick: () => {
+          setCurrentMcp(tool.name)
+          setShowDeletePopup(true)
+        },
+        active: true
+      }
+    ].filter(option => option.active)
+  }
+
+  useEffect(() => {
+    setExpandedSections(prev =>
+      prev.filter(name => sortedTools.some(tool => tool.name === name))
+    )
+  }, [sortedTools])
 
   return (
     <div className="tools-page overlay-page">
@@ -496,6 +706,20 @@ const Tools = () => {
             <p className="subtitle">{t("tools.subtitle")}</p>
           </div>
           <div className="header-actions">
+            {isLoggedInOAP &&
+              <Tooltip content={t("tools.addOapMcp.alt")}>
+                <button
+                  className="edit-btn"
+                  onClick={() => {
+                    setShowOapMcpPopup(true)
+                  }}
+                >
+                  <img className="oap-logo" src={`${imgPrefix}logo_oap.png`} alt="info" />
+                  OAP MCP Servers
+                </button>
+              </Tooltip>
+            }
+
             <Tooltip content={t("tools.addServer.alt")}>
               <button
                 className="add-btn"
@@ -515,9 +739,10 @@ const Tools = () => {
               <button
                 className="edit-btn"
                 onClick={() => {
-                  setCurrentMcp(sortedTools[0].name)
+                  setCurrentMcp(sortedTools.find(tool => tool.type === "local")?.name || "")
                   setShowMcpEditPopup(true)
                 }}
+                disabled={sortedTools.find(tool => tool.type === "local") ? false : true}
               >
                 {t("tools.editConfig")}
               </button>
@@ -528,7 +753,7 @@ const Tools = () => {
                 className="reload-btn"
                 onClick={() => handleReloadMCPServers()}
               >
-                <img src={"img://reload.svg"} />
+                <img src={`${imgPrefix}reload.svg`} />
                 {t("tools.reloadMCPServers")}
               </button>
             </Tooltip>
@@ -536,139 +761,153 @@ const Tools = () => {
         </div>
 
         <div className="tools-list">
+          {isLoggedInOAP &&
+            <Tabs
+              className="tools-type-tabs"
+              tabs={[{ label: t("tools.tabAll"), value: "all" }, { label: t("tools.tabOap"), value: "oap" }, { label: t("tools.tabLocal"), value: "local" }]}
+              value={toolType}
+              onChange={setToolType}
+            />
+          }
+          {sortedTools.length === 0 && !isLoading &&
+            <div className="no-oap-result-container">
+              <div className="cloud-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="41" height="41" viewBox="0 0 41 41" fill="none">
+                  <path d="M24.4 40.3C23.9 40.5667 23.3917 40.6083 22.875 40.425C22.3583 40.2417 21.9667 39.9 21.7 39.4L18.7 33.4C18.4333 32.9 18.3917 32.3917 18.575 31.875C18.7583 31.3583 19.1 30.9667 19.6 30.7C20.1 30.4333 20.6083 30.3917 21.125 30.575C21.6417 30.7583 22.0333 31.1 22.3 31.6L25.3 37.6C25.5667 38.1 25.6083 38.6083 25.425 39.125C25.2417 39.6417 24.9 40.0333 24.4 40.3ZM36.4 40.3C35.9 40.5667 35.3917 40.6083 34.875 40.425C34.3583 40.2417 33.9667 39.9 33.7 39.4L30.7 33.4C30.4333 32.9 30.3917 32.3917 30.575 31.875C30.7583 31.3583 31.1 30.9667 31.6 30.7C32.1 30.4333 32.6083 30.3917 33.125 30.575C33.6417 30.7583 34.0333 31.1 34.3 31.6L37.3 37.6C37.5667 38.1 37.6083 38.6083 37.425 39.125C37.2417 39.6417 36.9 40.0333 36.4 40.3ZM12.4 40.3C11.9 40.5667 11.3917 40.6083 10.875 40.425C10.3583 40.2417 9.96667 39.9 9.7 39.4L6.7 33.4C6.43333 32.9 6.39167 32.3917 6.575 31.875C6.75833 31.3583 7.1 30.9667 7.6 30.7C8.1 30.4333 8.60833 30.3917 9.125 30.575C9.64167 30.7583 10.0333 31.1 10.3 31.6L13.3 37.6C13.5667 38.1 13.6083 38.6083 13.425 39.125C13.2417 39.6417 12.9 40.0333 12.4 40.3ZM11.5 28.5C8.46667 28.5 5.875 27.425 3.725 25.275C1.575 23.125 0.5 20.5333 0.5 17.5C0.5 14.7333 1.41667 12.3167 3.25 10.25C5.08333 8.18333 7.35 6.96667 10.05 6.6C11.1167 4.7 12.575 3.20833 14.425 2.125C16.275 1.04167 18.3 0.5 20.5 0.5C23.5 0.5 26.1083 1.45833 28.325 3.375C30.5417 5.29167 31.8833 7.68333 32.35 10.55C34.65 10.75 36.5833 11.7 38.15 13.4C39.7167 15.1 40.5 17.1333 40.5 19.5C40.5 22 39.625 24.125 37.875 25.875C36.125 27.625 34 28.5 31.5 28.5H11.5ZM11.5 24.5H31.5C32.9 24.5 34.0833 24.0167 35.05 23.05C36.0167 22.0833 36.5 20.9 36.5 19.5C36.5 18.1 36.0167 16.9167 35.05 15.95C34.0833 14.9833 32.9 14.5 31.5 14.5H28.5V12.5C28.5 10.3 27.7167 8.41667 26.15 6.85C24.5833 5.28333 22.7 4.5 20.5 4.5C18.9 4.5 17.4417 4.93333 16.125 5.8C14.8083 6.66667 13.8167 7.83333 13.15 9.3L12.65 10.5H11.4C9.5 10.5667 7.875 11.275 6.525 12.625C5.175 13.975 4.5 15.6 4.5 17.5C4.5 19.4333 5.18333 21.0833 6.55 22.45C7.91667 23.8167 9.56667 24.5 11.5 24.5Z" fill="currentColor"/>
+                </svg>
+              </div>
+              <div>
+                <div className="no-oap-result-title">
+                  {t("tools.no_tool_title")}
+                </div>
+                <div className="no-oap-result-message">
+                  {isLoggedInOAP ? t(`tools.no_oap_tool_message.${toolType}`) : t("tools.no_tool_message")}
+                </div>
+              </div>
+            </div>
+          }
           {sortedTools.map((tool, index) => (
-            <div key={index} id={`tool-${index}`} onClick={() => toggleToolSection(index)} className={`tool-section ${tool.disabled ? "disabled" : ""} ${tool.enabled ? "enabled" : ""}`}>
-              <div className="tool-header">
-                <div className="tool-header-content">
-                  <div className="tool-status-light">
-                    {!tool.disabled && tool.enabled &&
-                      <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" width="16" height="16">
-                        <circle cx="50" cy="50" r="45" fill="none" stroke="#52c41a" strokeWidth="4" />
-                        <circle cx="50" cy="50" r="25" fill="#52c41a" />
-                      </svg>}
-                    {tool.disabled && tool.enabled &&
-                      <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" width="16" height="16">
-                        <circle cx="50" cy="50" r="45" fill="none" stroke="#ff3333" strokeWidth="4" />
-                        <circle cx="50" cy="50" r="25" fill="#ff0000" />
-                      </svg>}
-                  </div>
-                  <svg width="20" height="20" viewBox="0 0 24 24">
-                    <path d="M22.7 19l-9.1-9.1c.9-2.3.4-5-1.5-6.9-2-2-5-2.4-7.4-1.3L9 6 6 9 1.6 4.7C.4 7.1.9 10.1 2.9 12.1c1.9 1.9 4.6 2.4 6.9 1.5l9.1 9.1c.4.4 1 .4 1.4 0l2.3-2.3c.5-.4.5-1.1.1-1.4z"/>
-                  </svg>
-                  <span className="tool-name">{tool.name}</span>
-                </div>
-                <div onClick={(e) => e.stopPropagation()}>
-                  <Dropdown
-                    options={[
-                      { label:
-                          <div className="tool-edit-menu-item">
-                            <svg width="22" height="22" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg">
-                              <g clipPath="url(#clip0_6_586)">
-                                <path d="M11 5C9.41775 5 7.87103 5.46919 6.55544 6.34824C5.23985 7.22729 4.21446 8.47672 3.60896 9.93853C3.00346 11.4003 2.84504 13.0089 3.15372 14.5607C3.4624 16.1126 4.22433 17.538 5.34315 18.6569C6.46197 19.7757 7.88743 20.5376 9.43928 20.8463C10.9911 21.155 12.5997 20.9965 14.0615 20.391C15.5233 19.7855 16.7727 18.7602 17.6518 17.4446C18.5308 16.129 19 14.5823 19 13" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
-                                <path d="M16.4382 5.40544C16.7147 5.20587 16.7147 4.79413 16.4382 4.59456L11.7926 1.24188C11.4619 1.00323 11 1.23952 11 1.64733L11 8.35267C11 8.76048 11.4619 8.99676 11.7926 8.75812L16.4382 5.40544Z" fill="currentColor"/>
-                              </g>
-                              <defs>
-                                <clipPath id="clip0_6_586">
-                                <rect width="22" height="22" fill="currentColor" transform="matrix(-1 0 0 1 22 0)"/>
-                                </clipPath>
-                              </defs>
-                            </svg>
-                            {t("tools.toolMenu3")}
-                          </div>,
-                        onClick: () => {
-                          handleReloadMCPServers()
-                        },
-                        active: tool.enabled && tool.disabled
-                      },
-                      { label:
-                          <div className="tool-edit-menu-item">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 22 22" fill="none">
-                              <path d="M3 13.6684V18.9998H19" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                              <path d="M2.99991 13.5986L12.5235 4.12082C13.9997 2.65181 16.3929 2.65181 17.869 4.12082V4.12082C19.3452 5.58983 19.3452 7.97157 17.869 9.44058L8.34542 18.9183" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                            </svg>
-                            {t("tools.toolMenu2")}
-                          </div>,
-                        onClick: () => {
-                          setCurrentMcp(tool.name)
-                          setShowMcpEditPopup(true)
-                        },
-                        active: true
-                      },
-                      { label:
-                          <div className="tool-edit-menu-item">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 22 22" fill="none">
-                              <path d="M3 5H19" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                              <path d="M17 7V18.2373C16.9764 18.7259 16.7527 19.1855 16.3778 19.5156C16.0029 19.8457 15.5075 20.0192 15 19.9983H7C6.49249 20.0192 5.99707 19.8457 5.62221 19.5156C5.24735 19.1855 5.02361 18.7259 5 18.2373V7" stroke="currentColor" strokeWidth="2" strokeLinejoin="round"/>
-                              <path d="M8 10.04L14 16.04" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round"/>
-                              <path d="M14 10.04L8 16.04" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round"/>
-                              <path d="M13.5 2H8.5C8.22386 2 8 2.22386 8 2.5V4.5C8 4.77614 8.22386 5 8.5 5H13.5C13.7761 5 14 4.77614 14 4.5V2.5C14 2.22386 13.7761 2 13.5 2Z" stroke="currentColor" strokeWidth="2" strokeLinejoin="round"/>
-                            </svg>
-                            {t("tools.toolMenu1")}
-                          </div>,
-                        onClick: () => {
-                          setCurrentMcp(tool.name)
-                          setShowDeletePopup(true)
-                        },
-                        active: true
-                      }
-                    ].filter(option => option.active)}
-                  >
-                    <div className="tool-edit-menu">
-                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 22 22" width="25" height="25">
-                        <path fill="currentColor" d="M19 13a2 2 0 1 0 0-4 2 2 0 0 0 0 4ZM11 13a2 2 0 1 0 0-4 2 2 0 0 0 0 4ZM3 13a2 2 0 1 0 0-4 2 2 0 0 0 0 4Z"></path>
+            <div key={tool.name} id={`tool-${index}`} onClick={() => toggleToolSection(tool.name)} className={`tool-section ${tool.disabled ? "disabled" : ""} ${tool.enabled ? "enabled" : ""} ${expandedSections.includes(tool.name) ? "expanded" : ""}`}>
+              <div className="tool-header-container">
+                <div className="tool-header">
+                  <div className="tool-header-content">
+                    <div className="tool-status-light">
+                      {!tool.disabled && tool.enabled &&
+                        <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" width="16" height="16">
+                          <circle cx="50" cy="50" r="45" fill="none" stroke="#52c41a" strokeWidth="4" />
+                          <circle cx="50" cy="50" r="25" fill="#52c41a" />
+                        </svg>}
+                      {tool.disabled && tool.enabled &&
+                        <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" width="16" height="16">
+                          <circle cx="50" cy="50" r="45" fill="none" stroke="#ff3333" strokeWidth="4" />
+                          <circle cx="50" cy="50" r="25" fill="#ff0000" />
+                        </svg>}
+                    </div>
+                    {tool.type === "oap" ?
+                      <img className="oap-logo" src={`${imgPrefix}logo_oap.png`} alt="info" />
+                    :
+                      <svg width="20" height="20" viewBox="0 0 24 24">
+                        <path d="M22.7 19l-9.1-9.1c.9-2.3.4-5-1.5-6.9-2-2-5-2.4-7.4-1.3L9 6 6 9 1.6 4.7C.4 7.1.9 10.1 2.9 12.1c1.9 1.9 4.6 2.4 6.9 1.5l9.1 9.1c.4.4 1 .4 1.4 0l2.3-2.3c.5-.4.5-1.1.1-1.4z"/>
                       </svg>
-                    </div>
-                  </Dropdown>
-                </div>
-                {tool.disabled && tool.enabled && <div className="tool-disabled-label">{t("tools.startFailed")}</div>}
-                {tool.disabled && !tool.enabled && <div className="tool-disabled-label">{t("tools.installFailed")}</div>}
-                <div className="tool-switch-container">
-                  <Switch
-                    checked={tool.enabled}
-                    onChange={() => toggleTool(tool)}
-                  />
-                </div>
-                <span className="tool-toggle">▼</span>
-              </div>
-              <div className="tool-content" onClick={(e) => e.stopPropagation()}>
-                {tool.error ? (
-                  <div className="sub-tool-error">
-                    <svg width="18px" height="18px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2" fill="none"/>
-                      <line x1="12" y1="6" x2="12" y2="14" stroke="currentColor" strokeWidth="2"/>
-                      <circle cx="12" cy="17" r="1.5" fill="currentColor"/>
-                    </svg>
-                    <div className="sub-tool-error-text">
-                      <div className="sub-tool-error-text-title">Error Message</div>
-                      <div className="sub-tool-error-text-content">
-                        <ToolLog toolLog={tool.error} />
-                      </div>
-                    </div>
+                    }
+                    <span className="tool-name">{tool.name}</span>
+                    {isOapTool(tool.name) && tool.oapId &&
+                      <>
+                        <div className={`tool-tag ${tool.plan}`}>
+                          {tool.plan}
+                        </div>
+                        <Tooltip content={t("tools.oapStoreLink.alt")}>
+                          <button className="oap-store-link" onClick={(e) => {
+                            e.stopPropagation()
+                            window.open(`${OAP_ROOT_URL}/mcp/${tool.oapId}`, "_blank")
+                          }}>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 17 16" fill="none">
+                              <path d="M3.83333 14C3.46667 14 3.15278 13.8694 2.89167 13.6083C2.63056 13.3472 2.5 13.0333 2.5 12.6667V3.33333C2.5 2.96667 2.63056 2.65278 2.89167 2.39167C3.15278 2.13056 3.46667 2 3.83333 2H7.83333C8.02222 2 8.18056 2.06389 8.30833 2.19167C8.43611 2.31944 8.5 2.47778 8.5 2.66667C8.5 2.85556 8.43611 3.01389 8.30833 3.14167C8.18056 3.26944 8.02222 3.33333 7.83333 3.33333H3.83333V12.6667H13.1667V8.66667C13.1667 8.47778 13.2306 8.31944 13.3583 8.19167C13.4861 8.06389 13.6444 8 13.8333 8C14.0222 8 14.1806 8.06389 14.3083 8.19167C14.4361 8.31944 14.5 8.47778 14.5 8.66667V12.6667C14.5 13.0333 14.3694 13.3472 14.1083 13.6083C13.8472 13.8694 13.5333 14 13.1667 14H3.83333ZM13.1667 4.26667L7.43333 10C7.31111 10.1222 7.15556 10.1833 6.96667 10.1833C6.77778 10.1833 6.62222 10.1222 6.5 10C6.37778 9.87778 6.31667 9.72222 6.31667 9.53333C6.31667 9.34444 6.37778 9.18889 6.5 9.06667L12.2333 3.33333H10.5C10.3111 3.33333 10.1528 3.26944 10.025 3.14167C9.89722 3.01389 9.83333 2.85556 9.83333 2.66667C9.83333 2.47778 9.89722 2.31944 10.025 2.19167C10.1528 2.06389 10.3111 2 10.5 2H13.8333C14.0222 2 14.1806 2.06389 14.3083 2.19167C14.4361 2.31944 14.5 2.47778 14.5 2.66667V6C14.5 6.18889 14.4361 6.34722 14.3083 6.475C14.1806 6.60278 14.0222 6.66667 13.8333 6.66667C13.6444 6.66667 13.4861 6.60278 13.3583 6.475C13.2306 6.34722 13.1667 6.18889 13.1667 6V4.26667Z" fill="currentColor"/>
+                            </svg>
+                          </button>
+                        </Tooltip>
+                      </>
+                    }
                   </div>
-                ) : (
-                  <>
-                    {tool.description && (
-                      <div className="tool-description">{tool.description}</div>
-                    )}
-                    {tool.tools && (
-                      <div className="sub-tools">
-                        {tool.tools.map((subTool, subIndex) => (
-                          <div key={subIndex} className="sub-tool">
-                            <div className="sub-tool-content">
-                              <div className="sub-tool-name">{subTool.name}</div>
-                              {subTool.description && (
-                                <div className="sub-tool-description">
-                                  {subTool.description}
-                                </div>
-                              )}
-                            </div>
-                          </div>
-                        ))}
+                  <div onClick={(e) => e.stopPropagation()}>
+                    <Dropdown
+                      options={toolMenu(tool)}
+                    >
+                      <div className="tool-edit-menu">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 22 22" width="25" height="25">
+                          <path fill="currentColor" d="M19 13a2 2 0 1 0 0-4 2 2 0 0 0 0 4ZM11 13a2 2 0 1 0 0-4 2 2 0 0 0 0 4ZM3 13a2 2 0 1 0 0-4 2 2 0 0 0 0 4Z"></path>
+                        </svg>
                       </div>
-                    )}
-                  </>
-                )}
+                    </Dropdown>
+                  </div>
+                  {tool.disabled && tool.enabled && <div className="tool-disabled-label">{t("tools.startFailed")}</div>}
+                  {tool.disabled && !tool.enabled && <div className="tool-disabled-label">{t("tools.installFailed")}</div>}
+                  <div className="tool-switch-container">
+                    <Switch
+                      checked={tool.enabled}
+                      onChange={() => toggleTool(tool)}
+                    />
+                  </div>
+                  <span className="tool-toggle">
+                    {(tool.description || (tool.tools?.length ?? 0) > 0 || tool.error) && "▼"}
+                  </span>
+                </div>
+                {!tool.enabled ?
+                  <div className="tool-content-sub-title">
+                    {t("tools.disabledDescription")}
+                  </div>
+                :
+                  (tool.tools && tool.tools.length > 0) ? (
+                    <div className="tool-content-sub-title">
+                      {t("tools.subToolsCount", { count: tool.tools?.filter(subTool => subTool.enabled).length || 0, total: tool.tools?.length || 0 })}
+                    </div>
+                  ) : null
+                }
               </div>
+              {(tool.description || (tool.tools?.length ?? 0) > 0 || tool.error) && (
+                <div className="tool-content">
+                  {tool.error ? (
+                    <div className="sub-tool-error">
+                      <svg width="18px" height="18px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2" fill="none"/>
+                        <line x1="12" y1="6" x2="12" y2="14" stroke="currentColor" strokeWidth="2"/>
+                        <circle cx="12" cy="17" r="1.5" fill="currentColor"/>
+                      </svg>
+                      <div className="sub-tool-error-text">
+                        <div className="sub-tool-error-text-title">Error Message</div>
+                        <div className="sub-tool-error-text-content">{tool.error}</div>
+                      </div>
+                    </div>
+                  ) : (
+                    <>
+                      {tool.description && (
+                        <div className="tool-description">{tool.description}</div>
+                      )}
+                      {tool.tools && tool.tools.length > 0 && (
+                        <div className="sub-tools">
+                          {tool.tools.map((subTool, subIndex) => (
+                            <Tooltip
+                              key={subIndex}
+                              content={subTool.description}
+                              disabled={!subTool.description}
+                              align="start"
+                            >
+                              <div key={subIndex} className={`sub-tool ${(subTool.enabled && tool.enabled) ? "active" : ""}`} onClick={(e) => {
+                                e.stopPropagation()
+                                toggleSubTool(tool.name, subTool.name, (!subTool.enabled || !tool.enabled) ? "remove" : "add")
+                              }}>
+                                <div className="sub-tool-content">
+                                    <div className="sub-tool-name">{subTool.name}</div>
+                                </div>
+                              </div>
+                            </Tooltip>
+                          ))}
+                        </div>
+                      )}
+                    </>
+                  )}
+                </div>
+              )}
             </div>
           ))}
         </div>
@@ -734,6 +973,16 @@ const Tools = () => {
           onSubmit={handleConfigSubmit}
         />
       )}
+
+      {showOapMcpPopup && (
+        <OAPServerList
+          oapTools={oapTools ?? []}
+          onConfirm={handleReloadMCPServers}
+          onCancel={() => {
+            setShowOapMcpPopup(false)
+          }}
+        />
+      )}
     </div>
   )
 }
@@ -763,7 +1012,7 @@ interface mcpEditPopupProps {
   _mcpName?: string
   onDelete?: (toolName: string) => Promise<void>
   onCancel: () => void
-  onSubmit: (config: Record<string, any>) => Promise<void>
+  onSubmit: (config: {mcpServers: MCPConfig}) => Promise<void>
   toolLog?: Array<LogType>
 }
 
@@ -829,7 +1078,9 @@ const McpEditPopup = React.memo(({ _type, _config, _mcpName, onDelete, onCancel,
 
     // edit mode: separate each tool into a single object
     if(typeRef.current === "edit") {
-      Object.keys(newConfig.mcpServers).forEach((mcpName) => {
+      Object.keys(newConfig.mcpServers)
+      .filter((mcpName) => !newConfig.mcpServers[mcpName]?.extraData?.oap)
+      .forEach((mcpName) => {
         const newJson = {
           mcpServers: {
             [mcpName]: newConfig.mcpServers[mcpName]
@@ -872,7 +1123,9 @@ const McpEditPopup = React.memo(({ _type, _config, _mcpName, onDelete, onCancel,
       } else if(Object.keys(newMcpServers).length === 1 && typeRef.current === "add-json") {
         typeRef.current = "add"
       }
-    } catch(e) {}
+    } catch(e) {
+      console.error(e)
+    }
   }, [mcpList, currentMcpIndex, typeRef])
 
   useEffect(() => {
@@ -960,7 +1213,7 @@ const McpEditPopup = React.memo(({ _type, _config, _mcpName, onDelete, onCancel,
         }
       }
       return true
-    } catch(e) {
+    } catch(_e) {
       return false
     }
   }
@@ -970,7 +1223,7 @@ const McpEditPopup = React.memo(({ _type, _config, _mcpName, onDelete, onCancel,
       if (mcpList.some(mcp => mcp.isError))
         return
 
-      const newConfig: Record<string, any> = { "mcpServers": {} }
+      const newConfig: {mcpServers: MCPConfig} = { mcpServers: {} }
       if(typeRef.current.includes("json")) {
         let processedJsonString = mcpList[0].jsonString.trim()
         if (!processedJsonString.startsWith("{")) {
@@ -1302,7 +1555,7 @@ const McpEditPopup = React.memo(({ _type, _config, _mcpName, onDelete, onCancel,
           }
         }
         return true
-      } catch(e) {
+      } catch(_e) {
         return false
       }
     }
@@ -1474,7 +1727,7 @@ const McpEditPopup = React.memo(({ _type, _config, _mcpName, onDelete, onCancel,
             return newMcpList
           })
         }
-      } catch(e) {
+      } catch(_e) {
         setMcpList(prev => {
           const newMcpList = [...prev]
           newMcpList[currentMcpIndex].jsonString = value
@@ -1508,7 +1761,7 @@ const McpEditPopup = React.memo(({ _type, _config, _mcpName, onDelete, onCancel,
             createJsonLinter(),
             inputTheme
           ]}
-          onChange={(value, viewUpdate) => {
+          onChange={(value) => {
             let newJsonString = value
             if(!value.trim().startsWith("{")) {
               newJsonString = `{\n ${value}\n}`

@@ -1,8 +1,8 @@
-import { useEffect, useState } from 'react'
-import { useTranslation } from 'react-i18next'
-import WrappedInput from '../../../../../components/WrappedInput'
-import { Parameter } from '../../../../../helper/modelParameterUtils'
-import Switch from '../../../../../components/Switch'
+import { useEffect, useState } from "react"
+import { useTranslation } from "react-i18next"
+import WrappedInput from "../../../../../components/WrappedInput"
+import { Parameter } from "../../../../../helper/modelParameterUtils"
+import Switch from "../../../../../components/Switch"
 
 const TokenBudgetParameter = ({
   min,
@@ -21,23 +21,23 @@ const TokenBudgetParameter = ({
   const [isTokenBudgetEnabled, setIsTokenBudgetEnabled] = useState<boolean>(false)
 
   useEffect(() => {
-    const parameter = parameters.find((p) => p.name === 'budget_tokens' && p.isSpecific)
+    const parameter = parameters.find((p) => p.name === "budget_tokens" && p.isSpecific)
     if (parameter) {
       setTokenBudget(Number(parameter.value))
       setIsTokenBudgetEnabled(!!parameter.isTokenBudget)
     }
   }, [parameters])
 
-  const enableTokenBudgetChange = (value: boolean) => {
+  const enableTokenBudgetChange = (e: React.ChangeEvent<HTMLInputElement>, value: boolean) => {
     const updatedParameters = [...parameters]
-    const parameter = updatedParameters.find((p) => p.name === 'budget_tokens' && p.isSpecific)
+    const parameter = updatedParameters.find((p) => p.name === "budget_tokens" && p.isSpecific)
     if (parameter) {
       parameter.isTokenBudget = value
     } else {
       updatedParameters.push({
-        name: 'budget_tokens',
-        type: 'int',
-        value: 1024,
+        name: "budget_tokens",
+        type: "int",
+        value: Number(e.target.value),
         isSpecific: true,
         isTokenBudget: value,
       })
@@ -47,14 +47,14 @@ const TokenBudgetParameter = ({
 
   const handleTokenBudgetChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const updatedParameters = [...parameters]
-    const parameter = updatedParameters.find((p) => p.name === 'budget_tokens' && p.isSpecific)
+    const parameter = updatedParameters.find((p) => p.name === "budget_tokens" && p.isSpecific)
     if(isTokenBudgetEnabled){
       if (parameter) {
         parameter.value = Number(e.target.value)
       } else {
         updatedParameters.push({
-          name: 'budget_tokens',
-          type: 'int',
+          name: "budget_tokens",
+          type: "int",
           value: Number(e.target.value),
           isSpecific: true,
           isTokenBudget: false,
@@ -69,15 +69,15 @@ const TokenBudgetParameter = ({
       <div className="content">
         <div className="title">
           <label>Token Budget</label>
-          <div className="description">{t('models.tokenBudgetDescription', { min, max })}</div>
+          <div className="description">{t("models.tokenBudgetDescription", { min, max })}</div>
         </div>
         <div className="body token-budget-body">
           <div className="token-budget-switch">
             <Switch
               size="medium"
               checked={isTokenBudgetEnabled}
-              onChange={() => {
-                enableTokenBudgetChange(!isTokenBudgetEnabled)
+              onChange={(e) => {
+                enableTokenBudgetChange(e, !isTokenBudgetEnabled)
               }}
             />
           </div>

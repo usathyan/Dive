@@ -1,10 +1,13 @@
-import { ipcMain, BrowserWindow } from "electron"
+import { ipcMain, BrowserWindow, dialog, nativeImage, clipboard } from "electron"
 import fse from "fs-extra"
 import path from "node:path"
-import { scriptsDir } from "../constant"
+import { configDir, scriptsDir } from "../constant"
+import { CancelError, download } from "electron-dl"
+import { ModelGroupSetting } from "../../../types/model"
+import { refreshConfig } from "../deeplink"
 import { getInstallHostDependenciesLog } from "../service"
 
-export function ipcUtilHandler(_win: BrowserWindow) {
+export function ipcUtilHandler(win: BrowserWindow) {
   ipcMain.handle("util:fillPathToConfig", async (_, _config: string) => {
     try {
       const { mcpServers: servers } = JSON.parse(_config) as {mcpServers: Record<string, {enabled: boolean, command?: string, args?: string[]}>}
@@ -46,7 +49,93 @@ export function ipcUtilHandler(_win: BrowserWindow) {
     }
   })
 
+  ipcMain.handle("util:download", async (event, { url }) => {
+    let filename = getFilenameFromUrl(url)
+    await fetch(url, { method: "HEAD" })
+      .then(response => {
+        const contentDisposition = response.headers.get("content-disposition")
+        if (contentDisposition) {
+          const filenameMatch = contentDisposition.match(/filename="([^"]+)"/)
+          if (filenameMatch) {
+            filename = filenameMatch[1]
+          }
+        }
+      })
+      .catch(() => {
+        console.error("Failed to get filename from url")
+      })
+
+    filename = filename || "file"
+    const result = await dialog.showSaveDialog({
+      properties: ["createDirectory", "showOverwriteConfirmation"],
+      defaultPath: filename,
+    })
+
+    if (result.canceled) {
+      return
+    }
+
+    try {
+      await download(win, url, { directory: path.dirname(result.filePath), filename: path.basename(result.filePath) })
+    } catch (error) {
+      if (error instanceof CancelError) {
+        console.info("item.cancel() was called")
+      } else {
+        console.error(error)
+      }
+    }
+  })
+
+  ipcMain.handle("util:copyimage", async (_, url: string) => {
+    const getImageFromRemote = async (url: string) => {
+      const response = await fetch(url)
+      if (!response.ok) {
+        throw new Error(`HTTP error: ${response.status}`)
+      }
+
+      const buffer = await response.arrayBuffer()
+      const image = nativeImage.createFromBuffer(Buffer.from(buffer))
+      if (image.isEmpty()) {
+        throw new Error("Failed to create image from buffer")
+      }
+
+      return image
+    }
+
+    const localProtocol = "local-file:///"
+    const image = url.startsWith(localProtocol)
+      ? nativeImage.createFromPath(url.substring(localProtocol.length))
+      : await getImageFromRemote(url)
+
+    clipboard.writeImage(image)
+  })
+
+  ipcMain.handle("util:getModelSettings", async (_) => {
+    if (!fse.existsSync(path.join(configDir, "model_settings.json"))) {
+      return null
+    }
+
+    return fse.readJson(path.join(configDir, "model_settings.json"))
+  })
+
+  ipcMain.handle("util:setModelSettings", async (_, settings: ModelGroupSetting) => {
+    return fse.writeJson(path.join(configDir, "model_settings.json"), settings, { spaces: 2 })
+  })
+
+  ipcMain.handle("util:refreshConfig", async () => {
+    return refreshConfig()
+  })
+
   ipcMain.handle("util:getInstallHostDependenciesLog", async () => {
     return getInstallHostDependenciesLog()
   })
+}
+
+function getFilenameFromUrl(url: string) {
+  try {
+    const _url = new URL(url)
+    return _url.pathname.split("/").pop()
+  } catch (_error) {
+    return null
+  }
 }

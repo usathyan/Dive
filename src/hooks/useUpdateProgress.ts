@@ -3,29 +3,76 @@ import { ProgressInfo } from "electron-updater"
 import { useCallback, useEffect, useState } from "react"
 import { newVersionAtom } from "../atoms/globalState"
 import { useAtomValue } from "jotai"
+import { isElectron, listenIPC } from "../ipc"
+import { openUrl } from "../ipc/util"
+import { relaunch } from "@tauri-apps/plugin-process"
+import { check } from "@tauri-apps/plugin-updater"
 
 export default function useUpdateProgress(onComplete: () => void, onError: (e: { message: string, error: Error }) => void) {
   const [progress, setProgress] = useState(0)
   const newVersion = useAtomValue(newVersionAtom)
 
   useEffect(() => {
+    if (!window.ipcRenderer) {
+      return
+    }
+
     window.ipcRenderer.invoke("check-update")
+  }, [])
+
+  const electronStartDownload = useCallback(() => {
+    window.ipcRenderer.invoke("start-download")
+    setProgress(0.1)
+  }, [])
+
+  const tauriStartDownload = useCallback(async (silent: boolean = false) => {
+    await check().then((update) => {
+      if (!update) {
+        return
+      }
+
+      if (silent) {
+        return update.downloadAndInstall()
+      }
+
+      const probablyFileSize = window.PLATFORM === "win32" ? 1024 * 1024 * 30 : 1024 * 1024 * 270
+      let downloaded = 0
+
+      return update.download(event => {
+        switch (event.event) {
+          case "Started":
+            setProgress(0.1)
+            break
+          case "Progress":
+            downloaded += event.data.chunkLength
+            setProgress(Math.min(downloaded / probablyFileSize * 100, 99))
+            break
+          case "Finished":
+            setProgress(99)
+            update.install().then(() => {
+              setProgress(100)
+            })
+            break
+        }
+      })
+    })
   }, [])
 
   const update = useCallback(async () => {
     if (window.PLATFORM === "darwin") {
-      window.open("https://github.com/OpenAgentPlatform/Dive/releases/latest", "_blank")
+      openUrl("https://github.com/OpenAgentPlatform/Dive/releases/latest")
       return
     }
 
-    const autoDownload = getAutoDownload()
-    if (autoDownload || progress >= 100) {
-      window.ipcRenderer.invoke("quit-and-install")
-      return
+    if (getAutoDownload()) {
+      return isElectron ? window.ipcRenderer.invoke("quit-and-install") : tauriStartDownload(true)
     }
 
-    window.ipcRenderer.invoke("start-download")
-    setProgress(0.1)
+    if (progress >= 100) {
+      return isElectron ? window.ipcRenderer.invoke("quit-and-install") : relaunch()
+    }
+
+    return isElectron ? electronStartDownload() : tauriStartDownload()
   }, [progress])
 
   const handleDownloadProgress = useCallback((event: Electron.IpcRendererEvent, progressInfo: ProgressInfo) => {
@@ -43,21 +90,25 @@ export default function useUpdateProgress(onComplete: () => void, onError: (e: {
   }, [onError])
 
   useEffect(() => {
+    if (!window.ipcRenderer) {
+      return
+    }
+
     if (getAutoDownload()) {
       setProgress(0)
       return
     }
 
-    window.ipcRenderer.on("download-progress", handleDownloadProgress)
-    window.ipcRenderer.on("update-downloaded", onComplete)
-    window.ipcRenderer.on("update-error", handleError)
+    const unlistenDownloadProgress = listenIPC("download-progress", handleDownloadProgress)
+    const unlistenUpdateDownloaded = listenIPC("update-downloaded", onComplete)
+    const unlistenUpdateError = listenIPC("update-error", handleError)
 
     return () => {
-      window.ipcRenderer.off("download-progress", handleDownloadProgress)
-      window.ipcRenderer.off("update-downloaded", onComplete)
-      window.ipcRenderer.off("update-error", handleError)
+      unlistenDownloadProgress()
+      unlistenUpdateDownloaded()
+      unlistenUpdateError()
     }
-  }, [handleDownloadProgress, onComplete, onError])
+  }, [handleDownloadProgress, onComplete, onError, handleError])
 
   return { progress, update, newVersion }
 }

@@ -1,28 +1,3 @@
-import { ModelConfig } from "./atoms/configState"
-
-
-export const getModelPrefix = (config: ModelConfig, length: number = 5) => {
-  if (config.apiKey)
-    return config.apiKey.slice(-length)
-
-  if ((config as any).accessKeyId)
-    return (config as any).accessKeyId.slice(-length)
-
-  if (config.modelProvider.startsWith("ollama")) {
-    return "ollama"
-  }
-
-  try {
-    if(config.baseURL) {
-      const url = new URL(config.baseURL)
-      return url.hostname.slice(0, length)
-    }
-  } catch (error) {
-    return config.baseURL
-  }
-  return ""
-}
-
 export function safeBase64Encode(str: string): string {
   try {
     return btoa(encodeURIComponent(str).replace(/%([0-9A-F]{2})/g,
@@ -41,4 +16,13 @@ export function safeBase64Decode(str: string): string {
     console.error("Decoding error:", e)
     return str
   }
+}
+
+export function fileToBase64(file: File): Promise<string> {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader()
+        reader.onload = () => resolve(reader.result as string)
+        reader.onerror = reject
+        reader.readAsDataURL(file)
+    })
 }

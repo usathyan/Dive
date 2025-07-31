@@ -1,7 +1,7 @@
-import { useEffect, useState } from 'react'
-import { useTranslation } from 'react-i18next'
-import InfoTooltip from '../../../../../components/Tooltip'
-import { Parameter } from '../../../../../helper/modelParameterUtils'
+import { useEffect, useState } from "react"
+import { useTranslation } from "react-i18next"
+import InfoTooltip from "../../../../../components/Tooltip"
+import { Parameter } from "../../../../../helper/modelParameterUtils"
 
 const ReasoningLevelParameter = ({
   parameters,
@@ -13,10 +13,10 @@ const ReasoningLevelParameter = ({
   // reasoning_effort
   const { t } = useTranslation()
 
-  const [reasoningLevel, setReasoningLevel] = useState<string>('')
+  const [reasoningLevel, setReasoningLevel] = useState<string>("low")
 
   useEffect(() => {
-    const parameter = parameters.find((p) => p.name === 'reasoning_effort' && p.isSpecific)
+    const parameter = parameters.find((p) => p.name === "reasoning_effort" && p.isSpecific)
     if (parameter) {
       setReasoningLevel(parameter.value as string)
     }
@@ -24,13 +24,13 @@ const ReasoningLevelParameter = ({
 
   const handleReasoningLevelChange = (level: string) => {
     const updatedParameters = [...parameters]
-    const parameter = updatedParameters.find((p) => p.name === 'reasoning_effort' && p.isSpecific)
+    const parameter = updatedParameters.find((p) => p.name === "reasoning_effort" && p.isSpecific)
     if (parameter) {
       parameter.value = level
     } else {
       updatedParameters.push({
-        name: 'reasoning_effort',
-        type: 'string',
+        name: "reasoning_effort",
+        type: "string",
         value: level,
         isSpecific: true,
       })
@@ -45,7 +45,7 @@ const ReasoningLevelParameter = ({
         <div className="title align-top">
           <div className="title-left">
             <label>Reasoning Level</label>
-            <InfoTooltip side="left" content={t('models.reasoningLevelTooltip')}>
+            <InfoTooltip side="left" content={t("models.reasoningLevelTooltip")}>
               <div className="parameter-label">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -76,25 +76,25 @@ const ReasoningLevelParameter = ({
               </div>
             </InfoTooltip>
           </div>
-          <div className="description">{t('models.reasoningLevelDescription')}</div>
+          <div className="description">{t("models.reasoningLevelDescription")}</div>
         </div>
         <div className="body">
           <div className="reasoning-level-btn-group">
             <button
-              className={`btn ${reasoningLevel === 'low' ? 'active' : ''}`}
-              onClick={() => handleReasoningLevelChange(reasoningLevel === "low" ? "" : "low")}
+              className={`btn ${reasoningLevel === "low" ? "active" : ""}`}
+              onClick={() => handleReasoningLevelChange("low")}
             >
               <span>Low</span>
             </button>
             <button
-              className={`btn ${reasoningLevel === 'medium' ? 'active' : ''}`}
-              onClick={() => handleReasoningLevelChange(reasoningLevel === "medium" ? "" : 'medium')}
+              className={`btn ${reasoningLevel === "medium" ? "active" : ""}`}
+              onClick={() => handleReasoningLevelChange("medium")}
             >
               <span>Medium</span>
             </button>
             <button
-              className={`btn ${reasoningLevel === 'high' ? 'active' : ''}`}
-              onClick={() => handleReasoningLevelChange(reasoningLevel === "high" ? "" : 'high')}
+              className={`btn ${reasoningLevel === "high" ? "active" : ""}`}
+              onClick={() => handleReasoningLevelChange("high")}
             >
               <span>High</span>
             </button>

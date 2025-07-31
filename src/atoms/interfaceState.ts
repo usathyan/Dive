@@ -1,30 +1,35 @@
+import { imgPrefix } from "../ipc/env"
+import { OAP_PROXY_URL } from "../../shared/oap"
+import { ModelProvider } from "../../types/model"
+import { fetchModels } from "../ipc/llm"
+import { oapGetToken } from "../ipc"
+
 export const EMPTY_PROVIDER = "none"
 
-export type BaseProvider = "openai" | "ollama" | "anthropic" | "mistralai" | "bedrock"
-export type ModelProvider = BaseProvider | "google-genai"
-export type InterfaceProvider = BaseProvider | "openai_compatible" | "google_genai" | "openrouter" | "lmstudio" | "groq" | "grok" | "nvdia" | "perplexity"
-export const PROVIDERS: InterfaceProvider[] = [
+export const PROVIDERS: ModelProvider[] = [
   "openai",
   "openai_compatible",
   "ollama",
   "anthropic",
-  "google_genai",
+  "google-genai",
   "mistralai",
   "bedrock",
+  "azure_openai",
   "openrouter",
   "lmstudio",
   "groq",
   "grok",
   "nvdia",
-  "perplexity"
+  "perplexity",
+  "oap"
 ] as const
 
-export const PROVIDER_LABELS: Record<InterfaceProvider, string> = {
+export const PROVIDER_LABELS: Record<ModelProvider, string> = {
   openai: "OpenAI",
   openai_compatible: "OpenAI Compatible",
   ollama: "Ollama",
   anthropic: "Anthropic",
-  google_genai: "Google Gemini",
+  "google-genai": "Google Gemini",
   mistralai: "Mistral AI",
   bedrock: "AWS Bedrock",
   openrouter: "OpenRouter",
@@ -33,22 +38,28 @@ export const PROVIDER_LABELS: Record<InterfaceProvider, string> = {
   grok: "Grok",
   nvdia: "NVIDIA",
   perplexity: "Perplexity",
+  oap: "OAP",
+  azure_openai: "Azure OpenAI",
+  default: "Default",
 }
 
-export const PROVIDER_ICONS: Record<InterfaceProvider, string> = {
-  ollama: "img://model_ollama.svg",
-  openai_compatible: "img://model_openai_compatible.svg",
-  openai: "img://model_openai.svg",
-  anthropic: "img://model_anthropic.svg",
-  google_genai: "img://model_gemini.svg",
-  mistralai: "img://model_mistral-ai.svg",
-  bedrock: "img://model_bedrock.svg",
-  openrouter: "img://model_openrouter.svg",
-  lmstudio: "img://model_lmstudio.svg",
-  groq: "img://model_groq.svg",
-  grok: "img://model_grok.svg",
-  nvdia: "img://model_nvdia.svg",
-  perplexity: "img://model_perplexity.svg",
+export const PROVIDER_ICONS: Record<ModelProvider, string> = {
+  ollama: `${imgPrefix}model_ollama.svg`,
+  openai_compatible: `${imgPrefix}model_openai_compatible.svg`,
+  openai: `${imgPrefix}model_openai.svg`,
+  anthropic: `${imgPrefix}model_anthropic.svg`,
+  "google-genai": `${imgPrefix}model_gemini.svg`,
+  mistralai: `${imgPrefix}model_mistral-ai.svg`,
+  bedrock: `${imgPrefix}model_bedrock.svg`,
+  openrouter: `${imgPrefix}model_openrouter.svg`,
+  lmstudio: `${imgPrefix}model_lmstudio.svg`,
+  groq: `${imgPrefix}model_groq.svg`,
+  grok: `${imgPrefix}model_grok.svg`,
+  nvdia: `${imgPrefix}model_nvdia.svg`,
+  perplexity: `${imgPrefix}model_perplexity.svg`,
+  oap: `${imgPrefix}logo_oap.png`,
+  azure_openai: `${imgPrefix}model_azure.svg`,
+  default: "",
 }
 
 export type InputType = "text" | "password"
@@ -65,12 +76,13 @@ export interface FieldDefinition {
   listCallback?: (deps: Record<string, string>) => Promise<string[]>
   listDependencies?: string[]
   value?: string
+  getValue?: () => Promise<string>
 }
 
 export type InterfaceDefinition = Record<string, FieldDefinition>
 
 const openaiCompatibleListCallback = async (deps: Record<string, string>) => {
-  const results = await window.ipcRenderer.openaiCompatibleModelList(deps.apiKey, deps.baseURL)
+  const results = await fetchModels("openai_compatible", deps.apiKey, deps.baseURL)
   if (results.error) {
     throw new Error(results.error)
   }
@@ -114,7 +126,8 @@ function openaiCompatibleTemplate(baseURL: string, overwrite: {apiKey?: any, bas
   }
 }
 
-export const defaultInterface: Record<InterfaceProvider, InterfaceDefinition> = {
+export const defaultInterface: Record<ModelProvider, InterfaceDefinition> = {
+  default: {},
   openai: {
     apiKey: {
       type: "string",
@@ -133,7 +146,7 @@ export const defaultInterface: Record<InterfaceProvider, InterfaceDefinition> = 
       default: "",
       placeholder: "Select a model",
       listCallback: async (deps) => {
-        const results = await window.ipcRenderer.openaiModelList(deps.apiKey)
+        const results = await fetchModels("openai", deps.apiKey)
         if (results.error) {
           throw new Error(results.error)
         }
@@ -146,6 +159,13 @@ export const defaultInterface: Record<InterfaceProvider, InterfaceDefinition> = 
     baseURL: {
       required: false,
       readonly: false,
+    }
+  }),
+  oap: openaiCompatibleTemplate(`${OAP_PROXY_URL}/v1`, {
+    apiKey: {
+      getValue: () => {
+        return oapGetToken()
+      }
     }
   }),
   ollama: {
@@ -166,7 +186,7 @@ export const defaultInterface: Record<InterfaceProvider, InterfaceDefinition> = 
       default: "",
       placeholder: "Select a model",
       listCallback: async (deps) => {
-        const results = await window.ipcRenderer.ollamaModelList(deps.baseURL)
+        const results = await fetchModels("ollama", "", deps.baseURL)
         if (results.error) {
           throw new Error(results.error)
         }
@@ -202,7 +222,7 @@ export const defaultInterface: Record<InterfaceProvider, InterfaceDefinition> = 
       default: "",
       placeholder: "Select a model",
       listCallback: async (deps) => {
-        const results = await window.ipcRenderer.anthropicModelList(deps.apiKey, deps.baseURL)
+        const results = await fetchModels("anthropic", deps.apiKey, deps.baseURL)
         if (results.error) {
           throw new Error(results.error)
         }
@@ -211,7 +231,7 @@ export const defaultInterface: Record<InterfaceProvider, InterfaceDefinition> = 
       listDependencies: ["apiKey", "baseURL"]
     },
   },
-  google_genai: {
+  "google-genai": {
     apiKey: {
       type: "string",
       inputType: "password",
@@ -229,7 +249,7 @@ export const defaultInterface: Record<InterfaceProvider, InterfaceDefinition> = 
       default: "",
       placeholder: "Select a model",
       listCallback: async (deps) => {
-        const results = await window.ipcRenderer.googleGenaiModelList(deps.apiKey)
+        const results = await fetchModels("google-genai", deps.apiKey)
         if (results.error) {
           throw new Error(results.error)
         }
@@ -256,7 +276,7 @@ export const defaultInterface: Record<InterfaceProvider, InterfaceDefinition> = 
       default: "",
       placeholder: "Select a model",
       listCallback: async (deps) => {
-        const results = await window.ipcRenderer.mistralaiModelList(deps.apiKey)
+        const results = await fetchModels("mistralai", deps.apiKey)
         if (results.error) {
           throw new Error(results.error)
         }
@@ -310,7 +330,7 @@ export const defaultInterface: Record<InterfaceProvider, InterfaceDefinition> = 
       default: "",
       placeholder: "Select a model",
       listCallback: async (deps) => {
-        const results = await window.ipcRenderer.bedrockModelList(deps.accessKeyId, deps.secretAccessKey, deps.sessionToken, deps.region)
+        const results = await fetchModels("bedrock", "", "", [deps.accessKeyId, deps.secretAccessKey, deps.sessionToken, deps.region])
         if (results.error) {
           throw new Error(results.error)
         }
@@ -326,61 +346,60 @@ export const defaultInterface: Record<InterfaceProvider, InterfaceDefinition> = 
       default: ""
     }
   },
-  // azure_openai: {
-  //   apiKey: {
-  //     type: "string",
-  //     inputType: "password",
-  //     label: "API Key",
-  //     description: "Azure OpenAI API Key",
-  //     required: true,
-  //     default: "",
-  //     placeholder: "YOUR_API_KEY"
-  //   },
-  //   azureEndpoint: {
-  //     type: "string",
-  //     inputType: "text",
-  //     label: "Endpoint",
-  //     description: "Azure OpenAI Endpoint",
-  //     required: true,
-  //     default: "",
-  //     placeholder: "https://your-endpoint.openai.azure.com/"
-  //   },
-  //   azureDeployment: {
-  //     type: "string",
-  //     inputType: "text",
-  //     label: "Deployment",
-  //     description: "Azure OpenAI Deployment",
-  //     required: true,
-  //     default: "",
-  //     placeholder: "YOUR_DEPLOYMENT"
-  //   },
-  //   apiVersion: {
-  //     type: "string",
-  //     inputType: "text",
-  //     label: "API Version",
-  //     description: "Azure OpenAI API Version",
-  //     required: true,
-  //     default: "2023-03-15-preview",
-  //     placeholder: "2025-03-01-preview"
-  //   },
-  //   model: {
-  //     type: "list",
-  //     label: "Model ID",
-  //     description: "modelConfig.modelDescriptionHint",
-  //     required: false,
-  //     default: "",
-  //     placeholder: "Select a model",
-  //     listCallback: async (deps) => {
-  //       console.log(deps)
-  //       const results = await window.ipcRenderer.azureOpenaiModelList(deps.apiKey, deps.azureEndpoint, deps.azureDeployment, deps.apiVersion)
-  //       if (results.error) {
-  //         throw new Error(results.error)
-  //       }
-  //       return results.results
-  //     },
-  //     listDependencies: ["apiKey", "azureEndpoint", "azureDeployment", "apiVersion"]
-  //   },
-  // },
+  azure_openai: {
+    apiKey: {
+      type: "string",
+      inputType: "password",
+      label: "API Key",
+      description: "Azure OpenAI API Key",
+      required: true,
+      default: "",
+      placeholder: "YOUR_API_KEY"
+    },
+    azureEndpoint: {
+      type: "string",
+      inputType: "text",
+      label: "Endpoint",
+      description: "Azure OpenAI Endpoint",
+      required: true,
+      default: "",
+      placeholder: "https://your-endpoint.openai.azure.com/"
+    },
+    azureDeployment: {
+      type: "string",
+      inputType: "text",
+      label: "Deployment",
+      description: "Azure OpenAI Deployment",
+      required: true,
+      default: "",
+      placeholder: "YOUR_DEPLOYMENT"
+    },
+    apiVersion: {
+      type: "string",
+      inputType: "text",
+      label: "API Version",
+      description: "Azure OpenAI API Version",
+      required: true,
+      default: "2023-03-15-preview",
+      placeholder: "2025-03-01-preview"
+    },
+    model: {
+      type: "list",
+      label: "Model ID",
+      description: "modelConfig.modelDescriptionHint",
+      required: false,
+      default: "",
+      placeholder: "Select a model",
+      listCallback: async (deps) => {
+        const results = await fetchModels("azure_openai", deps.apiKey, "", [deps.azureEndpoint, deps.azureDeployment, deps.apiVersion])
+        if (results.error) {
+          throw new Error(results.error)
+        }
+        return results.results
+      },
+      listDependencies: ["apiKey", "azureEndpoint", "azureDeployment", "apiVersion"]
+    },
+  },
   openrouter: openaiCompatibleTemplate("https://openrouter.ai/api/v1"),
   lmstudio: openaiCompatibleTemplate("https://localhost:1234/api/v1", {
     apiKey: {
@@ -394,4 +413,20 @@ export const defaultInterface: Record<InterfaceProvider, InterfaceDefinition> = 
   grok: openaiCompatibleTemplate("https://api.x.ai/v1"),
   nvdia: openaiCompatibleTemplate("https://integrate.api.nvidia.com/v1"),
   perplexity: openaiCompatibleTemplate("https://api.perplexity.ai"),
+}
+
+export const isProviderIconNoFilter = (model: ModelProvider, userTheme: string, systemTheme: string) => {
+  const isLightMode = userTheme === "system" ? systemTheme === "light" : userTheme === "light"
+  switch (model) {
+  case "oap":
+  case "ollama":
+  case "openai_compatible":
+  case "bedrock":
+  case "google-genai":
+    return true
+  case "mistralai":
+    return isLightMode
+  default:
+    return model.startsWith("google") && isLightMode
+  }
 }

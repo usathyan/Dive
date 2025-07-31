@@ -1,85 +1,65 @@
-import { useAtom } from "jotai"
+import { useSetAtom } from "jotai"
 import { RefObject, useEffect, useLayoutEffect, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
-import { InterfaceProvider } from "../../../../atoms/interfaceState"
 import { showToastAtom } from "../../../../atoms/toastState"
 import PopupConfirm from "../../../../components/PopupConfirm"
 import Select from "../../../../components/Select"
 import Tooltip from "../../../../components/Tooltip"
 import WrappedInput from "../../../../components/WrappedInput"
-import { compressData } from "../../../../helper/config"
 import {
   formatParametersForSave,
   initializeAdvancedParameters,
   Parameter,
 } from "../../../../helper/modelParameterUtils"
-import { useModelsProvider } from "../ModelsProvider"
 import { ModelVerifyDetail, useModelVerify } from "../ModelVerify"
 import NonStreamingParameter from "./SpecialParameters/NonStreaming"
 import ReasoningLevelParameter from "./SpecialParameters/ReasoningLevel"
 import TokenBudgetParameter from "./SpecialParameters/TokenBudget"
 import { getVerifyStatus } from "../ModelVerify"
-interface AdvancedSettingPopupProps {
-  modelName: string
+import { imgPrefix } from "../../../../ipc/env"
+import { BaseModel, ModelProvider } from "../../../../../types/model"
+import { useModelsProvider } from "../ModelsProvider"
+
+type Props = {
+  model: BaseModel
   onClose: () => void
-  onSave?: () => void
+  onSave: (model: BaseModel) => void
 }
 
-const AdvancedSettingPopup = ({ modelName, onClose, onSave }: AdvancedSettingPopupProps) => {
+const AdvancedSettingPopup = ({ model, onClose, onSave }: Props) => {
   const { t } = useTranslation()
-  const [, showToast] = useAtom(showToastAtom)
-  const {
-    parameter,
-    multiModelConfigList = [],
-    currentIndex,
-    setMultiModelConfigList,
-  } = useModelsProvider()
+  const showToast = useSetAtom(showToastAtom)
   const { verify } = useModelVerify()
 
   const [parameters, setParameters] = useState<Parameter[]>([])
-  const [provider, setProvider] = useState<InterfaceProvider>("openai")
+  const [provider, setProvider] = useState<ModelProvider>("openai")
   const isVerifying = useRef(false)
-  const [isVerifySuccess, setIsVerifySuccess] = useState(false)
   const [verifyStatus, setVerifyStatus] = useState<string>("")
   const [verifyDetail, setVerifyDetail] = useState<string>("")
   const bodyRef = useRef<HTMLDivElement>(null)
   const isAddParameter = useRef(false)
   const prevParamsLength = useRef(0)
+  const modelName = model.model
+
+  const { getLatestBuffer } = useModelsProvider()
+
   // load parameters of current model
   useEffect(() => {
-    const currentModelProvider = multiModelConfigList[currentIndex]
-    if (!currentModelProvider) {
-      return
+    // Use the utility function to initialize parameters
+    const custom = {
+      ...(model.custom || {}),
+      disable_streaming: model.disableStreaming,
     }
 
-    const provider = currentModelProvider.name
-    const existingParams = currentModelProvider.parameters[modelName]
-
-    // Use the utility function to initialize parameters
-    const initializedParams = initializeAdvancedParameters(modelName, provider, existingParams)
-
+    const initializedParams = initializeAdvancedParameters(model.model, provider, custom)
     setParameters(initializedParams)
     setProvider(provider)
-  }, [parameter, multiModelConfigList, currentIndex, modelName]) // Added modelName dependency
+  }, [])
 
   // integrate parameters config to current ModelConfig (not write just format)
   const integrateParametersConfig = () => {
-    if (!multiModelConfigList || multiModelConfigList.length <= 0) {
-      return []
-    }
-
     // Use the utility function to format parameters
-    const finalParameters = formatParametersForSave(parameters)
-
-    const updatedModelConfigList = [...multiModelConfigList]
-    updatedModelConfigList[currentIndex] = {
-      ...updatedModelConfigList[currentIndex],
-      parameters: {
-        ...updatedModelConfigList[currentIndex].parameters,
-        [modelName]: finalParameters,
-      },
-    }
-    return updatedModelConfigList
+    return formatParametersForSave(parameters)
   }
 
   const handleParameterTypeChange = (type: "int" | "float" | "string", index?: number) => {
@@ -182,13 +162,11 @@ const AdvancedSettingPopup = ({ modelName, onClose, onSave }: AdvancedSettingPop
 
   const handleSave = async () => {
     const integratedParametersConfig = integrateParametersConfig()
-    if (integratedParametersConfig.length <= 0) {
-      return
-    }
-    setMultiModelConfigList(integratedParametersConfig)
-
     if (onSave) {
-      onSave()
+      onSave({
+        ...model,
+        custom: integratedParametersConfig,
+      })
     }
     onClose()
   }
@@ -199,54 +177,40 @@ const AdvancedSettingPopup = ({ modelName, onClose, onSave }: AdvancedSettingPop
     setVerifyStatus(t("setup.verifying"))
     setVerifyDetail("")
 
-    const integratedParametersConfig = integrateParametersConfig()
-    if (integratedParametersConfig.length <= 0) {
-      isVerifying.current = false
-      setVerifyStatus(t("setup.verifyFailed"))
-      setVerifyDetail("No model config to verify")
-      return
-    }
-    integratedParametersConfig[currentIndex].models = [modelName]
-    const compressedData = compressData(
-      integratedParametersConfig[currentIndex],
-      currentIndex,
-      parameter,
-    )
-
-    const _needVerifyList = compressedData
-
     // verify complete callback
     const onComplete = async () => {
       isVerifying.current = false
-      setIsVerifySuccess(true)
     }
 
     // update status callback
     const onUpdate = (detail: ModelVerifyDetail[]) => {
       const _detail = detail.find((item) => item.name == modelName)
-      if (_detail) {
-        setVerifyStatus(
-          (_detail.status === "success" || _detail.status === "unSupportTool")
-            ? t("setup.verifySuccess")
-            : _detail.status === "error"
-            ? t("setup.verifyError")
-            : t("setup.verifying"),
-        )
-        const status = getVerifyStatus(_detail.detail)
-        if (status === "unSupportModel") {
-          setVerifyDetail(_detail.detail?.["connecting"]?.error_msg || "")
-        } else if (status === "unSupportTool") {
-          setVerifyDetail(_detail.detail?.["supportToolsInPrompt"]?.error_msg || t("models.verifyErrorMsg"))
-        }
+      if (!_detail) {
+        return
+      }
+
+      setVerifyStatus(
+        _detail.status === "success"
+          ? t("setup.verifySuccess")
+          : _detail.status === "error"
+          ? t("setup.verifyError")
+          : t("setup.verifying"),
+      )
+      const status = getVerifyStatus(_detail.detail)
+      if (status === "success") {
+        setVerifyDetail("")
+      } else if (status === "unSupportModel") {
+        setVerifyDetail(_detail.detail?.["connecting"]?.error_msg || "")
+      } else if (status === "unSupportTool") {
+        setVerifyDetail(_detail.detail?.["supportToolsInPrompt"]?.error_msg || t("models.verifyErrorMsg"))
       }
     }
 
     // abort verify callback
-    const onAbort = () => {
-      setIsVerifySuccess(false)
-    }
+    const onAbort = () => {}
 
-    verify(_needVerifyList, onComplete, onUpdate, onAbort)
+    const { group } = getLatestBuffer()
+    verify(group, [model], onComplete, onUpdate, onAbort)
   }
 
   useEffect(() => {
@@ -275,7 +239,7 @@ const AdvancedSettingPopup = ({ modelName, onClose, onSave }: AdvancedSettingPop
       onCancel={handleClose}
       onClickOutside={handleClose}
       noBorder={false}
-      disabled={parameters.some((p) => p.isDuplicate) || !isVerifySuccess}
+      disabled={parameters.some((p) => p.isDuplicate)}
       footerHint={<FooterHint onVerifyConfirm={onVerifyConfirm} isVerifying={isVerifying} />}
     >
       <div className="models-key-popup parameters">
@@ -285,7 +249,6 @@ const AdvancedSettingPopup = ({ modelName, onClose, onSave }: AdvancedSettingPop
           <div className="body" ref={bodyRef}>
             {/* Streaming Mode Area */}
             <NonStreamingParameter
-              modelName={modelName}
               parameters={parameters}
               setParameters={setParameters}
             />
@@ -299,7 +262,7 @@ const AdvancedSettingPopup = ({ modelName, onClose, onSave }: AdvancedSettingPop
                 <label>{t("models.customInput")}</label>
               </div>
               <button className="btn" onClick={handleAddParameter}>
-                <img src={"img://CircleAdd.svg"} />
+                <img src={`${imgPrefix}CircleAdd.svg`} />
                 {t("models.addCustomParameter")}
               </button>
             </div>
@@ -507,7 +470,7 @@ const SpecialParameters = ({
   parameters,
   setParameters,
 }: {
-  provider: InterfaceProvider
+  provider: ModelProvider
   modelName: string
   parameters: Parameter[]
   setParameters: (parameters: Parameter[]) => void

@@ -84,6 +84,7 @@ const CodeModal = () => {
 
   return (
     <div className="code-modal">
+      <CodeModalSizeBox />
       <div className="code-modal-content">
         <div className="code-modal-header">
           <div className="header-left">
@@ -181,6 +182,60 @@ const CodeModal = () => {
         </div>
       </div>
     </div>
+  )
+}
+
+const CodeModalSizeBox = () => {
+  const [size, setSize] = useState<number>(parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--code-modal-width")) || 50)
+  const startSizeRef = useRef<number>(size)
+  const startXRef = useRef<number>(0)
+  const MAX_CODE_MODAL_WIDTH = 80
+  const MIN_CODE_MODAL_WIDTH = 20
+  const [isMouseDown, setIsMouseDown] = useState(false)
+  const coverRef = useRef<HTMLDivElement>(null)
+
+  const handleMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
+    setIsMouseDown(true)
+
+    startSizeRef.current = size
+
+    if (coverRef.current) {
+      const coverRect = coverRef.current.getBoundingClientRect()
+      if (Math.abs(size - (coverRect.width / window.innerWidth) * 100) > 5) {
+        startSizeRef.current = (coverRect.width / window.innerWidth) * 100
+        setSize(startSizeRef.current)
+        document.documentElement.style.setProperty("--code-modal-width", `${Math.max(Math.min(startSizeRef.current, MAX_CODE_MODAL_WIDTH), MIN_CODE_MODAL_WIDTH)}%`)
+      }
+    }
+
+    startXRef.current = e.clientX
+
+    const handleMouseUp = () => {
+      setSize(parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--code-modal-width")) || 50)
+      document.removeEventListener("mouseup", handleMouseUp)
+      setIsMouseDown(false)
+    }
+
+    document.addEventListener("mouseup", handleMouseUp)
+  }
+
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    const newSize = startSizeRef.current - (e.clientX - startXRef.current) / window.innerWidth * 100
+    document.documentElement.style.setProperty("--code-modal-width", `${Math.max(Math.min(newSize, MAX_CODE_MODAL_WIDTH), MIN_CODE_MODAL_WIDTH)}%`)
+  }
+
+  return (
+    <>
+      <div className="code-modal-size-box"
+        onMouseDown={handleMouseDown}
+      >
+        <div className="code-modal-size-box-icon"></div>
+      </div>
+      <div className="code-modal-size-box-cover" ref={coverRef}></div>
+      <div className={`code-modal-size-box-cover-all ${isMouseDown ? "active" : ""}`}
+        onMouseMove={handleMouseMove}
+      ></div>
+    </>
   )
 }
 

@@ -16,6 +16,8 @@ import { useTranslation } from "react-i18next"
 import { themeAtom } from "../../atoms/themeState"
 import Textarea from "../../components/WrappedTextarea"
 import { isChatStreamingAtom } from "../../atoms/chatState"
+import Zoom from "../../components/Zoom"
+import { convertLocalFileSrc } from "../../ipc/util"
 
 declare global {
   namespace JSX {
@@ -204,23 +206,61 @@ const Message = ({ messageId, text, isSent, files, isError, isLoading, onRetry, 
             )
           },
           a(props) {
+            if(props.children?.toString().toLowerCase().includes("audio")) {
+              if (isChatStreaming) {
+                return <></>
+              }
+
+              return <audio src={props.href} controls />
+            }
+
+            if(props.children?.toString().toLowerCase().includes("video") || props.children?.toString().toLowerCase().includes("影片")) {
+              if (isChatStreaming) {
+                return <></>
+              }
+
+              return <video style={{maxWidth: "720px"}} className="message-video" src={props.href} controls />
+            }
+
             return (
               <a href={props.href} target="_blank" rel="noreferrer">
                 {props.children}
               </a>
             )
           },
-          img({className, src, alt}) {
+          img({className, src}) {
             let imageSrc = src
             if (src?.startsWith("https://localfile")) {
               let path = src.replace("https://localfile", "").replace(/\\/g, "/")
               if (path === decodeURI(path)) {
                 path = encodeURI(path)
               }
-              imageSrc = `local-file:///${path}`
+
+              imageSrc = convertLocalFileSrc(path)
             }
 
-            return <img src={imageSrc} alt={alt} className={className} />
+            return <Zoom allowCopy allowDownload><img src={imageSrc} className={className} /></Zoom>
+          },
+          audio({className, src, controls}) {
+            let audioSrc = src
+            if (src?.startsWith("https://localfile")) {
+              let path = src.replace("https://localfile", "").replace(/\\/g, "/")
+              if (path === decodeURI(path)) {
+                path = encodeURI(path)
+              }
+
+              audioSrc = convertLocalFileSrc(path)
+            }
+
+            return (
+              <div className="audio-container">
+                <audio
+                  src={audioSrc}
+                  controls={controls}
+                  className={className}
+                />
+              </div>
+            )
           },
           code({node, className, children, ...props}) {
             const match = /language-(\w+)/.exec(className || "")
@@ -247,7 +287,10 @@ const Message = ({ messageId, text, isSent, files, isError, isLoading, onRetry, 
               const diffLength = Math.abs(code.length - cacheCode.current.length)
               if ((!isBlockComplete && isLoading) || (diffLength < 10 && cacheCode.current !== code)) {
                 cacheCode.current = code
-                updateStreamingCode({ code, language })
+                if(isChatStreaming) {
+                  console.log("updateStreamingCode", code, language)
+                  updateStreamingCode({ code, language })
+                }
               }
 
               return (
