@@ -2086,3 +2086,80 @@
     }
   }
 }
+
+.oap-high-cost-popup {
+  .popup-confirm-content {
+    padding: 16px 50px;
+  }
+  .oap-high-cost-content {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    overflow: hidden;
+
+    .oap-high-cost-title {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--text-medium);
+    }
+
+    .oap-high-cost-desc {
+      font-size: 16px;
+      color: var(--text-weak);
+    }
+
+    .oap-high-cost-list {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      padding: 0 50px;
+      overflow-y: auto;
+      @include scrollbar;
+
+      .oap-high-cost-item {
+        padding: 20px;
+
+        &:not(:last-child) {
+          border-bottom: 1px solid var(--border-op-mediumweak);
+        }
+
+        &:first-child {
+          padding-top: 10px;
+        }
+
+        .oap-high-cost-item-title {
+          font-size: 15px;
+          font-weight: 600;
+        }
+
+        .oap-high-cost-item-list {
+          margin: 0;
+          margin-top: 5px;
+          font-size: 12px;
+
+          li {
+            width: fit-content;
+
+            &:hover {
+              text-decoration: underline;
+            }
+          }
+
+          li + li {
+            margin-top: 5px;
+          }
+
+          .oap-high-cost-item-name {
+            @include line-clamp(2);
+
+            .oap-high-cost-item-cost {
+              color: var(--text-weak);
+            }
+          }
+        }
+      }
+    }
+  }
+}

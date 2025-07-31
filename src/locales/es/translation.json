@@ -157,6 +157,8 @@
     "oap.no_search_data": "No se encontraron resultados, por favor limpie las palabras clave o ajuste los filtros.",
     "oap.clear_filter": "Limpiar filtros",
     "oap.hint": "Los servidores MCP avanzados requieren una actualización a la versión Pro para instalarse",
+    "oap.high_cost_title": "Activar MCP Server de alto costo",
+    "oap.high_cost_desc": "Has seleccionado herramientas MCP que consumen muchos tokens. ¿Estás seguro de que deseas activarlos?",
     "tabAll": "Todas las herramientas",
     "tabOap": "Herramientas OAP",
     "tabLocal": "Herramientas personalizadas",
