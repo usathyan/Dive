@@ -77,7 +77,13 @@ Choose between two architectures:
 
 Dive offers two ways to access MCP tools: **OAP Cloud Services** (recommended for beginners) and **Local MCP Servers** (for advanced users).
 
-### Option 1: OAP Cloud Services ☁️ (Recommended)
+### Option 1: Local MCP Servers 🛠️
+
+For advanced users who prefer local control. The system comes with a default echo MCP Server, and you can add more powerful tools like Fetch and Youtube-dl.
+
+![Set MCP](./docs/ToolsManager.png)
+
+### Option 2: OAP Cloud Services ☁️
 
 The easiest way to get started! Access enterprise-grade MCP tools instantly:
 
@@ -91,11 +97,7 @@ Benefits:
 - ✅ Enterprise-grade reliability
 - ✅ Automatic updates and maintenance
 
-### Option 2: Local MCP Servers 🛠️
 
-For advanced users who prefer local control. The system comes with a default echo MCP Server, and you can add more powerful tools like Fetch and Youtube-dl.
-
-![Set MCP](./docs/ToolsManager.png)
 
 
 #### Quick Local Setup
@@ -131,9 +133,29 @@ Add this JSON configuration to your Dive MCP settings to enable local tools:
   }
 ```
 
-#### Using SSE Server for Local MCP
+#### Using Streamable HTTP for Cloud MCP Services
 
-You can also connect to an external MCP server via SSE (Server-Sent Events). Add this configuration to your Dive MCP settings:
+You can connect to external cloud MCP servers via Streamable HTTP transport. Here's the Dive configuration example for SearXNG service from OAPHub:
+
+```json
+{
+  "mcpServers": {
+    "SearXNG_MCP_Server": {
+      "transport": "streamable",
+      "url": "https://proxy.oaphub.ai/v1/mcp/181672830075666436",
+      "headers": {
+        "Authorization": "GLOBAL_CLIENT_TOKEN"
+      }
+    }
+  }
+}
+```
+
+Reference: [@https://oaphub.ai/mcp/181672830075666436](https://oaphub.ai/mcp/181672830075666436)
+
+#### Using SSE Server (Non-Local MCP)
+
+You can also connect to external MCP servers (not local ones) via SSE (Server-Sent Events). Add this configuration to your Dive MCP settings:
 
 ```json
 {
