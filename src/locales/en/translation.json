@@ -179,7 +179,12 @@
     "tabLocal": "Custom Tools",
     "oapStoreLinkAlt": "View Details",
     "subToolsCount": "Tools Enabled：{{count}} / {{total}}",
-    "disabledDescription": "Disabled"
+    "disabledDescription": "Disabled",
+    "unsavedSubtools": {
+      "title": "Unsaved Changes",
+      "desc": "You have unsaved changes. If you leave this page, the changes will be lost. Do you want to continue?",
+      "cancel": "Cancel Changes"
+    }
   },
   "modelConfig": {
     "title": "Model Settings",
@@ -203,7 +208,8 @@
     "copyImageUrl": "Copy Image URL",
     "downloadImage": "Download Image",
     "login": "Login",
-    "signup": "Sign Up"
+    "signup": "Sign Up",
+    "save": "Save"
   },
   "models": {
     "title": "Model Settings",
