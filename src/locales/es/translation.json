@@ -171,8 +171,7 @@
       "clear_filter": "Limpiar filtros",
       "hint": "Los servidores MCP avanzados requieren una actualización a la versión Pro para poder instalarlos",
       "high_cost_title": "Activar servidor MCP costoso",
-      "high_cost_desc": "Ha seleccionado los siguientes servidores MCP que consumen muchos tokens. ¿Desea activarlos?",
-      "pro_only": "Solo los usuarios de la versión Pro pueden instalarlos"
+      "high_cost_desc": "Ha seleccionado los siguientes servidores MCP que consumen muchos tokens. ¿Desea activarlos?"
     },
     "tabAll": "Todas las herramientas",
     "tabOap": "Herramientas OAP",

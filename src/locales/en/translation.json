@@ -171,8 +171,7 @@
       "clear_filter": "Clear Filter",
       "hint": "High-level MCP Servers require upgrading to the Pro version to install",
       "high_cost_title": "Enable High-Cost MCP Servers",
-      "high_cost_desc": "You have selected MCP Servers that consume many tokens. Please check if your plan usage is sufficient.",
-      "pro_only": "Pro plan users can install"
+      "high_cost_desc": "You have selected MCP Servers that consume many tokens. Please check if your plan usage is sufficient."
     },
     "tabAll": "All Tools",
     "tabOap": "OAP Tools",

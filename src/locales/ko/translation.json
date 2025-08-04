@@ -171,8 +171,7 @@
       "clear_filter": "필터 지우기",
       "hint": "고급 MCP 서버는 Pro 버전으로 업그레이드해야 설치할 수 있습니다",
       "high_cost_title": "비싼 MCP 서버 활성화",
-      "high_cost_desc": "다음 MCP 서버는 많은 토큰을 소비하므로 계획 사용량이 충분한지 확인하세요.",
-      "pro_only": "Pro 계획 사용자만 설치할 수 있습니다"
+      "high_cost_desc": "다음 MCP 서버는 많은 토큰을 소비하므로 계획 사용량이 충분한지 확인하세요."
     },
     "tabAll": "모든 도구",
     "tabOap": "OAP 도구",
