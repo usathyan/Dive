@@ -1,0 +1,84 @@
+@use "../_variables" as *;
+
+.custom-button {
+  background-color: var(--bg);
+  box-shadow: 0 3px 7px var(--shadow-btn-white);
+  transition: background-color $transition-normal ease;
+
+  &:hover,
+  &:focus {
+    outline: none;
+    border-color: transparent;
+  }
+
+  &:hover {
+    background-color: var(--bg-btn-hover-white);
+  }
+
+  &.padding-xxs {
+    padding: 0 8px;
+  }
+
+  &.padding-xs {
+    padding: 0 16px;
+  }
+
+  &.padding-s {
+    padding: 7px 24px;
+  }
+
+  &.padding-n {
+    padding: 7px 32px;
+  }
+
+  &.padding-l {
+    padding: 7px 40px;
+  }
+
+  &.padding-xl {
+    padding: 7px 48px;
+  }
+
+  &.padding-xxl {
+    padding: 7px 56px;
+  }
+
+  &.white {
+    background-color: var(--bg);
+    box-shadow: 0 3px 7px var(--shadow-btn-white);
+    color: var(--text);
+
+    &:hover {
+      background-color: var(--bg-btn-hover-white);
+    }
+  }
+
+  &.green {
+    background-color: var(--bg-pri-green);
+    box-shadow: 0 3px 7px var(--shadow-btn-green);
+    color: var(--text-light);
+
+    &:hover {
+      background-color: var(--bg-btn-hover-green);
+    }
+  }
+
+  &.fit {
+    width: fit-content;
+  }
+
+  &.normal {
+    width: 100%;
+  }
+
+  &.full {
+    width: 100%;
+  }
+
+  &.disabled {
+    background-color: var(--bg-op-dark-weak)!important;
+    box-shadow: none!important;
+    color: var(--text-cancel)!important;
+    cursor: not-allowed!important;
+  }
+}
