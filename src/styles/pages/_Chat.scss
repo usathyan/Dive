@@ -33,12 +33,20 @@
   overflow: hidden;
   position: relative;
 
-  .scroll-to-bottom-btn {
+  .scroll-to-bottom-btn-container {
     position: absolute;
+    width: 100%;
+    max-width: 740px;
     bottom: 20px;
     left: 50%;
+    transform: translate(-50%, -100%);
+    display: flex;
+    justify-content: flex-end;
     z-index: 1;
-    transform: translate(-150%, -100%);
+    pointer-events: none;
+  }
+
+  .scroll-to-bottom-btn {
     width: 30px;
     height: 30px;
     padding: 6px;
