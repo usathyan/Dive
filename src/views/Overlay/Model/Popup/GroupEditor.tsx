@@ -203,7 +203,7 @@ const KeyPopupEdit = ({ onClose, onSuccess }: Props) => {
           </div>
           {Object.entries(fields).map(
             ([key, field]) =>
-              key !== "model" && (
+              key !== "model" && key !== "skip_tls_verify" && (
                 <div key={key} className="models-key-form-group">
                   <label className="models-key-field-title">
                     <>
@@ -348,6 +348,31 @@ const KeyPopupEdit = ({ onClose, onSuccess }: Props) => {
               />
             )}
           </div>
+          {fields["skip_tls_verify"] && (
+            <div className="models-key-form-group">
+              <label className="models-key-field-title">
+                <div className="models-key-field-optional">
+                  <CheckBox
+                    checked={formData?.skip_tls_verify as boolean || false}
+                    onChange={e => handleChange("skip_tls_verify", e.target.checked)}
+                  ></CheckBox>
+                  {`TLS/SSL non-certificate ${t("models.selfOptional")}`}
+                </div>
+              </label>
+              {(formData?.skip_tls_verify as boolean || false) && (
+                <div className="warning-text">
+                  <svg className="warning-icon" width="20px" height="20px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2" fill="none"></circle>
+                    <line x1="12" y1="6" x2="12" y2="14" stroke="currentColor" strokeWidth="2"></line>
+                    <circle cx="12" cy="17" r="1.5" fill="currentColor"></circle>
+                  </svg>
+                  <div className="warning-text-description">
+                    {t("system.skipTlsVerifyWarning")}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
         </div>
       </PopupConfirm>
     </>

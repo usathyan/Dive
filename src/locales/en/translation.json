@@ -212,6 +212,7 @@
     "instructionsSetting": "Instruction Settings",
     "listTitle": "Service Provider Configuration",
     "optional": "(Optional)",
+    "selfOptional": "(Optional)",
     "unSupportModelCount": "You have selected {{count}} unsupported models",
     "deleteTitle": "Confirm deletion of {{name}} Key?",
     "deleteDescription": "This action cannot be undone.",
@@ -337,7 +338,8 @@
     "tokenPackageHint": "Token packages have no expiration date and will only be used after the monthly plan quota is exhausted.",
     "tokenPackageRemainingUsage": "Remaining usage",
     "tokenPackageWarningTitle": "Token quota used up.",
-    "tokenPackageWarning": "You can replenish more token usage at the OAPhub <planLink>Dashboard page</planLink>."
+    "tokenPackageWarning": "You can replenish more token usage at the OAPhub <planLink>Dashboard page</planLink>.",
+    "skipTlsVerifyWarning": "Security warning: Ignoring certificate verification may reduce connection security. It is recommended to use in trusted network environments."
   },
   "toast": {
     "copiedToClipboard": "Copied to clipboard",
