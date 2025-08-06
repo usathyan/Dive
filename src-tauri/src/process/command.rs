@@ -44,7 +44,10 @@ impl Command {
                 #[cfg(target_os = "linux")]
                 {
                     // PR_SET_PDEATHSIG: Send SIGKILL when parent dies
+                    #[cfg(not(debug_assertions))]
                     libc::prctl(libc::PR_SET_PDEATHSIG, libc::SIGKILL, 0, 0, 0);
+                    #[cfg(debug_assertions)]
+                    libc::prctl(libc::PR_SET_PDEATHSIG, libc::SIGTERM, 0, 0, 0);
                 }
 
                 Ok(())
