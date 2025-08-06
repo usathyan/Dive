@@ -4,7 +4,7 @@ type ModelListResult = Result<Vec<String>, String>;
 
 #[tauri::command]
 pub async fn llm_openai_model_list(api_key: String) -> ModelListResult {
-    get_openai_model_list(api_key, "https://api.openai.com").await
+    get_openai_model_list(api_key, "https://api.openai.com/v1").await
 }
 
 #[tauri::command]
