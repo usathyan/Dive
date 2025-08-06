@@ -4,6 +4,10 @@
   background-color: var(--bg);
   box-shadow: 0 3px 7px var(--shadow-btn-white);
   transition: background-color $transition-normal ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
 
   &:hover,
   &:focus {
@@ -15,12 +19,23 @@
     background-color: var(--bg-btn-hover-white);
   }
 
+  .loading-spinner {
+    @include loading-spinner;
+  }
+
+  &.white,
+  &.gray {
+    .loading-spinner {
+      @include loading-spinner-dark;
+    }
+  }
+
   &.padding-xxs {
-    padding: 0 8px;
+    padding: 7px 8px;
   }
 
   &.padding-xs {
-    padding: 0 16px;
+    padding: 7px 16px;
   }
 
   &.padding-s {
@@ -45,11 +60,32 @@
 
   &.white {
     background-color: var(--bg);
+    border: 1px solid var(--border-weak);
     box-shadow: 0 3px 7px var(--shadow-btn-white);
     color: var(--text);
 
     &:hover {
       background-color: var(--bg-btn-hover-white);
+    }
+  }
+
+  &.gray {
+    background-color: var(--bg-op-dark-extremeweak);
+    box-shadow: 0 3px 7px var(--shadow);
+    color: var(--text);
+
+    &:hover {
+      background-color: var(--bg-op-dark-weak);
+    }
+  }
+
+  &.success-green {
+    background: var(--bg-success);
+    box-shadow: 0 3px 7px var(--shadow-btn-green);
+    color: var(--text-light);
+
+    &:hover {
+      background-color: var(--bg-hover-success);
     }
   }
 
@@ -60,6 +96,16 @@
 
     &:hover {
       background-color: var(--bg-btn-hover-green);
+    }
+  }
+
+  &.blue {
+    background-color: var(--bg-pri-blue);
+    box-shadow: 0 3px 7px var(--shadow-btn-blue);
+    color: var(--text-light);
+
+    &:hover {
+      background-color: var(--bg-hover-blue);
     }
   }
 
@@ -75,10 +121,16 @@
     width: 100%;
   }
 
-  &.disabled {
+  &.disabled:not(.loading) {
     background-color: var(--bg-op-dark-weak)!important;
     box-shadow: none!important;
-    color: var(--text-cancel)!important;
+    color: var(--text-light)!important;
     cursor: not-allowed!important;
+    opacity: 0.5;
+  }
+
+  &.loading {
+    cursor: not-allowed!important;
+    opacity: 0.5;
   }
 }

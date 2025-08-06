@@ -3,6 +3,7 @@ import { Behavior, useLayer } from "../hooks/useLayer"
 import PopupWindow, { PopupStylePorps } from "./PopupWindow"
 import { useTranslation } from "react-i18next"
 import Tooltip from "./Tooltip"
+import Button from "./Button"
 
 type PopupConfirmProps = PopupStylePorps & {
 	title?: string
@@ -63,13 +64,14 @@ export default function PopupConfirm({ title, children, zIndex, noBackground, cl
 
 	const ConfirmButton = () => {
   const buttonElement = (
-			<button
-				className="confirm-btn"
-				onClick={onConfirm}
+			<Button
+				onClick={onConfirm || (() => {})}
 				disabled={disabled}
+				color="green"
+				minHeight="40px"
 			>
 				{confirmText || t("common.confirm")}
-			</button>
+			</Button>
   )
 
   return confirmTooltip ? (
@@ -81,12 +83,13 @@ export default function PopupConfirm({ title, children, zIndex, noBackground, cl
 
 const CancelButton = () => {
 	const buttonElement = (
-		<button
-			className="cancel-btn"
-			onClick={onCancel}
-		>
-			{cancelText || t("common.cancel")}
-		</button>
+			<Button
+				onClick={onCancel || (() => {})}
+				color="white"
+				minHeight="40px"
+			>
+				{cancelText || t("common.cancel")}
+			</Button>
 	)
 
 	return cancelTooltip ? (

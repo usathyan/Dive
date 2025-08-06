@@ -5,6 +5,7 @@ import { useAtomValue } from "jotai"
 import { useNavigate } from "react-router-dom"
 import { isLoggedInOAPAtom } from "../atoms/oapState"
 import { openOapLoginPage } from "../ipc/oap"
+import Button from "../components/Button"
 
 const Login = () => {
   const navigate = useNavigate()
@@ -37,10 +38,15 @@ const Login = () => {
             {t("login.description1")}
           </p>
           <div className="button-container">
-            <button className="option-btn setting-btn" onClick={() => {
-              navigate("/setup")
-              setIsInitialized(true)
-            }}>{t("login.button1")}</button>
+            <Button
+              color="blue"
+              size="fit"
+              padding="xxl"
+              onClick={() => {
+                navigate("/setup")
+                setIsInitialized(true)
+              }}
+            >{t("login.button1")}</Button>
           </div>
         </div>
 
@@ -52,8 +58,18 @@ const Login = () => {
             {t("login.description2")}
           </p>
           <div className="button-container">
-            <button className="option-btn login-btn" onClick={() => openOapLoginPage(false)}>{t("login.button2")}</button>
-            <button className="option-btn login-btn" onClick={() => openOapLoginPage(false)}>{t("login.button3")}</button>
+            <Button
+              color="blue"
+              size="full"
+              padding="n"
+              onClick={() => openOapLoginPage(false)}
+            >{t("login.button2")}</Button>
+            <Button
+              color="blue"
+              size="full"
+              padding="n"
+              onClick={() => openOapLoginPage(false)}
+            >{t("login.button3")}</Button>
           </div>
         </div>
       </div>

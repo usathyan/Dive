@@ -153,30 +153,6 @@
           @include loading-spinner;
         }
       }
-
-      .verify-btn {
-        background: var(--bg-pri-blue);
-
-        &:hover:not(:disabled) {
-          background: var(--bg-hover-blue);
-        }
-
-        &:active:not(:disabled) {
-          background: var(--bg-active-blue);
-        }
-      }
-
-      .submit-btn {
-        background: var(--bg-success);
-
-        &:hover:not(:disabled) {
-          background: var(--bg-hover-success);
-        }
-
-        &:active:not(:disabled) {
-          background: var(--bg-active-success);
-        }
-      }
     }
 
     .divider {

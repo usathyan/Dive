@@ -107,23 +107,8 @@
     padding: 16px $page-h-padding;
 
     .new-chat-btn {
-      width: 100%;
-      padding: 10px;
-      border: none;
-      border-radius: 8px;
-      background: var(--bg-pri-blue);
-      color: white;
       font-weight: 500;
-      cursor: pointer;
       transition: background $transition-fast;
-
-      &:hover {
-        background: var(--bg-hover-blue);
-      }
-
-      &:active {
-        background: var(--bg-active-blue);
-      }
     }
   }
 
@@ -289,34 +274,6 @@
     display: flex;
     justify-content: center;
     gap: 12px;
-
-    button {
-      padding: 8px 16px;
-      border-radius: 6px;
-      border: none;
-      cursor: pointer;
-      transition: all 0.2s;
-
-      &.cancel-btn {
-        background: none;
-        border: 1px solid var(--border);
-        color: var(--text);
-
-        &:hover {
-          border-color: var(--bg-hover-blue);
-          color: var(--text-hover-blue);
-        }
-      }
-
-      &.confirm-btn {
-        background: var(--bg-error);
-        color: white;
-
-        &:hover {
-          background: var(--bg-hover-error);
-        }
-      }
-    }
   }
 }
 

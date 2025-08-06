@@ -25,16 +25,6 @@
       color: var(--text-error);
     }
   }
-
-  .confirm-btn {
-    &:disabled {
-      background-color: var(--bg-op-dark-mediumweak) !important;
-
-      &:hover {
-        background-color: var(--bg-op-dark-mediumweak) !important;
-      }
-    }
-  }
 }
 
 .model-custom-parameters {
