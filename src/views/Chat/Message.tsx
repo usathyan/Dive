@@ -18,6 +18,7 @@ import Textarea from "../../components/WrappedTextarea"
 import { isChatStreamingAtom } from "../../atoms/chatState"
 import Zoom from "../../components/Zoom"
 import { convertLocalFileSrc } from "../../ipc/util"
+import Button from "../../components/Button"
 
 declare global {
   namespace JSX {
@@ -118,21 +119,25 @@ const Message = ({ messageId, text, isSent, files, isError, isLoading, onRetry, 
             <span>{t("chat.editDescription")}</span>
           </div>
           <div className="edit-text-footer-right">
-            <button
-              type="button"
-              className="cancel-btn"
+            <Button
+              color="white"
+              size="fit"
+              padding="n"
+              minHeight="40px"
               onClick={onCancel}
             >
               {t("chat.cancel")}
-            </button>
-            <button
-              type="button"
-              className="save-btn"
+            </Button>
+            <Button
+              color="blue"
+              size="fit"
+              padding="n"
+              minHeight="40px"
               onClick={onSave}
               disabled={editedText === ""}
             >
               {t("chat.save")}
-            </button>
+            </Button>
           </div>
         </div>
       </div>

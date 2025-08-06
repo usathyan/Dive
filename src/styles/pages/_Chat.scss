@@ -372,35 +372,6 @@
           display: flex;
           align-items: center;
           gap: 15px;
-
-          button {
-            padding: 8px 16px;
-            border-radius: 8px;
-            border: none;
-            background: var(--bg-pri-blue);
-            color: white;
-            cursor: pointer;
-            transition: background 0.2s;
-
-            &:hover {
-              background: var(--bg-hover-blue);
-            }
-
-            &:disabled {
-              opacity: 0.5;
-              cursor: not-allowed;
-              background: var(--bg-hover-blue);
-            }
-
-            &.cancel-btn {
-              background: var(--bg);
-              color: var(--text);
-
-              &:hover {
-                background: var(--bg-btn-hover);
-              }
-            }
-          }
         }
       }
     }

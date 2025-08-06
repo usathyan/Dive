@@ -14,6 +14,7 @@ import { useNavigate } from "react-router-dom"
 import { ModelProvider } from "../../../types/model"
 import { defaultBaseModel, fieldsToLLMGroup, intoModelConfig } from "../../helper/model"
 import { modelSettingsAtom } from "../../atoms/modelState"
+import Button from "../../components/Button"
 
 interface ModelConfigFormProps {
   provider: ModelProvider
@@ -298,25 +299,28 @@ const ModelConfigForm: React.FC<ModelConfigFormProps> = ({
         )}
 
       <div className="form-actions">
-        <button
-          type="button"
-          className="verify-btn"
+        <Button
+          color="success-green"
+          size="fit"
+          padding="n"
+          minHeight="48px"
           onClick={verifyModel}
-          disabled={isVerifying || isSubmitting}
+          disabled={isSubmitting}
+          loading={isVerifying}
         >
-          {isVerifying ? (
-            <div className="loading-spinner"></div>
-          ) : t("setup.verify")}
-        </button>
-        <button
+          {t("setup.verify")}
+        </Button>
+        <Button
           type="submit"
-          className="submit-btn"
-          disabled={isVerifying || isSubmitting || !isVerified}
+          color="blue"
+          size="fit"
+          padding="n"
+          minHeight="48px"
+          disabled={isVerifying || !isVerified}
+          loading={isSubmitting}
         >
-          {isSubmitting ? (
-            <div className="loading-spinner"></div>
-          ) : t(submitLabel)}
-        </button>
+          {t(submitLabel)}
+        </Button>
       </div>
 
       <div className="form-actions">

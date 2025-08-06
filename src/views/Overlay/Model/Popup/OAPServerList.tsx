@@ -23,6 +23,7 @@ import { tomorrow, oneLight } from "react-syntax-highlighter/dist/esm/styles/pri
 import { themeAtom } from "../../../../atoms/themeState"
 import remarkGfm from "remark-gfm"
 import { showToastAtom } from "../../../../atoms/toastState"
+import Button from "../../../../components/Button"
 
 const SearchHightLight = memo(({ text, searchText }: { text: string, searchText: string }) => {
   if (searchText === "") {
@@ -248,6 +249,7 @@ const OAPServerList = ({
             t("tools.save")
           )
         }
+        disabled={isSubmitting}
         onCancel={onCancel}
         zIndex={1000}
         footerHint={
@@ -373,16 +375,18 @@ const OAPServerList = ({
                     {t("tools.oap.no_search_data")}
                   </div>
                 </div>
-                <button
-                  className="no-oap-result-button"
+                <Button
+                  color="blue"
+                  size="fit"
+                  padding="xs"
                   onClick={() => {
                     setTag([])
                     setSubscription("ALL")
                     setSearchText("")
                   }}
                 >
-                  <span>{t("tools.oap.clear_filter")}</span>
-                </button>
+                  {t("tools.oap.clear_filter")}
+                </Button>
               </div>
             :
               <div className="oap-grid" id="itemGrid">

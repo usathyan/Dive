@@ -239,41 +239,6 @@
         opacity: 0.7;
         cursor: not-allowed;
       }
-
-      .loading-spinner {
-        width: 16px;
-        height: 16px;
-        border: 2px solid var(--border-inverted-op-mediumweak);
-        border-radius: 50%;
-        border-top-color: var(--border);
-        animation: spin 0.8s linear infinite;
-      }
-    }
-
-    .verify-btn {
-      background: var(--bg-success);
-      color: var(--text-light);
-
-      &:hover:not(:disabled) {
-        background: var(--bg-hover-success);
-      }
-
-      &:active:not(:disabled) {
-        background: var(--bg-active-success);
-      }
-    }
-
-    .submit-btn {
-      background: var(--bg-pri-blue);
-      color: var(--text-light);
-
-      &:hover:not(:disabled) {
-        background: var(--bg-hover-blue);
-      }
-
-      &:active:not(:disabled) {
-        background: var(--bg-active-blue);
-      }
     }
   }
 
@@ -324,8 +289,6 @@
     gap: 12px;
     margin-top: 16px;
 
-    .edit-btn,
-    .folder-btn,
     .reload-btn {
       display: flex;
       align-items: center;
@@ -338,50 +301,12 @@
       font-size: 14px;
       cursor: pointer;
       transition: all 0.2s;
-
-      svg {
-        fill: currentColor;
-      }
-    }
-
-    .edit-btn {
-      background: var(--bg-pri-blue);
-      color: var(--text-light);
-
-      &:hover {
-        background: var(--bg-hover-blue);
-      }
-    }
-
-    .folder-btn {
       background: var(--bg-op-dark-extremeweak);
-
-      &:hover {
-        background: var(--bg-op-dark-ultraweak);
-      }
-    }
-
-    .reload-btn {
-      background: var(--bg-op-dark-extremeweak);
-
-      img {
-        height: 16px;
-        width: 16px;
-      }
     }
 
     .oap-logo {
       height: 22px;
       width: 22px;
-    }
-  }
-}
-
-[data-theme='dark'],
-:root:has([data-theme='dark']) {
-  .reload-btn {
-    img {
-      filter: invert(1);
     }
   }
 }
@@ -820,71 +745,14 @@
       display: flex;
       align-items: center;
       gap: 8px;
-      padding: 8px 16px;
       border: none;
       border-radius: 6px;
       cursor: pointer;
       transition: all 0.2s;
       font-size: 14px;
-      color: var(--text);
 
       svg {
         fill: currentColor;
-      }
-
-      [data-theme='dark'] {
-        background: rgba(255, 255, 255, 0.1);
-
-        &:hover {
-          background: rgba(255, 255, 255, 0.15);
-        }
-      }
-    }
-
-    .add-btn {
-      background: var(--bg-success);
-      color: var(--text-light);
-
-      &:hover {
-        background: var(--bg-hover-success);
-      }
-
-      [data-theme='dark'] {
-        background: rgba(82, 196, 26, 0.2);
-
-        &:hover {
-          background: rgba(82, 196, 26, 0.3);
-        }
-      }
-    }
-
-    .edit-btn {
-      background: var(--bg-pri-blue);
-      color: var(--text-light);
-
-      &:hover {
-        background: var(--bg-hover-blue);
-      }
-
-      &[disabled] {
-        background: var(--bg-hover-blue);
-        cursor: not-allowed;
-      }
-
-      [data-theme='dark'] {
-        background: rgba(24, 144, 255, 0.2);
-
-        &:hover {
-          background: rgba(24, 144, 255, 0.3);
-        }
-      }
-    }
-
-    .folder-btn {
-      background: var(--bg-op-dark-extremeweak);
-
-      &:hover {
-        background: var(--bg-op-dark-ultraweak);
       }
     }
   }
@@ -951,26 +819,6 @@
       border-radius: 6px;
       cursor: pointer;
       transition: all 0.3s;
-    }
-
-    .cancel-btn {
-      background: none;
-      border: 1px solid var(--border);
-      color: var(--text);
-
-      &:hover {
-        border-color: var(--border-hover-blue);
-        color: var(--text-hover-blue);
-      }
-    }
-
-    .submit-btn {
-      background: var(--bg-pri-blue);
-      color: var(--text-light);
-
-      &:hover {
-        background: var(--bg-hover-blue);
-      }
     }
   }
 
@@ -1426,12 +1274,7 @@
 }
 
 .loading-spinner {
-  width: 16px;
-  height: 16px;
-  border: 2px solid var(--border-inverted-op-mediumweak);
-  border-radius: 50%;
-  border-top-color: var(--border);
-  animation: spin 0.8s linear infinite;
+  @include loading-spinner;
 }
 
 .tool-edit-menu-item {

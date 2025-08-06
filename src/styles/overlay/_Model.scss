@@ -291,24 +291,6 @@
       outline: none;
     }
   }
-
-  .submit-btn {
-    height: 40px;
-    background: var(--bg-success);
-    color: var(--text-light);
-
-    &:hover:not(:disabled) {
-      background: var(--bg-hover-success);
-    }
-
-    &:active:not(:disabled) {
-      background: var(--bg-active-success);
-    }
-
-    .loading-spinner {
-      @include loading-spinner;
-    }
-  }
 }
 
 .models-parameter-popup-confirm {
@@ -793,6 +775,7 @@
             gap: 5px;
 
             .loading-spinner {
+              @include loading-spinner-dark;
               width: 22px;
               height: 22px;
             }
@@ -1030,6 +1013,8 @@
 
 .model-customID-popup {
   .model-popup-content {
+    display: flex;
+    align-items: center;
     flex: 1;
     padding: 0 20px;
 

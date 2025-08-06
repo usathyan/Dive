@@ -16,6 +16,7 @@ import { getTermFromModelConfig, queryGroup, queryModel, updateGroup, updateMode
 import { modelSettingsAtom } from "../atoms/modelState"
 import { fileToBase64 } from "../util"
 import { isLoggedInOAPAtom, isOAPUsageLimitAtom, oapUserAtom } from "../atoms/oapState"
+import Button from "./Button"
 
 interface Props {
   page: "welcome" | "chat"
@@ -393,8 +394,11 @@ const ChatInput: React.FC<Props> = ({ page, onSendMessage, disabled, onAbort }) 
           <div>
             {t("chat.unsupportTools", { model: activeConfig?.model })}
           </div>
-          <button
+          <Button
             className="enable-tools-btn"
+            color="white"
+            size="fit"
+            padding="n"
             onClick={toggleEnableTools}
           >
             {ifEnableTools() ?
@@ -410,7 +414,7 @@ const ChatInput: React.FC<Props> = ({ page, onSendMessage, disabled, onAbort }) 
                 </svg>
                 {t("chat.tools-btn.enable")}
               </>}
-          </button>
+          </Button>
         </div>
       )}
       {(!activeConfig?.model || activeConfig?.model == "none") ? (

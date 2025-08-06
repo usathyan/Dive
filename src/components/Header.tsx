@@ -39,7 +39,7 @@ const Header = ({ showHelpButton = false, showModelSelect = false }: Props) => {
         </div>
         {showHelpButton && (
           <div className="right-side">
-            <button 
+            <button
               className="help-btn"
               onMouseEnter={() => setKeymapModalVisible(true)}
               onMouseLeave={() => setKeymapModalVisible(false)}
@@ -55,4 +55,4 @@ const Header = ({ showHelpButton = false, showModelSelect = false }: Props) => {
   )
 }
 
-export default React.memo(Header) 
+export default React.memo(Header)

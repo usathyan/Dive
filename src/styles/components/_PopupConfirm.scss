@@ -99,46 +99,4 @@
     display: flex;
     gap: 8px;
   }
-
-  .cancel-btn {
-    height: 40px;
-    line-height: 40px;
-    padding: 0 16px;
-    background-color: var(--bg-cancel);
-    box-shadow: 0 3px 7px var(--shadow-btn-cancel);
-
-    &:hover {
-      background-color: var(--bg-hover-cancel);
-      box-shadow: none;
-    }
-  }
-
-  .confirm-btn {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    height: 40px;
-    line-height: 40px;
-    padding: 0 16px;
-    color: var(--text-light);
-    background-color: var(--bg-pri-green);
-    box-shadow: 0 3px 7px var(--shadow-btn-confirm);
-
-    &:hover {
-      background-color: var(--bg-hover-green);
-      box-shadow: none;
-    }
-
-    &:disabled {
-      opacity: 0.5;
-      box-shadow: none;
-      cursor: not-allowed;
-      border-color: transparent;
-
-      &:hover {
-        background-color: var(--bg-pri-green);
-        box-shadow: none;
-      }
-    }
-  }
 }
