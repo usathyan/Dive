@@ -241,11 +241,26 @@ const Tools = () => {
           return newConfig
         })
       })
-    } else if(isShowToast) {
-      showToast({
-        message: t("tools.saveSuccess"),
-        type: "success"
-      })
+    }
+    if(data?.detail?.filter((item: any) => item.type.includes("error")).length > 0) {
+      data?.detail?.filter((item: any) => item.type.includes("error"))
+        .map((e: any) => [e.loc[2], e.msg])
+        .forEach(([serverName, error]: [string, string]) => {
+          if(isShowToast) {
+            showToast({
+              message: t("tools.updateFailed", { serverName, error }),
+              type: "error",
+              closable: true
+            })
+          }
+        })
+    }
+    if(data.errors?.filter((error: any) => error.serverName === tool.name).length === 0 &&
+        data?.detail?.filter((item: any) => item.type.includes("error")).length === 0) {
+        showToast({
+          message: t("tools.saveSuccess"),
+          type: "success"
+        })
     }
   }
 
@@ -355,13 +370,20 @@ const Tools = () => {
         // reset enable
         await updateMCPConfig(newConfig)
       }
+      if(data?.detail?.filter((item: any) => item.type.includes("error")).length > 0) {
+        data?.detail?.filter((item: any) => item.type.includes("error"))
+          .map((e: any) => [e.loc[2], e.msg])
+          .forEach(([serverName, error]: [string, string]) => {
+            showToast({
+              message: t("tools.updateFailed", { serverName, error }),
+              type: "error",
+              closable: true
+            })
+          })
+      }
 
-      if(data.errors?.filter((error: any) => error.serverName === tool.name).length > 0) {
-        showToast({
-          message: t("tools.toggleFailed"),
-          type: "error"
-        })
-      } else {
+      if(data.errors?.filter((error: any) => error.serverName === tool.name).length === 0 &&
+        data?.detail?.filter((item: any) => item.type.includes("error")).length === 0) {
         showToast({
           message: t("tools.saveSuccess"),
           type: "success"
