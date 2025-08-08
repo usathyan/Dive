@@ -33,7 +33,7 @@ function putS3
 # Check if mode parameter is provided
 if [ $# -eq 0 ]; then
   echo "Usage: $0 [electron|tauri]"
-  echo "  electron: Upload files from ./release"
+  echo "  electron: Upload files from ./release and ./output (if they exist)"
   echo "  tauri: Upload files from ./src-tauri/target/release"
   exit 1
 fi
@@ -45,42 +45,58 @@ script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 project_root="$(dirname "$script_dir")"
 
 if [ "$mode" = "electron" ]; then
-  source_path="$project_root/release"
+  source_paths=()
+  if [ -d "$project_root/release" ]; then
+    source_paths+=("$project_root/release")
+  fi
+  if [ -d "$project_root/output" ]; then
+    source_paths+=("$project_root/output")
+  fi
+  if [ ${#source_paths[@]} -eq 0 ]; then
+    echo "Error: No valid source directories found for electron mode"
+    echo "Expected at least one of: $project_root/release, $project_root/output"
+    exit 1
+  fi
 elif [ "$mode" = "tauri" ]; then
-  source_path="$project_root/src-tauri/target/release"
+  if [ -d "$project_root/src-tauri/target/release" ]; then
+    source_paths=("$project_root/src-tauri/target/release")
+  else
+    echo "Error: Source directory '$project_root/src-tauri/target/release' does not exist"
+    exit 1
+  fi
 else
   echo "Error: Invalid mode. Use 'electron' or 'tauri'"
   exit 1
 fi
 
-# Check if source directory exists
-if [ ! -d "$source_path" ]; then
-  echo "Error: Source directory '$source_path' does not exist"
-  exit 1
-fi
-
 echo "Mode: $mode"
-echo "Source path: $source_path"
+echo "Source paths: ${source_paths[@]}"
 echo "Looking for files with extensions: .exe, .AppImage, .dmg, .sig"
-echo "Also looking for files starting with 'latest' and ending with .yml in: $source_path"
+echo "Also looking for files starting with 'latest' and ending with .yml in: ${source_paths[@]}"
 echo "Looking for files starting with 'latest' and ending with .json in: $project_root"
 
 # Find and upload files with specific extensions (search up to 3 levels deep)
 found_files=0
 
-# Search for exe, AppImage, dmg, sig, and latest yml files in source_path
-while IFS= read -r -d '' file; do
-  if [ -f "$file" ]; then
-    filename=$(basename "$file")
-    file_dir=$(dirname "$file")
-    # Check if file has one of the target extensions or matches latest yml pattern
-    if [[ "$filename" == *.exe ]] || [[ "$filename" == *.AppImage ]] || [[ "$filename" == *.dmg ]] || [[ "$filename" == *.sig ]] || [[ "$filename" == latest*.yml ]]; then
-      echo "Uploading: $filename (from $file_dir)"
-      putS3 "$file_dir" "$filename"
-      found_files=$((found_files + 1))
+# Search for exe, AppImage, dmg, sig, and latest yml files in source_paths
+for src_path in "${source_paths[@]}"; do
+  while IFS= read -r -d '' file; do
+    if [ -f "$file" ]; then
+      filename=$(basename "$file")
+      file_dir=$(dirname "$file")
+      # Check if file has one of the target extensions and starts with dive/Dive, or matches latest yml pattern
+      if ([[ "$filename" == dive*.exe ]] || [[ "$filename" == Dive*.exe ]] \
+          || [[ "$filename" == dive*.AppImage ]] || [[ "$filename" == Dive*.AppImage ]] \
+          || [[ "$filename" == dive*.dmg ]] || [[ "$filename" == Dive*.dmg ]] \
+          || [[ "$filename" == dive*.sig ]] || [[ "$filename" == Dive*.sig ]] \
+          || [[ "$filename" == latest*.yml ]]); then
+        echo "Uploading: $filename (from $file_dir)"
+        putS3 "$file_dir" "$filename"
+        found_files=$((found_files + 1))
+      fi
     fi
-  fi
-done < <(find "$source_path" -maxdepth 3 -type f -print0)
+  done < <(find "$src_path" -maxdepth 3 -type f -print0)
+done
 
 # Search for latest json files in project_root (2 levels deep)
 while IFS= read -r -d '' file; do
@@ -97,7 +113,7 @@ while IFS= read -r -d '' file; do
 done < <(find "$project_root" -maxdepth 2 -type f -print0)
 
 if [ $found_files -eq 0 ]; then
-  echo "No files with target extensions found in $source_path"
+  echo "No files with target extensions found in ${source_paths[@]}"
 else
   echo "Uploaded $found_files files successfully"
 fi
