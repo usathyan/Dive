@@ -7,7 +7,7 @@ import useHotkeyEvent from "../hooks/useHotkeyEvent"
 import Textarea from "./WrappedTextarea"
 import { lastMessageAtom } from "../atoms/chatState"
 import { useAtomValue, useSetAtom } from "jotai"
-import { activeConfigAtom, activeProviderAtom, configAtom, configDictAtom, currentModelSupportToolsAtom, isConfigActiveAtom, writeRawConfigAtom } from "../atoms/configState"
+import { activeConfigAtom, configAtom, configDictAtom, currentModelSupportToolsAtom, isConfigActiveAtom, writeRawConfigAtom } from "../atoms/configState"
 import { openOverlayAtom } from "../atoms/layerState"
 import { enabledToolsAtom, loadToolsAtom } from "../atoms/toolState"
 import { useNavigate } from "react-router-dom"
@@ -55,7 +55,6 @@ const ChatInput: React.FC<Props> = ({ page, onSendMessage, disabled, onAbort }) 
   const loadTools = useSetAtom(loadToolsAtom)
   const isLoggedInOAP = useAtomValue(isLoggedInOAPAtom)
   const config = useAtomValue(configAtom)
-  const activeProvider = useAtomValue(activeProviderAtom)
   const configList = useAtomValue(configDictAtom)
   const saveAllConfig = useSetAtom(writeRawConfigAtom)
   const showToast = useSetAtom(showToastAtom)
@@ -241,9 +240,8 @@ const ChatInput: React.FC<Props> = ({ page, onSendMessage, disabled, onAbort }) 
     }
   }, [])
 
-  const ifEnableTools = () => {
-    const configs = config?.configs
-    return !hasActiveConfig || !configs[activeProvider] || !("enableTools" in configs[activeProvider]) || configs[activeProvider]?.enableTools
+  const currentModelEnableToolcall = () => {
+    return config.enableTools ?? true
   }
 
   const toggleEnableTools = () => {
@@ -252,7 +250,7 @@ const ChatInput: React.FC<Props> = ({ page, onSendMessage, disabled, onAbort }) 
     }
 
     const _config = configList[config.activeProvider]
-    const enableTools = "enableTools" in _config ? _config?.enableTools : true
+    const enableTools = config?.enableTools ?? true
     setSettings(s => {
       const term = getTermFromModelConfig(_config)
       if (!term) {
@@ -401,7 +399,7 @@ const ChatInput: React.FC<Props> = ({ page, onSendMessage, disabled, onAbort }) 
             padding="n"
             onClick={toggleEnableTools}
           >
-            {ifEnableTools() ?
+            {currentModelEnableToolcall() ?
               <>
                 <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 11 11" fill="none">
                   <path d="M3 9L3 2" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
@@ -521,7 +519,7 @@ const ChatInput: React.FC<Props> = ({ page, onSendMessage, disabled, onAbort }) 
                 openOverlay("Tools")
               }}
             >
-              {ifEnableTools() ?
+              {currentModelEnableToolcall() ?
               <>
                 <svg width="20" height="20" viewBox="0 0 24 24">
                   <path d="M22.7 19l-9.1-9.1c.9-2.3.4-5-1.5-6.9-2-2-5-2.4-7.4-1.3L9 6 6 9 1.6 4.7C.4 7.1.9 10.1 2.9 12.1c1.9 1.9 4.6 2.4 6.9 1.5l9.1 9.1c.4.4 1 .4 1.4 0l2.3-2.3c.5-.4.5-1.1.1-1.4z"/>
