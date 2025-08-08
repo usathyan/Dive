@@ -116,6 +116,7 @@
     "editTool": "Editar {{tool}} config",
     "fieldTitle": "Campo",
     "fieldTitleAlt": "Los campos suelen satisfacer la mayoría de las necesidades, pero si su configuración MCP requiere campos adicionales o diferentes tipos, puede editar directamente en el JSON TextArea a la derecha para satisfacer sus necesidades",
+    "initialTimeoutAlt": "El tiempo de espera inicial predeterminado es de 10 segundos, pero puede configurarse en cualquier número flotante de 10 segundos o más. No hay límite de segundos. Se recomienda ajustar este valor si el servidor tiene una conexión lenta.",
     "editJsonTool": "Configuración de Herramientas MCP",
     "addTool": "Agregar Herramientas MCP",
     "jsonDesc": "Por favor, ingresa o pega el JSON del servidor MCP en el campo",
@@ -131,7 +132,10 @@
       "args": "Herramienta {{mcp}}: El campo args debe ser un array",
       "env": "Herramienta {{mcp}}: El campo env debe ser un objeto",
       "url": "Herramienta {{mcp}}: El campo url debe ser una cadena de texto",
-      "transport": "Herramienta {{mcp}}: El campo transport solo puede ser {{options}}"
+      "transport": "Herramienta {{mcp}}: El campo transport solo puede ser {{options}}",
+      "range": "Herramienta {{mcp}}: El campo {{field}} está fuera de rango, por favor verifica y corrige el valor",
+      "minRange": "Herramienta {{mcp}}: El campo {{field}} debe ser mayor o igual a {{min}}",
+      "maxRange": "Herramienta {{mcp}}: El campo {{field}} debe ser menor o igual a {{max}}"
     },
     "namePlaceholder": "Ingrese el nombre...",
     "commandPlaceholder": "Ingrese el comando...",
