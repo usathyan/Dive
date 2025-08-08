@@ -103,7 +103,7 @@ impl HostProcess {
             .stderr(Stdio::piped())
             .stdout(Stdio::piped());
 
-        log::info!("dived execute: {:?}", cmd);
+        log::info!("dived execute: {:?}", cmd.get_args());
         let mut process = cmd.spawn()?;
 
         if let (Some(stdout), Some(stderr)) = (process.stdout.take(), process.stderr.take()) {
