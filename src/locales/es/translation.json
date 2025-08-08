@@ -212,6 +212,7 @@
     "instructionsSetting": "Configuración de Instrucciones",
     "listTitle": "Configuración de Proveedores de Servicio",
     "optional": "(Opcional)",
+    "selfOptional": "(Opcional)",
     "unSupportModelCount": "Has seleccionado {{count}} modelos no compatibles",
     "deleteTitle": "¿Confirmar eliminar la clave de {{name}}?",
     "deleteDescription": "Esta acción no se puede deshacer.",
@@ -337,7 +338,8 @@
     "tokenPackageHint": "El paquete de tokens no tiene fecha de vencimiento y se utilizará después de agotar la cuota del plan mensual.",
     "tokenPackageRemainingUsage": "Uso restante",
     "tokenPackageWarningTitle": "El uso de tokens ha alcanzado el límite.",
-    "tokenPackageWarning": "Puede ir a la página <planLink>Dashboard</planLink> de OAPhub para recargar más uso de tokens."
+    "tokenPackageWarning": "Puede ir a la página <planLink>Dashboard</planLink> de OAPhub para recargar más uso de tokens.",
+    "skipTlsVerifyWarning": "Advertencia de seguridad: Ignorar la verificación de certificados puede reducir la seguridad de la conexión. Se recomienda usar en entornos de red confiables."
   },
   "toast": {
     "copiedToClipboard": "Copiado al portapapeles",

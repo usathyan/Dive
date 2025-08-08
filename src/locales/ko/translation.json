@@ -212,6 +212,7 @@
     "instructionsSetting": "프롬프트 설정",
     "listTitle": "서비스 공급자 구성",
     "optional": "(선택 사항)",
+    "selfOptional": "(선택 사항)",
     "unSupportModelCount": "{{count}}개의 지원되지 않는 모델이 선택되었습니다",
     "deleteTitle": "{{name}} 키를 삭제하시겠습니까?",
     "deleteDescription": "이 작업은 되돌릴 수 없습니다.",
@@ -337,7 +338,8 @@
     "tokenPackageHint": "토큰 패키지는 만료일이 없으며, 매월 계획 할당량이 소진된 후 사용됩니다.",
     "tokenPackageRemainingUsage": "남은 사용량",
     "tokenPackageWarningTitle": "토큰 사용량이 초과되었습니다.",
-    "tokenPackageWarning": "OAPhub <planLink>Dashboard 페이지</planLink>에서 더 많은 토큰 사용량을 충전할 수 있습니다."
+    "tokenPackageWarning": "OAPhub <planLink>Dashboard 페이지</planLink>에서 더 많은 토큰 사용량을 충전할 수 있습니다.",
+    "skipTlsVerifyWarning": "보안 경고: 인증서 검증을 무시하면 연결 보안이 감소할 수 있습니다. 신뢰할 수 있는 네트워크 환경에서 사용하는 것이 좋습니다."
   },
   "toast": {
     "copiedToClipboard": "클립보드에 복사되었습니다",
