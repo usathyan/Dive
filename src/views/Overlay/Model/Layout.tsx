@@ -1,5 +1,5 @@
 import { useAtom, useAtomValue, useSetAtom } from "jotai"
-import React, { useEffect, useState } from "react"
+import React, { useEffect, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { closeOverlayAtom } from "../../../atoms/layerState"
 import PopupConfirm from "../../../components/PopupConfirm"
@@ -24,13 +24,16 @@ import { isOAPUsageLimitAtom } from "../../../atoms/oapState"
 const PageLayout = () => {
   const { t } = useTranslation()
   const closeOverlay = useSetAtom(closeOverlayAtom)
-  const [showDeleteGroupConfirm, setShowDeleteGroupConfirm] = useState(false)
-  const [showNoModelAvailable, setShowNoModelAvailable] = useState(false)
+
   const [showGroupCreator, setShowGroupCreator] = useState(false)
   const [showGrupEditor, setShowGroupEditor] = useState(false)
-  const [showModelPopup, setShowModelPopup] = useState(false)
-  const [showNoModelAlert, setShowNoModelAlert] = useState(false)
+  const [showModelEditorPopup, setShowModelEditorPopup] = useState(false)
   const [showParameterPopup, setShowParameterPopup] = useState(false)
+  const [showDeleteModel, setShowDeleteModel] = useState(false)
+  const [showNoModelAfterDelete, setShowNoModelAfterDelete] = useState(false)
+  const [showNoModelAfterToggle, setShowNoModelAfterToggle] = useState(false)
+
+  const lastToggleGroup = useRef<LLMGroup | null>(null)
   const showToast = useSetAtom(showToastAtom)
   const allVerifiedList = useAtomValue(modelVerifyListAtom)
   const modelGroups = useAtomValue(modelGroupsAtom)
@@ -41,6 +44,16 @@ const PageLayout = () => {
   const [settings, setSettings] = useAtom(modelSettingsAtom)
   const { writeGroupBuffer, writeModelsBuffer, getLatestBuffer, pushModelBufferWithModelNames, flush } = useModelsProvider()
   const [commonFlash, setCommonFlash] = useAtom(commonFlashAtom)
+
+  const isGroupNoModelAvailble = (groups: LLMGroup[]) => {
+    return groups
+      .filter(g => g.active)
+      .map(group => {
+        const currentVerifyList = allVerifiedList[getVerifyKey(group)] ?? {}
+        return group.models.filter(model => getVerifyStatus(currentVerifyList[model.model]) !== "unSupportModel").length
+      })
+      .every(a => a === 0)
+  }
 
   const getSettings = () => new Promise<ModelGroupSetting>((resolve) => {
     setSettings(prev => {
@@ -62,7 +75,7 @@ const PageLayout = () => {
 
   const handleNewGroupSubmit = () => {
     setShowGroupCreator(false)
-    setShowModelPopup(true)
+    setShowModelEditorPopup(true)
   }
 
   const handleKeyPopupEditSubmit = (customModel?: string) => {
@@ -78,24 +91,15 @@ const PageLayout = () => {
     })
   }
 
-  const isNoModelAlert = () => {
-    // alert when closing or deleting provider cause no model available
-    return modelGroups.every(isNoModelAlertWithGroup)
-  }
-
-  const isNoModelAlertWithGroup = (group: LLMGroup) => {
-    return group.active && getAvailableModelCount(group) === 0
-  }
-
   const openModelPopup = async (group: LLMGroup) => {
     writeGroupBuffer(group)
     writeModelsBuffer(group.models)
-    setShowModelPopup(true)
+    setShowModelEditorPopup(true)
   }
 
   const handleModelSubmit = () => {
     handleActiveConfigNotInSettings()
-    setShowModelPopup(false)
+    setShowModelEditorPopup(false)
   }
 
   const handleActiveConfigNotInSettings = async () => {
@@ -114,7 +118,8 @@ const PageLayout = () => {
   }
 
   const handleConfirmDelete = async () => {
-    setShowDeleteGroupConfirm(false)
+    setShowDeleteModel(false)
+    setShowNoModelAfterDelete(false)
     const group = clone(getLatestBuffer().group)
     setSettings(settings => {
       settings.groups = removeGroup(getGroupTerm(group), settings.groups)
@@ -129,52 +134,43 @@ const PageLayout = () => {
     handleActiveConfigNotInSettings()
   }
 
-  const handleConfirmClose = async () => {
-    setShowNoModelAvailable(false)
-    const group = clone(getLatestBuffer().group)
-    handleGroupToggle(group, false)
+  const handleDeleteGroup = (group: LLMGroup) => {
+    const newGroups = removeGroup(getGroupTerm(group), settings.groups)
+    if (isGroupNoModelAvailble(newGroups)) {
+      setShowNoModelAfterDelete(true)
+      return
+    }
 
-    showToast({
-      message: t("setup.saveSuccess"),
-      type: "success"
+    writeGroupBuffer(group)
+    setShowDeleteModel(true)
+  }
+
+  const handleGroupToggle = (group: LLMGroup, active?: boolean, force?: boolean) => {
+    if (!group) {
+      return
+    }
+
+    lastToggleGroup.current = group
+    const newGroups = settings.groups.map(g => {
+      if(isMatch(getGroupTerm(g), getGroupTerm(group))) {
+        return {
+          ...g,
+          active: active ?? !g.active
+        }
+      }
+      return g
     })
 
-    handleActiveConfigNotInSettings()
-  }
-
-  const handleConfirm = async (type: "delete" | "close") => {
-    if(type === "delete") {
-      await handleConfirmDelete()
-    } else {
-      await handleConfirmClose()
+    if (!force && isGroupNoModelAvailble(newGroups)) {
+      setShowNoModelAfterToggle(true)
+      return
     }
-  }
 
-  const getAvailableModelCount = (group: LLMGroup) => {
-    const currentVerifyList = allVerifiedList[getVerifyKey(group)] ?? {}
-    return group.models.filter(model => getVerifyStatus(currentVerifyList[model.model]) !== "unSupportModel").length
-  }
-
-  const handleDeleteGroup = (group: LLMGroup) => {
-    writeGroupBuffer(group)
-    setShowDeleteGroupConfirm(true)
-  }
-
-  const handleGroupToggle = (group: LLMGroup, active?: boolean) => {
+    setShowNoModelAfterToggle(false)
     setSettings(settings => {
-      const groups = settings.groups.map(g => {
-        if(isMatch(getGroupTerm(g), getGroupTerm(group))) {
-          return {
-            ...g,
-            active: active ?? !g.active
-          }
-        }
-        return g
-      })
-
       return {
         ...settings,
-        groups
+        groups: newGroups
       }
     })
 
@@ -213,45 +209,6 @@ const PageLayout = () => {
               {t("models.listTitle")}
             </div>
             <div className="right">
-              {showNoModelAvailable && (
-                <PopupConfirm
-                  noBorder={true}
-                  zIndex={900}
-                  footerType="center"
-                  className="models-delete-confirm"
-                  onConfirm={() => handleConfirm("close")}
-                  onCancel={() => setShowNoModelAvailable(false)}
-                  onClickOutside={() => setShowNoModelAvailable(false)}
-                >
-                  <div className="models-delete-confirm-content">
-                    <div className="models-delete-confirm-title">{t("models.closeAllTitle")}</div>
-                    <div className="models-delete-confirm-description">{t("models.closeAllDescription")}</div>
-                  </div>
-                </PopupConfirm>
-              )}
-              {showDeleteGroupConfirm && (
-                <PopupConfirm
-                  noBorder={true}
-                  zIndex={900}
-                  footerType="center"
-                  className="models-delete-confirm"
-                  onConfirm={() => handleConfirm("delete")}
-                  onCancel={() => setShowDeleteGroupConfirm(false)}
-                  onClickOutside={() => setShowDeleteGroupConfirm(false)}
-                >
-                  <div className="models-delete-confirm-content">
-                    <div className="models-delete-confirm-title">
-                      {isNoModelAlert() ?
-                        t("models.deleteAllTitle") :
-                        t("models.deleteTitle", { name: getLatestBuffer().group.modelProvider })}
-                    </div>
-                    <div className="models-delete-confirm-description">
-                      {isNoModelAlert() ?
-                        t("models.deleteAllDescription") : t("models.deleteDescription")}
-                    </div>
-                  </div>
-                </PopupConfirm>
-              )}
               <button
                 className="models-new-key-btn"
                 onClick={() => {
@@ -266,11 +223,6 @@ const PageLayout = () => {
               >
                 {t("models.parameters")}
               </div>
-              {showParameterPopup && (
-                <ParameterPopup
-                  onClose={() => setShowParameterPopup(false)}
-                />
-              )}
             </div>
           </div>
           <div className={`providers-list ${isOAPUsageLimit ? "oap-usage-limit" : ""}`}>
@@ -308,32 +260,98 @@ const PageLayout = () => {
             onSuccess={handleKeyPopupEditSubmit}
           />
         )}
-        {showModelPopup && (
+        {showModelEditorPopup && (
           <ModelsEditor
             onClose={() => {
-              setShowModelPopup(false)
+              setShowModelEditorPopup(false)
             }}
             onSuccess={handleModelSubmit}
           />
         )}
-        {showNoModelAlert && (
+        {/* {showNoActiveModelAfterEditModel && (
           <PopupConfirm
             noBorder={true}
             zIndex={900}
             footerType="center"
             className="models-delete-confirm"
-            onConfirm={() => {
-              setShowNoModelAlert(false)
-            }}
-            onClickOutside={() => {
-              setShowNoModelAlert(false)
-            }}
+            onConfirm={() => setShowNoActiveModelAfterEditModel(false)}
+            onClickOutside={() => setShowNoActiveModelAfterEditModel(false)}
           >
             <div className="models-delete-confirm-content">
               <div className="models-delete-confirm-title">{t("models.noModelAlertTitle")}</div>
               <div className="models-delete-confirm-description">{t("models.noModelAlertDescription")}</div>
             </div>
           </PopupConfirm>
+        )} */}
+        {showNoModelAfterToggle && (
+          <PopupConfirm
+            noBorder={true}
+            zIndex={900}
+            footerType="center"
+            className="models-delete-confirm"
+            onConfirm={() => {
+              handleGroupToggle(lastToggleGroup.current!, false, true)
+              lastToggleGroup.current = null
+            }}
+            onCancel={() => {
+              setShowNoModelAfterToggle(false)
+              lastToggleGroup.current = null
+            }}
+            onClickOutside={() => {
+              setShowNoModelAfterToggle(false)
+              lastToggleGroup.current = null
+            }}
+          >
+            <div className="models-delete-confirm-content">
+              <div className="models-delete-confirm-title">{t("models.closeAllTitle")}</div>
+              <div className="models-delete-confirm-description">{t("models.closeAllDescription")}</div>
+            </div>
+          </PopupConfirm>
+        )}
+        {showDeleteModel && (
+          <PopupConfirm
+            noBorder={true}
+            zIndex={900}
+            footerType="center"
+            className="models-delete-confirm"
+            onConfirm={handleConfirmDelete}
+            onCancel={() => setShowDeleteModel(false)}
+            onClickOutside={() => setShowDeleteModel(false)}
+          >
+            <div className="models-delete-confirm-content">
+              <div className="models-delete-confirm-title">
+                {t("models.deleteTitle", { name: getLatestBuffer().group.modelProvider })}
+              </div>
+              <div className="models-delete-confirm-description">
+                {t("models.deleteDescription") }
+              </div>
+            </div>
+          </PopupConfirm>
+        )}
+        {showNoModelAfterDelete && (
+          <PopupConfirm
+            noBorder={true}
+            zIndex={900}
+            footerType="center"
+            className="models-delete-confirm"
+            onConfirm={handleConfirmDelete}
+            onCancel={() => setShowNoModelAfterDelete(false)}
+            onClickOutside={() => setShowNoModelAfterDelete(false)}
+          >
+            <div className="models-delete-confirm-content">
+              <div className="models-delete-confirm-title">
+                {t("models.deleteAllTitle")}
+              </div>
+              <div className="models-delete-confirm-description">
+                {t("models.deleteAllDescription")}
+              </div>
+            </div>
+          </PopupConfirm>
+        )}
+        {showParameterPopup && (
+          <ParameterPopup
+            onClose={() => setShowParameterPopup(false)}
+          />
         )}
       </div>
     </div>
