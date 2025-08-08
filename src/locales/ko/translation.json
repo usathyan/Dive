@@ -178,7 +178,12 @@
     "tabLocal": "사용자 정의 도구",
     "oapStoreLinkAlt": "자세히 보기",
     "subToolsCount": "도구 활성화: {{count}} / {{total}}",
-    "disabledDescription": "비활성화"
+    "disabledDescription": "비활성화",
+    "unsavedSubtools": {
+      "title": "저장되지 않은 변경",
+      "desc": "저장되지 않은 변경이 있습니다. 페이지를 벗어나면 변경이 손실됩니다. 계속하시겠습니까?",
+      "cancel": "변경 취소"
+    }
   },
   "modelConfig": {
     "title": "모델 설정",
@@ -202,7 +207,8 @@
     "copyImageUrl": "이미지 URL 복사",
     "downloadImage": "이미지 다운로드",
     "login": "로그인",
-    "signup": "회원가입"
+    "signup": "회원가입",
+    "save": "저장"
   },
   "models": {
     "title": "모델 설정",

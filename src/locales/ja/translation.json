@@ -178,7 +178,12 @@
     "tabLocal": "カスタムツール",
     "oapStoreLinkAlt": "詳細を見る",
     "subToolsCount": "ツール有効：{{count}} / {{total}}",
-    "disabledDescription": "無効"
+    "disabledDescription": "無効",
+    "unsavedSubtools": {
+      "title": "未保存の変更",
+      "desc": "未保存の変更があります。ページを離れると変更が失われます。続行しますか？",
+      "cancel": "変更をキャンセル"
+    }
   },
   "modelConfig": {
     "title": "モデル設定",
@@ -202,7 +207,8 @@
     "copyImageUrl": "画像URLをコピー",
     "downloadImage": "画像をダウンロード",
     "login": "ログイン",
-    "signup": "サインアップ"
+    "signup": "サインアップ",
+    "save": "保存"
   },
   "models": {
     "title": "モデル設定",

@@ -178,7 +178,12 @@
     "tabLocal": "自定义工具",
     "oapStoreLinkAlt": "在 OAP Hub 查看详情",
     "subToolsCount": "工具启用：{{count}} / {{total}}",
-    "disabledDescription": "已停用"
+    "disabledDescription": "已停用",
+    "unsavedSubtools": {
+      "title": "未保存的变更",
+      "desc": "您有未保存的变更，若离开此页面，变更将丢失。确定继续？",
+      "cancel": "取消变更"
+    }
   },
   "modelConfig": {
     "title": "模型设置",
@@ -202,7 +207,8 @@
     "copyImageUrl": "复制图片URL",
     "downloadImage": "下载图片",
     "login": "登录",
-    "signup": "註冊"
+    "signup": "注册",
+    "save": "保存"
   },
   "models": {
     "title": "模型设置",
