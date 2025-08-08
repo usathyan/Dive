@@ -1804,7 +1804,6 @@ const McpEditPopup = React.memo(({ _type, _config, _mcpName, onDelete, onCancel,
     }
 
     const handleJsonChangeMcp = async (value: string) => {
-      console.log(123)
       try {
         let newJson = jsonlint.parse(value)
         if(Object.keys(newJson)[0] !== "mcpServers") {
@@ -1828,13 +1827,11 @@ const McpEditPopup = React.memo(({ _type, _config, _mcpName, onDelete, onCancel,
           }])
           setCurrentMcpIndex(0)
         } else if(isValidJSON(newJson)) {
-          console.log(1)
           setMcpList(prev => {
             const newMcpList = [...prev]
             newMcpList[currentMcpIndex].jsonString = value
             newMcpList[currentMcpIndex].name = newMcpName
             newMcpList[currentMcpIndex].mcpServers = encodeMcpServers(newMcpServers[newMcpName])
-            console.log(newMcpList[currentMcpIndex].mcpServers, isValidRange(newMcpList[currentMcpIndex].mcpServers))
             newMcpList[currentMcpIndex].isError = false
             newMcpList[currentMcpIndex].isRangeError = isValidRange(newMcpList[currentMcpIndex].mcpServers)
             return newMcpList
@@ -1849,7 +1846,6 @@ const McpEditPopup = React.memo(({ _type, _config, _mcpName, onDelete, onCancel,
           })
         }
       } catch(_e) {
-        console.log(3)
         setMcpList(prev => {
           const newMcpList = [...prev]
           newMcpList[currentMcpIndex].jsonString = value
