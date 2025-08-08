@@ -171,8 +171,7 @@
       "clear_filter": "清除筛选条件",
       "hint": "高阶 MCP Server 需要升级 Pro 版本方能安装",
       "high_cost_title": "启用昂贵的MCP Server",
-      "high_cost_desc": "您有勾选到以下使用较多 Token 数量的 MCP Server。 确定要启用吗？",
-      "pro_only": "Pro 方案用户才能安装"
+      "high_cost_desc": "您有勾选到以下使用较多 Token 数量的 MCP Server。 确定要启用吗？"
     },
     "tabAll": "所有工具",
     "tabOap": "OAP工具",
@@ -218,6 +217,7 @@
     "instructionsSetting": "提示词设置",
     "listTitle": "服务提供者配置",
     "optional": "（可选填）",
+    "selfOptional": "（可自选）",
     "unSupportModelCount": "你已选取 {{count}} 个不支持模型",
     "deleteTitle": "确定删除此条 {{name}} Key？",
     "deleteDescription": "一经删除即无法恢复。",
@@ -343,7 +343,8 @@
     "tokenPackageHint": "Token 包装包没有到期日，将在每月计划配额耗尽后使用。",
     "tokenPackageRemainingUsage": "剩余使用量",
     "tokenPackageWarningTitle": "Token 使用量已达到上限。",
-    "tokenPackageWarning": "您可以前往 OAPhub <planLink>Dashboard 页面</planLink>补充更多 Token 使用量。"
+    "tokenPackageWarning": "您可以前往 OAPhub <planLink>Dashboard 页面</planLink>补充更多 Token 使用量。",
+    "skipTlsVerifyWarning": "安全提醒：忽略证书验证会降低连接安全性，建议您在信任的网络环境中使用。"
   },
   "toast": {
     "copiedToClipboard": "已复制到剪贴板",

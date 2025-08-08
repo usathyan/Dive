@@ -19,6 +19,7 @@ import { isLoggedInOAPAtom, OAPLevelAtom, oapUserAtom } from "../atoms/oapState"
 import { OAP_ROOT_URL } from "../../shared/oap"
 import { openUrl } from "../ipc/util"
 import { imgPrefix, oapLogout } from "../ipc"
+import Button from "./Button"
 
 interface Props {
   onNewChat?: () => void
@@ -202,9 +203,15 @@ const HistorySidebar = ({ onNewChat }: Props) => {
           <Tooltip
             content={`${t("chat.newChatTooltip")} Ctrl + Shift + O`}
           >
-            <button className="new-chat-btn" onClick={handleNewChat}>
+            <Button
+              className="new-chat-btn"
+              color="blue"
+              size="full"
+              padding="n"
+              onClick={handleNewChat}
+            >
               + {t("chat.newChat")}
-            </button>
+            </Button>
           </Tooltip>
         </div>
         <div className="history-list">

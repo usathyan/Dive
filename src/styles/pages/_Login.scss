@@ -72,25 +72,5 @@
     display: flex;
     gap: 15px;
     justify-content: center;
-
-    .option-btn {
-      padding: 10px 100px;
-      border-radius: 12px;
-      font-size: 16px;
-      font-weight: 600;
-      color: var(--text-light);
-      background-color: var(--bg-pri-blue);
-      white-space: nowrap;
-
-      &.login-btn {
-        padding: 10px 80px;
-      }
-
-      &:hover {
-        background-color: var(--bg-hover-blue);
-        border-color: transparent;
-      }
-    }
   }
-
 }

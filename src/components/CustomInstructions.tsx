@@ -80,4 +80,4 @@ const CustomInstructions = () => {
   )
 }
 
-export default React.memo(CustomInstructions) 
+export default React.memo(CustomInstructions)

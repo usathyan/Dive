@@ -64,6 +64,7 @@ export default function ModelsProvider({ children }: { children: ReactNode }) {
         }
       default:
         return {
+          ...group.extra,
           apiKey: group.apiKey,
           baseURL: group.baseURL,
         }

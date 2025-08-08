@@ -27,24 +27,11 @@ const ChatMessages = ({ messages, isLoading, onRetry, onEdit }: Props) => {
   const isChatStreaming = useAtomValue(isChatStreamingAtom)
   const hoverTimeOutRef = useRef<NodeJS.Timeout | null>(null)
   const [isHovering, setIsHovering] = useState(false)
-  const [positionLeft, setPositionLeft] = useState(0)
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView()
     setShowScrollButton(false)
   }
-
-  useEffect(() => {
-    const resetPositionLeft = () => {
-      setPositionLeft(messagesEndRef.current?.getBoundingClientRect().right ?? 0)
-    }
-
-    resetPositionLeft()
-    window.addEventListener("resize", resetPositionLeft)
-    return () => {
-      window.removeEventListener("resize", resetPositionLeft)
-    }
-  }, [])
 
   useEffect(() => {
     !mouseWheelRef.current && scrollToBottom()
@@ -105,7 +92,6 @@ const ChatMessages = ({ messages, isLoading, onRetry, onEdit }: Props) => {
   }
 
   const handleBtnEnter = (e: React.MouseEvent<HTMLButtonElement>) => {
-    console.log("btn enter")
     e.preventDefault()
     e.stopPropagation()
     if (hoverTimeOutRef.current) {
@@ -153,12 +139,14 @@ const ChatMessages = ({ messages, isLoading, onRetry, onEdit }: Props) => {
         ))}
         <div className="chat-messages-end" ref={messagesEndRef} />
       </div>
-      <button style={{ left: positionLeft }} className={`scroll-to-bottom-btn ${showScrollButton && isHovering ? 'show' : ''}`} onClick={scrollToBottom} onMouseEnter={handleBtnEnter} onMouseLeave={handleBtnLeave} onMouseMove={handleBtnMove}>
-        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 22 22" fill="none">
-          <path d="M4 12L11 19L18 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-          <path d="M11 18L11 3" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
-        </svg>
-      </button>
+      <div className="scroll-to-bottom-btn-container">
+        <button className={`scroll-to-bottom-btn ${showScrollButton && isHovering ? "show" : ""}`} onClick={scrollToBottom} onMouseEnter={handleBtnEnter} onMouseLeave={handleBtnLeave} onMouseMove={handleBtnMove}>
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 22 22" fill="none">
+            <path d="M4 12L11 19L18 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            <path d="M11 18L11 3" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+          </svg>
+        </button>
+      </div>
     </div>
   )
 }

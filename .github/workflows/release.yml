@@ -139,6 +139,15 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Publish to OAP
+        env:
+          S3_ACCESS_KEY: ${{ secrets.OAP_S3_ACCESS_KEY }}
+          S3_SECRET_KEY: ${{ secrets.OAP_S3_SECRET_KEY }}
+          S3_DOMAIN: ${{ secrets.OAP_S3_DOMAIN }}
+        shell: bash
+        run: |
+          ./scripts/publish-to-oap.sh electron
+
   release-tauri:
     permissions:
       contents: write
@@ -205,3 +214,12 @@ jobs:
           releaseName: 'v__VERSION__'
           prerelease: false
           args: ${{ matrix.args }}
+
+      - name: Publish to OAP
+        env:
+          S3_ACCESS_KEY: ${{ secrets.OAP_S3_ACCESS_KEY }}
+          S3_SECRET_KEY: ${{ secrets.OAP_S3_SECRET_KEY }}
+          S3_DOMAIN: ${{ secrets.OAP_S3_DOMAIN }}
+        shell: bash
+        run: |
+          ./scripts/publish-to-oap.sh tauri

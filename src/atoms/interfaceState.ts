@@ -62,7 +62,7 @@ export const PROVIDER_ICONS: Record<ModelProvider, string> = {
   default: "",
 }
 
-export type InputType = "text" | "password"
+export type InputType = "text" | "password" | "checkbox"
 
 export interface FieldDefinition {
   type: string | "list"
@@ -113,6 +113,14 @@ function openaiCompatibleTemplate(baseURL: string, overwrite: {apiKey?: any, bas
       readonly: false,
       ...overwrite.baseURL,
     },
+    skip_tls_verify: {
+      type: "boolean",
+      inputType: "checkbox",
+      label: "Skip TLS Verification",
+      description: "Skip TLS Verification",
+      required: false,
+      default: false,
+    },
     model: {
       type: "list",
       label: "Model ID",
@@ -137,6 +145,14 @@ export const defaultInterface: Record<ModelProvider, InterfaceDefinition> = {
       required: true,
       default: "",
       placeholder: "YOUR_API_KEY"
+    },
+    skip_tls_verify: {
+      type: "boolean",
+      inputType: "checkbox",
+      label: "Skip TLS Verification",
+      description: "Skip TLS Verification",
+      required: false,
+      default: false,
     },
     model: {
       type: "list",
@@ -177,6 +193,14 @@ export const defaultInterface: Record<ModelProvider, InterfaceDefinition> = {
       required: true,
       default: "http://localhost:11434",
       placeholder: "http://localhost:11434"
+    },
+    skip_tls_verify: {
+      type: "boolean",
+      inputType: "checkbox",
+      label: "Skip TLS Verification",
+      description: "Skip TLS Verification",
+      required: false,
+      default: false,
     },
     model: {
       type: "list",

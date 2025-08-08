@@ -35,26 +35,6 @@
   .login-section-button-group {
     display: flex;
     gap: 15px;
-
-    .login-section-button {
-      padding: 10px 55px;
-      background-color: var(--bg-op-dark-extremeweak);
-      box-shadow: 0 3px 7px var(--shadow);
-
-      &:hover {
-        border: 1px solid transparent;
-        background-color: var(--bg-op-dark-weak);
-      }
-
-      &.signup {
-        background-color: var(--bg-pri-blue);
-        color: var(--text-light);
-
-        &:hover {
-          background-color: var(--bg-pri-blue-medium);
-        }
-      }
-    }
   }
 
   .profile-section {

@@ -49,6 +49,7 @@ $shadow-dark: 0 2px 6px rgba(0, 0, 0, 0.2);
   --bg-active-blue: #096dd9;
   --bg-blue-ultraweak: #BEDBFF;
   --bg-blue-weak: #92c3ff;
+  --bg-op-blue-ultraweak: color-mix(in srgb, var(--bg-pri-blue), transparent 90%);
   --bg-cancel: #fefeff;
   --bg-hover-cancel: rgba(205,211,227,.3);
   --bg-success: #52c41a;
@@ -64,11 +65,16 @@ $shadow-dark: 0 2px 6px rgba(0, 0, 0, 0.2);
   --bg-select-hover: inherit;
   --bg-btn-hover: rgba(29, 161, 242, 0.1);
   --bg-btn-hover-strong: rgba(29, 161, 242, 0.2);
+  --bg-btn-hover-white: rgba(205,211,227,.3);
+  --bg-btn-hover-green: #03a3a9;
+  --bg-btn-hover-success-green: #73d13d;
+  --bg-btn-hover-blue: #40a9ff;
   --bg-modal: #1e1e1e;
   --bg-modal-header: #2d2d2d;
   --bg-hover-modal-resize: #d3eafd;
   --bg-overlay: rgba(61,61,77,.3);
   --bg-alert: #FFFCE9;
+  --bg-alert-mediumweak: #F7DDA1;
   --bg-alert-medium: #D08700;
 
   --text-link: #646cff;
@@ -115,6 +121,8 @@ $shadow-dark: 0 2px 6px rgba(0, 0, 0, 0.2);
   --shadow-btn-cancel: rgba(205,211,227,.3);
   --shadow-btn-confirm: rgba(3,163,169,.36);
   --shadow-btn-hover: rgba(29, 161, 242, 0.3);
+  --shadow-btn-white: rgba(205,211,227,.3);
+  --shadow-btn-green: rgba(3,163,169,.36);
   --shadow-modal-light: rgba(0, 0, 0, 0.2);
   --shadow-modal: rgba(0, 0, 0, 0.2);
 
@@ -168,6 +176,7 @@ $shadow-dark: 0 2px 6px rgba(0, 0, 0, 0.2);
   --bg-pri-blue-strong: #1447E6;
   --bg-hover-blue: #40a9ff;
   --bg-active-blue: #096dd9;
+  --bg-op-blue-ultraweak: color-mix(in srgb, var(--bg-pri-blue), transparent 90%);
   --bg-cancel: #262633;
   --bg-hover-cancel: rgba(61,61,77,.5);
   --bg-success: #52c41a;
@@ -183,11 +192,16 @@ $shadow-dark: 0 2px 6px rgba(0, 0, 0, 0.2);
   --bg-select-hover: rgba(255, 255, 255, 0.1);
   --bg-btn-hover: rgba(29, 161, 242, 0.1);
   --bg-btn-hover-strong: rgba(29, 161, 242, 0.2);
+  --bg-btn-hover-white: rgba(61,61,77,.5);
+  --bg-btn-hover-green: #069aa1;
+  --bg-btn-hover-success-green: rgba(82, 196, 26, 0.3);
+  --bg-btn-hover-blue: #40a9ff;
   --bg-modal: #1e1e1e;
   --bg-modal-header: #2d2d2d;
   --bg-hover-modal-resize: #2d2d2d;
   --bg-overlay: rgba(61,61,77,.6);
   --bg-alert: #FFFCE9;
+  --bg-alert-mediumweak: #F7DDA1;
   --bg-alert-medium: #D08700;
 
   --text-link: #646cff;
@@ -234,6 +248,8 @@ $shadow-dark: 0 2px 6px rgba(0, 0, 0, 0.2);
   --shadow-btn-cancel: rgba(13,15,18,.3);
   --shadow-btn-confirm: rgba(14,89,95,.3);
   --shadow-btn-hover: rgba(29, 161, 242, 0.3);
+  --shadow-btn-white: rgba(13,15,18,.3);
+  --shadow-btn-green: rgba(14,89,95,.3);
   --shadow-modal-light: rgba(0, 0, 0, 0.1);
   --shadow-modal: rgba(0, 0, 0, 0.2);
 
@@ -309,9 +325,18 @@ $z-sidebar: 200;
 @mixin loading-spinner($size: 16px, $border-width: 2px) {
   width: $size;
   height: $size;
-  border: $border-width solid rgba(255, 255, 255, 0.3);
+  border: $border-width solid var(--border-inverted-op-mediumweak);
   border-radius: 50%;
-  border-top-color: white;
+  border-top-color: var(--text-inverted);
+  animation: spin 0.8s linear infinite;
+}
+
+@mixin loading-spinner-dark($size: 16px, $border-width: 2px) {
+  width: $size;
+  height: $size;
+  border: $border-width solid var(--border-op-mediumweak);
+  border-radius: 50%;
+  border-top-color: var(--text);
   animation: spin 0.8s linear infinite;
 }
 

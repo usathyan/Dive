@@ -16,6 +16,7 @@ import { commonFlashAtom } from "../../atoms/globalState"
 import Tooltip from "../../components/Tooltip"
 import { openUrl } from "../../ipc/util"
 import { openOapLoginPage } from "../../ipc/oap"
+import Button from "../../components/Button"
 
 const USER_EDIT_URL = `${OAP_ROOT_URL}/u/account`
 const USAGE_ANALYTICS_URL = `${OAP_ROOT_URL}/u/dashboard`
@@ -127,8 +128,22 @@ const System = () => {
             {t("system.loginDescription")}
           </p>
           <div className="login-section-button-group">
-            <button className="login-section-button login" onClick={() => openOapLoginPage(false)}>{t("common.login")}</button>
-            <button className="login-section-button signup" onClick={() => openOapLoginPage(false)}>{t("common.signup")}</button>
+            <Button
+              color="gray"
+              size="fit"
+              padding="xxl"
+              onClick={() => openOapLoginPage(false)}
+            >
+              {t("common.login")}
+            </Button>
+            <Button
+              color="blue"
+              size="fit"
+              padding="xxl"
+              onClick={() => openOapLoginPage(false)}
+            >
+              {t("common.signup")}
+            </Button>
           </div>
         </div>
         :

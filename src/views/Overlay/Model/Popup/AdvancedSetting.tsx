@@ -19,6 +19,7 @@ import { getVerifyStatus } from "../ModelVerify"
 import { imgPrefix } from "../../../../ipc/env"
 import { BaseModel, ModelProvider } from "../../../../../types/model"
 import { useModelsProvider } from "../ModelsProvider"
+import Button from "../../../../components/Button"
 
 type Props = {
   model: BaseModel
@@ -501,18 +502,21 @@ const FooterHint = ({
   const { t } = useTranslation()
   return (
     <div>
-      <button
-        className="cancel-btn"
+      <Button
+        color="gray"
+        size="fit"
+        padding="n"
+        minHeight="40px"
         onClick={() => {
           if (isVerifying.current) {
             return
           }
           onVerifyConfirm()
         }}
-        disabled={isVerifying.current ?? false}
+        loading={isVerifying.current ?? false}
       >
         {t("models.parameterVerify")}
-      </button>
+      </Button>
     </div>
   )
 }

@@ -78,6 +78,10 @@ pub fn run() {
                 window.open_devtools();
             }
 
+            // Initialize Job Object for Windows process management
+            #[cfg(windows)]
+            process::init_job_object();
+
             let app_handle = app.handle();
 
             let store = app.store("oap.json")?;
@@ -277,9 +281,10 @@ pub fn run() {
             command::download_image,
             // llm
             command::llm::llm_openai_model_list,
+            command::llm::llm_openai_compatible_model_list,
+            command::llm::llm_openai_azure_model_list,
             command::llm::llm_anthropic_model_list,
             command::llm::llm_ollama_model_list,
-            command::llm::llm_openai_compatible_model_list,
             command::llm::llm_bedrock_model_list,
             command::llm::llm_mistralai_model_list,
             command::llm::llm_google_genai_model_list,
