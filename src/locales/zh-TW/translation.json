@@ -117,6 +117,7 @@
     "editJsonTool": "MCP Tools 設定",
     "fieldTitle": "欄位",
     "fieldTitleAlt": "欄位通常能滿足大多數需求，但若您的 MCP 設定需要額外欄位或不同型態，您可以直接在右側 JSON TextArea 進行編輯，以符合您程式的要求",
+    "initialTimeoutAlt": "初始連線等待時間預設為 10 秒，可自訂為 10 秒以上的任意浮點數，沒有最大秒數限制。若遇連線較慢的伺服器，請適度調整此數值。",
     "addTool": "新增 MCP Tools",
     "jsonDesc": "請在欄位輸入或直接貼上MCP Server Json",
     "addArg": "新增參數",
@@ -131,7 +132,10 @@
       "args": "工具{{mcp}}： 欄位 args 必須以陣列形式提供",
       "env": "工具{{mcp}}： 欄位 env 必須以物件形式提供",
       "url": "工具{{mcp}}： 欄位 url 必須為字串格式",
-      "transport": "工具{{mcp}}： 欄位 transport 只能為 {{options}}"
+      "transport": "工具{{mcp}}： 欄位 transport 只能為 {{options}}",
+      "range": "工具{{mcp}}： 欄位 {{field}} 的數值超出範圍，請檢查並修正數值",
+      "minRange": "工具{{mcp}}： 欄位 {{field}} 必須大於等於 {{min}}",
+      "maxRange": "工具{{mcp}}： 欄位 {{field}} 必須小於等於 {{max}}"
     },
     "namePlaceholder": "輸入名稱...",
     "commandPlaceholder": "輸入指令...",

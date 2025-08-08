@@ -994,7 +994,7 @@
           flex-direction: column;
           gap: 12px;
           width: 100%;
-          height: 415px;
+          height: 445px;
           padding: 0 5px;
           overflow-y: auto;
 
@@ -1004,6 +1004,12 @@
             display: flex;
             flex-direction: column;
             gap: 4px;
+
+            .field-item-title {
+              display: flex;
+              align-items: center;
+              gap: 4px;
+            }
 
             .field-item-array {
               display: flex;
@@ -1042,6 +1048,13 @@
             .select-button {
               &:focus {
                 outline: none;
+              }
+            }
+
+            &.error {
+              input,
+              .select-button {
+                border: 2px solid var(--border-error);
               }
             }
           }
@@ -1115,7 +1128,7 @@
           flex: 1;
 
           .cm-editor {
-            height: 415px;
+            height: 445px;
             flex: 1;
 
             &.cm-focused {

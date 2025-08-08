@@ -1014,6 +1014,7 @@ interface mcpListProps {
   mcpServers: mcpServersProps
   jsonString: string
   isError: boolean
+  isRangeError: { isError: boolean, fieldKey: string }
 }
 
 interface mcpServersProps {
@@ -1068,6 +1069,11 @@ const FieldType = {
     type: "select",
     options: ["stdio", "sse", "streamable", "websocket"] as const,
     error: "tools.jsonFormatError.transport"
+  },
+  "initialTimeout": {
+    type: "number",
+    min: 10,
+    minError: "tools.jsonFormatError.minRange"
   }
 }
 
@@ -1077,6 +1083,7 @@ const McpEditPopup = React.memo(({ _type, _config, _mcpName, onDelete, onCancel,
   const [mcpList, setMcpList] = useState<mcpListProps[]>([])
   const [currentMcpIndex, setCurrentMcpIndex] = useState(0)
   const [isFormatError, setIsFormatError] = useState(false)
+  const [isRangeError, setIsRangeError] = useState(false)
   const theme = useAtomValue(themeAtom)
   const systemTheme = useAtomValue(systemThemeAtom)
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -1099,6 +1106,14 @@ const McpEditPopup = React.memo(({ _type, _config, _mcpName, onDelete, onCancel,
     if(typeRef.current === "edit") {
       Object.keys(newConfig.mcpServers)
       .filter((mcpName) => !newConfig.mcpServers[mcpName]?.extraData?.oap)
+      .sort((a, b) => {
+        const aEnabled = newConfig.mcpServers[a]?.enabled
+        const bEnabled = newConfig.mcpServers[b]?.enabled
+        if (aEnabled && !bEnabled)
+          return -1
+        if (!aEnabled && bEnabled)
+          return 1
+      })
       .forEach((mcpName) => {
         const newJson = {
           mcpServers: {
@@ -1110,7 +1125,8 @@ const McpEditPopup = React.memo(({ _type, _config, _mcpName, onDelete, onCancel,
           name: mcpName,
           mcpServers: encodeMcpServers(newConfig.mcpServers[mcpName]),
           jsonString: JSON.stringify(newJson, null, 2),
-          isError: !isValidName(newMcpList, mcpName) || !isValidField(encodeMcpServers(newConfig.mcpServers[mcpName]))
+          isError: !isValidName(newMcpList, mcpName) || !isValidField(encodeMcpServers(newConfig.mcpServers[mcpName])),
+          isRangeError: isValidRange(encodeMcpServers(newConfig.mcpServers[mcpName]))
         })
       })
       setCurrentMcpIndex(newMcpList.findIndex(mcp => mcp.name === _mcpName) ?? 0)
@@ -1121,7 +1137,8 @@ const McpEditPopup = React.memo(({ _type, _config, _mcpName, onDelete, onCancel,
         name: "",
         mcpServers: {},
         jsonString: typeRef.current === "edit-json" ? JSON.stringify(newConfig, null, 2) : "",
-        isError: false
+        isError: false,
+        isRangeError: { isError: false, fieldKey: "" }
       })
       setCurrentMcpIndex(0)
     }
@@ -1170,6 +1187,7 @@ const McpEditPopup = React.memo(({ _type, _config, _mcpName, onDelete, onCancel,
       newMcpList[currentMcpIndex].mcpServers = newMcpServers
       newMcpList[currentMcpIndex].jsonString = isValidField(newMcpServers) ? JSON.stringify(newJsonString, null, 2) : newMcpList[currentMcpIndex].jsonString
       newMcpList.forEach(mcp => mcp.isError = !isValidName(newMcpList, mcp.name) || !isValidField(mcp.mcpServers))
+      newMcpList.forEach(mcp => mcp.isRangeError = isValidRange(mcp.mcpServers))
       return newMcpList
     })
   }
@@ -1229,6 +1247,14 @@ const McpEditPopup = React.memo(({ _type, _config, _mcpName, onDelete, onCancel,
               return false
             }
           }
+          if(FieldType[fieldKey].type === "number") {
+            if("min" in FieldType[fieldKey] && newMcpServers[fieldKey] < FieldType[fieldKey].min) {
+              return false
+            }
+            if("max" in FieldType[fieldKey] && newMcpServers[fieldKey] > FieldType[fieldKey].max) {
+              return false
+            }
+          }
         }
       }
       return true
@@ -1237,9 +1263,35 @@ const McpEditPopup = React.memo(({ _type, _config, _mcpName, onDelete, onCancel,
     }
   }
 
+  const isValidRange = (value: Record<string, any>) => {
+    try {
+      let newMcpServers = value
+      if(newMcpServers.mcpServers) {
+        newMcpServers = newMcpServers.mcpServers
+      }
+
+      // check value is in range
+      for(const fieldKey of Object.keys(FieldType) as Array<keyof typeof FieldType>) {
+        if(newMcpServers[fieldKey]) {
+          if(FieldType[fieldKey].type === "number") {
+            if("min" in FieldType[fieldKey] && newMcpServers[fieldKey] < FieldType[fieldKey].min) {
+              return { isError: true, fieldKey: fieldKey }
+            }
+            if("max" in FieldType[fieldKey] && newMcpServers[fieldKey] > FieldType[fieldKey].max) {
+              return { isError: true, fieldKey: fieldKey }
+            }
+          }
+        }
+      }
+      return { isError: false, fieldKey: "" }
+    } catch(_e) {
+      return { isError: true, fieldKey: "" }
+    }
+  }
+
   const handleSubmit = async () => {
     try {
-      if (mcpList.some(mcp => mcp.isError))
+      if (mcpList.some(mcp => mcp.isError || mcp.isRangeError?.isError))
         return
 
       const newConfig: {mcpServers: MCPConfig} = { mcpServers: {} }
@@ -1298,10 +1350,10 @@ const McpEditPopup = React.memo(({ _type, _config, _mcpName, onDelete, onCancel,
     return (
       <div className="tool-edit-list">
         {mcpList && mcpList.map((mcp, index) => (
-          mcp.isError ? (
+          (mcp.isError || mcp.isRangeError?.isError) ? (
             <Tooltip
               key={index}
-              content={t("tools.jsonFormatError.format", { mcp: mcp.name })}
+              content={(mcp.isRangeError?.isError && mcp.isRangeError.fieldKey !== "") ? t("tools.jsonFormatError.range", { mcp: mcp.name, field: mcp.isRangeError.fieldKey, min: FieldType.initialTimeout.min }) : t("tools.jsonFormatError.format", { mcp: mcp.name })}
               side="right"
             >
               <div
@@ -1542,6 +1594,25 @@ const McpEditPopup = React.memo(({ _type, _config, _mcpName, onDelete, onCancel,
               onChange={(e) => handleMcpChange("url", e.target.value)}
             />
           </div>
+          {/* Initial Timeout (s) */}
+          <div className={`field-item ${currentMcpServers.initialTimeout && currentMcpServers.initialTimeout < FieldType.initialTimeout.min ? "error" : ""}`}>
+            <div className="field-item-title">
+              <label>Initial Timeout (s)</label>
+              <Tooltip content={t("tools.initialTimeoutAlt")} side="bottom" align="start" maxWidth={402}>
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" fill="none">
+                  <circle cx="8" cy="8" r="7.5" stroke="currentColor"/>
+                  <path d="M8.73 6.64V12H7.85V6.64H8.73ZM8.3 4.63C8.43333 4.63 8.55 4.67667 8.65 4.77C8.75667 4.85667 8.81 4.99667 8.81 5.19C8.81 5.37667 8.75667 5.51667 8.65 5.61C8.55 5.70333 8.43333 5.75 8.3 5.75C8.15333 5.75 8.03 5.70333 7.93 5.61C7.83 5.51667 7.78 5.37667 7.78 5.19C7.78 4.99667 7.83 4.85667 7.93 4.77C8.03 4.67667 8.15333 4.63 8.3 4.63Z" fill="currentColor"/>
+                </svg>
+              </Tooltip>
+            </div>
+            <input
+              placeholder={t("tools.initialTimeoutPlaceholder")}
+              type="number"
+              min={FieldType.initialTimeout.min}
+              value={currentMcpServers.initialTimeout || 10}
+              onChange={(e) => handleMcpChange("initialTimeout", parseFloat(e.target.value) || 10)}
+            />
+          </div>
         </div>
       </div>
     )
@@ -1570,6 +1641,12 @@ const McpEditPopup = React.memo(({ _type, _config, _mcpName, onDelete, onCancel,
               } else if(FieldType[fieldKey].type !== fieldType) {
                 return false
               }
+              //  else if(FieldType[fieldKey].type === "number") {
+              //   if(("min" in FieldType[fieldKey] && newMcpServers[mcp][fieldKey] < FieldType[fieldKey].min)
+              //     || ("max" in FieldType[fieldKey] && newMcpServers[mcp][fieldKey] > FieldType[fieldKey].max)) {
+              //     return false
+              //   }
+              // }
             }
           }
         }
@@ -1654,12 +1731,31 @@ const McpEditPopup = React.memo(({ _type, _config, _mcpName, onDelete, onCancel,
                     message: t(FieldType[fieldKey].error, { mcp: mcp }),
                     severity: "error",
                   }]
+                }else if(parsed.mcpServers[mcp]?.[fieldKey] && FieldType[fieldKey].type === "number") {
+                  if("min" in FieldType[fieldKey] && parsed.mcpServers[mcp][fieldKey] < FieldType[fieldKey].min) {
+                    setIsRangeError(true)
+                    return [{
+                      from: 0,
+                      to: doc.length,
+                      message: t(FieldType[fieldKey].minError, { mcp: mcp, field: fieldKey, min: FieldType[fieldKey].min }),
+                      severity: "error",
+                    }]
+                  } else if("max" in FieldType[fieldKey] && parsed.mcpServers[mcp][fieldKey] > FieldType[fieldKey].max) {
+                    setIsRangeError(true)
+                    return [{
+                      from: 0,
+                      to: doc.length,
+                      message: t(FieldType[fieldKey].maxError, { mcp: mcp, field: fieldKey, max: FieldType[fieldKey].max }),
+                      severity: "error",
+                    }]
+                  }
                 }
               }
             }
           }
 
           setIsFormatError(false)
+          setIsRangeError(false)
           return []
         } catch (e: any) {
           const lineMatch = e.message.match(/line\s+(\d+)/)
@@ -1708,6 +1804,7 @@ const McpEditPopup = React.memo(({ _type, _config, _mcpName, onDelete, onCancel,
     }
 
     const handleJsonChangeMcp = async (value: string) => {
+      console.log(123)
       try {
         let newJson = jsonlint.parse(value)
         if(Object.keys(newJson)[0] !== "mcpServers") {
@@ -1726,16 +1823,20 @@ const McpEditPopup = React.memo(({ _type, _config, _mcpName, onDelete, onCancel,
             name: "",
             mcpServers: {},
             jsonString: value,
-            isError: false
+            isError: false,
+            isRangeError: { isError: false, fieldKey: "" }
           }])
           setCurrentMcpIndex(0)
         } else if(isValidJSON(newJson)) {
+          console.log(1)
           setMcpList(prev => {
             const newMcpList = [...prev]
             newMcpList[currentMcpIndex].jsonString = value
             newMcpList[currentMcpIndex].name = newMcpName
             newMcpList[currentMcpIndex].mcpServers = encodeMcpServers(newMcpServers[newMcpName])
+            console.log(newMcpList[currentMcpIndex].mcpServers, isValidRange(newMcpList[currentMcpIndex].mcpServers))
             newMcpList[currentMcpIndex].isError = false
+            newMcpList[currentMcpIndex].isRangeError = isValidRange(newMcpList[currentMcpIndex].mcpServers)
             return newMcpList
           })
         } else {
@@ -1743,14 +1844,17 @@ const McpEditPopup = React.memo(({ _type, _config, _mcpName, onDelete, onCancel,
             const newMcpList = [...prev]
             newMcpList[currentMcpIndex].jsonString = value
             newMcpList[currentMcpIndex].isError = true
+            newMcpList[currentMcpIndex].isRangeError = { isError: false, fieldKey: "" }
             return newMcpList
           })
         }
       } catch(_e) {
+        console.log(3)
         setMcpList(prev => {
           const newMcpList = [...prev]
           newMcpList[currentMcpIndex].jsonString = value
           newMcpList[currentMcpIndex].isError = true
+          newMcpList[currentMcpIndex].isRangeError = { isError: false, fieldKey: "" }
           return newMcpList
         })
       }
@@ -1862,7 +1966,7 @@ const McpEditPopup = React.memo(({ _type, _config, _mcpName, onDelete, onCancel,
       className={`tool-edit-popup-container ${typeRef.current}`}
       onConfirm={handleSubmit}
       onCancel={onCancel}
-      disabled={isFormatError || !isValidName(mcpList, mcpList[currentMcpIndex]?.name) || mcpList.some(mcp => mcp.isError) || isSubmitting}
+      disabled={isFormatError || isRangeError || !isValidName(mcpList, mcpList[currentMcpIndex]?.name) || mcpList.some(mcp => mcp.isError || mcp.isRangeError?.isError) || isSubmitting}
       zIndex={1000}
       listenHotkey={false}
       confirmText={isSubmitting ? (
