@@ -34,7 +34,7 @@ function putS3
 if [ $# -eq 0 ]; then
   echo "Usage: $0 [electron|tauri]"
   echo "  electron: Upload files from ./release and ./output (if they exist)"
-  echo "  tauri: Upload files from ./src-tauri/target/release"
+  echo "  tauri: Upload files from ./src-tauri/target/release/bundle"
   exit 1
 fi
 
@@ -58,10 +58,10 @@ if [ "$mode" = "electron" ]; then
     exit 1
   fi
 elif [ "$mode" = "tauri" ]; then
-  if [ -d "$project_root/src-tauri/target/release" ]; then
-    source_paths=("$project_root/src-tauri/target/release")
+  if [ -d "$project_root/src-tauri/target/release/bundle" ]; then
+    source_paths=("$project_root/src-tauri/target/release/bundle")
   else
-    echo "Error: Source directory '$project_root/src-tauri/target/release' does not exist"
+    echo "Error: Source directory '$project_root/src-tauri/target/release/bundle' does not exist"
     exit 1
   fi
 else
