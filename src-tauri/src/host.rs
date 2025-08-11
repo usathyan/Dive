@@ -59,7 +59,7 @@ impl HostProcess {
             .arg("-I")
             .arg("-c")
             .arg(format!(
-                "import sys; sys.path.extend(['{}', '{}']); from dive_mcp_host.httpd._main import main; main()",
+                "import site; site.addsitedir('{}'); site.addsitedir('{}'); from dive_mcp_host.httpd._main import main; main()",
                 dunce::simplified(&self.host_dir).to_string_lossy().replace('\\', "\\\\"),
                 dunce::simplified(&deps_dir).to_string_lossy().replace('\\', "\\\\")
             ));
