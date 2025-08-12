@@ -117,6 +117,8 @@
     "fieldTitle": "Campo",
     "fieldTitleAlt": "Los campos suelen satisfacer la mayoría de las necesidades, pero si su configuración MCP requiere campos adicionales o diferentes tipos, puede editar directamente en el JSON TextArea a la derecha para satisfacer sus necesidades",
     "initialTimeoutAlt": "El tiempo de espera inicial predeterminado es de 10 segundos, pero puede configurarse en cualquier número flotante de 10 segundos o más. No hay límite de segundos. Se recomienda ajustar este valor si el servidor tiene una conexión lenta.",
+    "initialTimeoutPlaceholder": "Ingrese Initial Timeout...",
+    "initialTimeoutError": "Por favor, ingrese un número flotante de 10 segundos o más",
     "editJsonTool": "Configuración de Herramientas MCP",
     "addTool": "Agregar Herramientas MCP",
     "jsonDesc": "Por favor, ingresa o pega el JSON del servidor MCP en el campo",

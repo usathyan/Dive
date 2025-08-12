@@ -117,6 +117,8 @@
     "fieldTitle": "フィールド",
     "fieldTitleAlt": "フィールドは通常、ほとんどのニーズを満たしますが、MCP設定に追加のフィールドや異なるタイプが必要な場合は、右側のJSON TextAreaで直接編集してプログラム要件を満たすことができます",
     "initialTimeoutAlt": "初期接続待ち時間はデフォルトで10秒に設定されていますが、10秒以上の任意の浮動小数点数に設定できます。最大秒数に制限はありません。接続が遅いサーバーの場合は、この値を調整することをお勧めします。",
+    "initialTimeoutPlaceholder": "Initial Timeout 入力...",
+    "initialTimeoutError": "10秒以上の任意の浮動小数点数を入力してください",
     "editJsonTool": "MCPツール設定",
     "addTool": "MCPツールを追加",
     "jsonDesc": "フィールドにMCPサーバーのJSONを入力または貼り付けてください",

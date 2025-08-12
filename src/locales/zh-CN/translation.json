@@ -117,6 +117,8 @@
     "fieldTitle": "栏位",
     "fieldTitleAlt": "栏位通常能满足大多数需求，但若您的 MCP 设置需要额外栏位或不同类型，您可以直接在右侧 JSON TextArea 进行编辑，以符合您程序的要求",
     "initialTimeoutAlt": "初始连接等待时间预设为 10 秒，可自订为 10 秒以上的任意浮点数，没有最大秒数限制。若遇连接较慢的服务器，请适度调整此数值。",
+    "initialTimeoutPlaceholder": "输入Initial Timeout...",
+    "initialTimeoutError": "请输入至少 10 秒以上的任意浮点数",
     "editJsonTool": "MCP Tools 设置",
     "addTool": "新增 MCP Tools",
     "jsonDesc": "请在栏位输入或直接粘贴 MCP Server Json",
