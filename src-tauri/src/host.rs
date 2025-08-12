@@ -59,7 +59,7 @@ impl HostProcess {
             .arg("-I")
             .arg("-c")
             .arg(format!(
-                "import sys; sys.path.extend(['{}', '{}']); from dive_mcp_host.httpd._main import main; main()",
+                "import site; site.addsitedir('{}'); site.addsitedir('{}'); from dive_mcp_host.httpd._main import main; main()",
                 dunce::simplified(&self.host_dir).to_string_lossy().replace('\\', "\\\\"),
                 dunce::simplified(&deps_dir).to_string_lossy().replace('\\', "\\\\")
             ));
@@ -94,19 +94,17 @@ impl HostProcess {
             .arg("--report_status_file")
             .arg(&self.file_path)
             .arg("--log_level")
-            .arg("INFO");
-
-        log::info!("dived execute: {:?}", cmd);
-
-        let mut process = cmd
+            .arg("INFO")
             .envs(std::env::vars())
             .env("PATH", crate::util::get_system_path().await)
             .env("DIVE_CONFIG_DIR", dirs.config)
             .env("RESOURCE_DIR", dirs.cache)
             .current_dir(dunce::simplified(cwd))
             .stderr(Stdio::piped())
-            .stdout(Stdio::piped())
-            .spawn()?;
+            .stdout(Stdio::piped());
+
+        log::info!("dived execute: {:?}", cmd.get_args());
+        let mut process = cmd.spawn()?;
 
         if let (Some(stdout), Some(stderr)) = (process.stdout.take(), process.stderr.take()) {
             tauri::async_runtime::spawn(async move {

@@ -175,15 +175,19 @@
       "clear_filter": "Limpiar filtros",
       "hint": "Los servidores MCP avanzados requieren una actualización a la versión Pro para poder instalarlos",
       "high_cost_title": "Activar servidor MCP costoso",
-      "high_cost_desc": "Ha seleccionado los siguientes servidores MCP que consumen muchos tokens. ¿Desea activarlos?",
-      "pro_only": "Solo los usuarios de la versión Pro pueden instalarlos"
+      "high_cost_desc": "Ha seleccionado los siguientes servidores MCP que consumen muchos tokens. ¿Desea activarlos?"
     },
     "tabAll": "Todas las herramientas",
     "tabOap": "Herramientas OAP",
     "tabLocal": "Herramientas personalizadas",
     "oapStoreLinkAlt": "Ver detalles",
     "subToolsCount": "Herramientas activadas：{{count}} / {{total}}",
-    "disabledDescription": "Desactivado"
+    "disabledDescription": "Desactivado",
+    "unsavedSubtools": {
+      "title": "Cambios no guardados",
+      "desc": "Hay cambios no guardados. Si sale de esta página, los cambios se perderán. ¿Desea continuar?",
+      "cancel": "Cancelar cambios"
+    }
   },
   "modelConfig": {
     "title": "Configuración del Modelo",
@@ -207,7 +211,8 @@
     "copyImageUrl": "Copiar URL de imagen",
     "downloadImage": "Descargar imagen",
     "login": "Iniciar sesión",
-    "signup": "Registrarse"
+    "signup": "Registrarse",
+    "save": "Guardar"
   },
   "models": {
     "title": "Configuración de Modelos",
@@ -216,6 +221,7 @@
     "instructionsSetting": "Configuración de Instrucciones",
     "listTitle": "Configuración de Proveedores de Servicio",
     "optional": "(Opcional)",
+    "selfOptional": "(Opcional)",
     "unSupportModelCount": "Has seleccionado {{count}} modelos no compatibles",
     "deleteTitle": "¿Confirmar eliminar la clave de {{name}}?",
     "deleteDescription": "Esta acción no se puede deshacer.",
@@ -341,7 +347,8 @@
     "tokenPackageHint": "El paquete de tokens no tiene fecha de vencimiento y se utilizará después de agotar la cuota del plan mensual.",
     "tokenPackageRemainingUsage": "Uso restante",
     "tokenPackageWarningTitle": "El uso de tokens ha alcanzado el límite.",
-    "tokenPackageWarning": "Puede ir a la página <planLink>Dashboard</planLink> de OAPhub para recargar más uso de tokens."
+    "tokenPackageWarning": "Puede ir a la página <planLink>Dashboard</planLink> de OAPhub para recargar más uso de tokens.",
+    "skipTlsVerifyWarning": "Advertencia de seguridad: Ignorar la verificación de certificados puede reducir la seguridad de la conexión. Se recomienda usar en entornos de red confiables."
   },
   "toast": {
     "copiedToClipboard": "Copiado al portapapeles",

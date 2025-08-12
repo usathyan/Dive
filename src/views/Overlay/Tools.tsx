@@ -23,6 +23,7 @@ import { OAP_ROOT_URL } from "../../../shared/oap"
 import { openUrl } from "../../ipc/util"
 import { oapApplyMCPServer } from "../../ipc"
 import cloneDeep from "lodash/cloneDeep"
+import { ClickOutside } from "../../components/ClickOutside"
 import Button from "../../components/Button"
 
 interface ToolsCache {
@@ -66,6 +67,8 @@ const Tools = () => {
   const [showMcpAddPopup, setShowMcpAddPopup] = useState(false)
   const [showMcpEditJsonPopup, setShowMcpEditJsonPopup] = useState(false)
   const [showOapMcpPopup, setShowOapMcpPopup] = useState(false)
+  const [showUnsavedSubtoolsPopup, setShowUnsavedSubtoolsPopup] = useState(false)
+  const [changingTool, setChangingTool] = useState<string>("")
   const [currentMcp, setCurrentMcp] = useState<string>("")
   const abortControllerRef = useRef<AbortController | null>(null)
   const [toolLog, setToolLog] = useState<LogType[]>([])
@@ -241,11 +244,26 @@ const Tools = () => {
           return newConfig
         })
       })
-    } else if(isShowToast) {
-      showToast({
-        message: t("tools.saveSuccess"),
-        type: "success"
-      })
+    }
+    if(data?.detail?.filter((item: any) => item.type.includes("error")).length > 0) {
+      data?.detail?.filter((item: any) => item.type.includes("error"))
+        .map((e: any) => [e.loc[2], e.msg])
+        .forEach(([serverName, error]: [string, string]) => {
+          if(isShowToast) {
+            showToast({
+              message: t("tools.updateFailed", { serverName, error }),
+              type: "error",
+              closable: true
+            })
+          }
+        })
+    }
+    if(data.errors?.filter((error: any) => error.serverName === tool.name).length === 0 &&
+        data?.detail?.filter((item: any) => item.type.includes("error")).length === 0) {
+        showToast({
+          message: t("tools.saveSuccess"),
+          type: "success"
+        })
     }
   }
 
@@ -342,6 +360,10 @@ const Tools = () => {
 
       const newConfig = JSON.parse(JSON.stringify(mcpConfig))
       newConfig.mcpServers[tool.name].enabled = !currentEnabled
+      if(newConfig.mcpServers[tool.name].enabled && tool.tools.every(subTool => !subTool.enabled)) {
+        newConfig.mcpServers[tool.name].exclude_tools = []
+      }
+
       const data = await updateMCPConfig(newConfig)
       if (data.errors && Array.isArray(data.errors) && data.errors.length) {
         data.errors
@@ -355,13 +377,20 @@ const Tools = () => {
         // reset enable
         await updateMCPConfig(newConfig)
       }
+      if(data?.detail?.filter((item: any) => item.type.includes("error")).length > 0) {
+        data?.detail?.filter((item: any) => item.type.includes("error"))
+          .map((e: any) => [e.loc[2], e.msg])
+          .forEach(([serverName, error]: [string, string]) => {
+            showToast({
+              message: t("tools.updateFailed", { serverName, error }),
+              type: "error",
+              closable: true
+            })
+          })
+      }
 
-      if(data.errors?.filter((error: any) => error.serverName === tool.name).length > 0) {
-        showToast({
-          message: t("tools.toggleFailed"),
-          type: "error"
-        })
-      } else {
+      if(data.errors?.filter((error: any) => error.serverName === tool.name).length === 0 &&
+        data?.detail?.filter((item: any) => item.type.includes("error")).length === 0) {
         showToast({
           message: t("tools.saveSuccess"),
           type: "success"
@@ -392,24 +421,101 @@ const Tools = () => {
     )
   }
 
+  const handleUnsavedSubtools = (toolName: string, event?: MouseEvent) => {
+    // check current changing tool is the same as the toolName
+    if(changingTool !== "" && changingTool === toolName) {
+      event?.preventDefault()
+      setShowUnsavedSubtoolsPopup(true)
+    }
+    return
+  }
+
+  const arrayEqual = (arr1: any[], arr2: any[]) => {
+    if (arr1.length !== arr2.length)
+      return false
+    const sortedA = [...arr1].sort()
+    const sortedB = [...arr2].sort()
+    return sortedA.every((val, index) => val === sortedB[index])
+  }
+
   const toggleSubTool = async (toolName: string, subToolName: string, action: "add" | "remove") => {
-    setIsLoading(true)
-    const newConfig = JSON.parse(JSON.stringify(mcpConfig))
-    if(action === "add" && !newConfig.mcpServers[toolName].exclude_tools?.includes(subToolName)) {
-      if(toolsCacheRef.current[toolName].subTools?.length === 1) {
-        newConfig.mcpServers[toolName].enabled = false
-      } else {
-        newConfig.mcpServers[toolName].exclude_tools = [...(newConfig.mcpServers[toolName].exclude_tools || []), subToolName]
-        if(newConfig.mcpServers[toolName].exclude_tools.length === toolsCacheRef.current[toolName].subTools.length) {
-          newConfig.mcpServers[toolName].enabled = false
+    const newTools = [...tools]
+    const tool = newTools.find(tool => tool.name === toolName)
+    const subToolIndex = tool?.tools?.findIndex(subTool => subTool.name === subToolName)
+
+    if(tool?.enabled) {
+      if(tool?.tools && subToolIndex > -1) {
+        if(action === "add") {
+          tool.tools[subToolIndex].enabled = false
+        } else {
+          tool.tools[subToolIndex].enabled = true
         }
       }
+
+      if(tool?.tools.filter(subTool => subTool.enabled).length === 0) {
+        tool.enabled = false
+        //if closing all subtools, make tool disabled, check if tool is disabled originally
+        //disabled Originally: it means it still in draft, recover all subtools state
+        if(!mcpConfig.mcpServers[toolName].enabled) {
+          tool.tools.map(subTool => {
+            subTool.enabled = true
+            if(mcpConfig.mcpServers[toolName].exclude_tools.includes(subTool.name)) {
+              subTool.enabled = false
+            }
+          })
+        }
+      } else {
+        tool.enabled = true
+      }
     } else {
-      newConfig.mcpServers[toolName].enabled = true
-      newConfig.mcpServers[toolName].exclude_tools = newConfig.mcpServers[toolName].exclude_tools?.filter((tool: string) => tool !== subToolName)
+      tool.enabled = true
+      tool.tools.map(subTool => {
+        subTool.enabled = false
+        if(subTool.name === subToolName) {
+          subTool.enabled = true
+        }
+      })
     }
+
+    setTools(newTools)
+
+    //Compare disabled tools of tools(temporary disabled tools) and mcpConfig.mcpServers[toolName].exclude_tools(actually disabled tools)
+    const newDisabledSubTools = newTools.find(tool => tool.name === toolName)?.tools.filter(subTool => !subTool.enabled).map(subTool => subTool.name)
+    if(!arrayEqual(newDisabledSubTools, mcpConfig.mcpServers[toolName].exclude_tools) ||
+    tool?.enabled !== mcpConfig.mcpServers[toolName].enabled) {
+      setChangingTool(toolName)
+    } else {
+      setChangingTool("")
+    }
+  }
+
+  const toggleSubToolConfirm = async (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.stopPropagation()
+    setShowUnsavedSubtoolsPopup(false)
+    setChangingTool("")
+    setIsLoading(true)
+    const newConfig = JSON.parse(JSON.stringify(mcpConfig))
+    Object.keys(newConfig.mcpServers).forEach(toolName => {
+      const tool = tools.find(tool => tool.name === toolName)
+      const newDisabledSubTools = tool?.tools.filter(subTool => !subTool.enabled).map(subTool => subTool.name)
+      if(tool?.tools.length === newDisabledSubTools.length) {
+        newConfig.mcpServers[toolName].enabled = false
+      } else {
+        newConfig.mcpServers[toolName].enabled = tool?.enabled
+      }
+      newConfig.mcpServers[toolName].exclude_tools = newDisabledSubTools
+    })
+
     setMcpConfig(newConfig)
     await updateMCPConfig(newConfig)
+    await loadTools()
+    setIsLoading(false)
+  }
+
+  const toggleSubToolCancel = async () => {
+    setShowUnsavedSubtoolsPopup(false)
+    setChangingTool("")
+    setIsLoading(true)
     await loadTools()
     setIsLoading(false)
   }
@@ -884,47 +990,64 @@ const Tools = () => {
                 }
               </div>
               {(tool.description || (tool.tools?.length ?? 0) > 0 || tool.error) && (
-                <div className="tool-content">
-                  {tool.error ? (
-                    <div className="sub-tool-error">
-                      <svg width="18px" height="18px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2" fill="none"/>
-                        <line x1="12" y1="6" x2="12" y2="14" stroke="currentColor" strokeWidth="2"/>
-                        <circle cx="12" cy="17" r="1.5" fill="currentColor"/>
-                      </svg>
-                      <div className="sub-tool-error-text">
-                        <div className="sub-tool-error-text-title">Error Message</div>
-                        <div className="sub-tool-error-text-content">{tool.error}</div>
-                      </div>
-                    </div>
-                  ) : (
-                    <>
-                      {tool.description && (
-                        <div className="tool-description">{tool.description}</div>
-                      )}
-                      {tool.tools && tool.tools.length > 0 && (
-                        <div className="sub-tools">
-                          {tool.tools.map((subTool, subIndex) => (
-                            <Tooltip
-                              key={subIndex}
-                              content={subTool.description}
-                              disabled={!subTool.description}
-                              align="start"
-                            >
-                              <div key={subIndex} className={`sub-tool ${(subTool.enabled && tool.enabled) ? "active" : ""}`} onClick={(e) => {
-                                e.stopPropagation()
-                                toggleSubTool(tool.name, subTool.name, (!subTool.enabled || !tool.enabled) ? "remove" : "add")
-                              }}>
-                                <div className="sub-tool-content">
-                                    <div className="sub-tool-name">{subTool.name}</div>
-                                </div>
-                              </div>
-                            </Tooltip>
-                          ))}
+                <div onClick={(e) => {
+                  if(changingTool !== "" && changingTool === tool.name) {
+                    e.stopPropagation()
+                  }
+                }}>
+                  <div className="tool-content-container">
+                    {tool.error ? (
+                      <div className="tool-content">
+                        <div className="sub-tool-error">
+                          <svg width="18px" height="18px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2" fill="none"/>
+                            <line x1="12" y1="6" x2="12" y2="14" stroke="currentColor" strokeWidth="2"/>
+                            <circle cx="12" cy="17" r="1.5" fill="currentColor"/>
+                          </svg>
+                          <div className="sub-tool-error-text">
+                            <div className="sub-tool-error-text-title">Error Message</div>
+                            <div className="sub-tool-error-text-content">{tool.error}</div>
+                          </div>
                         </div>
-                      )}
-                    </>
-                  )}
+                      </div>
+                    ) : (
+                      <>
+                        {tool.description && (
+                          <div className="tool-content">
+                            <div className="tool-description">{tool.description}</div>
+                          </div>
+                        )}
+                        {tool.tools && tool.tools.length > 0 && (
+                          <ClickOutside onClickOutside={(event) => handleUnsavedSubtools(tool.name, event)}>
+                            <div className="tool-content">
+                              <div className="sub-tools">
+                                {tool.tools.map((subTool, subIndex) => (
+                                  <Tooltip
+                                    key={subIndex}
+                                    content={subTool.description}
+                                    disabled={!subTool.description}
+                                    align="start"
+                                  >
+                                    <div key={subIndex} className={`sub-tool ${(subTool.enabled && tool.enabled) ? "active" : ""}`} onClick={(e) => {
+                                      e.stopPropagation()
+                                      toggleSubTool(tool.name, subTool.name, (!subTool.enabled || !tool.enabled) ? "remove" : "add")
+                                    }}>
+                                      <div className="sub-tool-content">
+                                          <div className="sub-tool-name">{subTool.name}</div>
+                                      </div>
+                                    </div>
+                                  </Tooltip>
+                                ))}
+                              </div>
+                            </div>
+                            <div className="sub-tools-footer">
+                              <button className={`sub-tools-footer-confirm-btn ${changingTool === tool.name ? "active" : ""}`} onClick={toggleSubToolConfirm}>{t("common.save")}</button>
+                            </div>
+                          </ClickOutside>
+                        )}
+                      </>
+                    )}
+                  </div>
                 </div>
               )}
             </div>
@@ -1001,6 +1124,27 @@ const Tools = () => {
             setShowOapMcpPopup(false)
           }}
         />
+      )}
+
+      {showUnsavedSubtoolsPopup && (
+        <PopupConfirm
+          noBorder
+          className="unsaved-subtools-popup"
+          footerType="center"
+          zIndex={1000}
+          onConfirm={toggleSubToolConfirm}
+          onCancel={toggleSubToolCancel}
+          cancelText={t("tools.unsavedSubtools.cancel")}
+        >
+          <div className="unsaved-subtools-content">
+            <div className="unsaved-subtools-header">
+              {t("tools.unsavedSubtools.title")}
+            </div>
+            <div className="unsaved-subtools-desc">
+              {t("tools.unsavedSubtools.desc")}
+            </div>
+          </div>
+        </PopupConfirm>
       )}
     </div>
   )

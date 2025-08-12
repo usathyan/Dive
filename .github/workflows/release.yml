@@ -26,6 +26,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+            submodules: 'recursive'
 
       - name: Checkout submodules
         run: git submodule update --init --recursive
@@ -163,6 +165,8 @@ jobs:
     runs-on: ${{ matrix.platform }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          submodules: 'recursive'
 
       - name: install dependencies (ubuntu only)
         if: matrix.platform == 'ubuntu-22.04'

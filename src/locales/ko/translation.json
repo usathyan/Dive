@@ -175,15 +175,19 @@
       "clear_filter": "필터 지우기",
       "hint": "고급 MCP 서버는 Pro 버전으로 업그레이드해야 설치할 수 있습니다",
       "high_cost_title": "비싼 MCP 서버 활성화",
-      "high_cost_desc": "다음 MCP 서버는 많은 토큰을 소비하므로 계획 사용량이 충분한지 확인하세요.",
-      "pro_only": "Pro 계획 사용자만 설치할 수 있습니다"
+      "high_cost_desc": "다음 MCP 서버는 많은 토큰을 소비하므로 계획 사용량이 충분한지 확인하세요."
     },
     "tabAll": "모든 도구",
     "tabOap": "OAP 도구",
     "tabLocal": "사용자 정의 도구",
     "oapStoreLinkAlt": "자세히 보기",
     "subToolsCount": "도구 활성화: {{count}} / {{total}}",
-    "disabledDescription": "비활성화"
+    "disabledDescription": "비활성화",
+    "unsavedSubtools": {
+      "title": "저장되지 않은 변경",
+      "desc": "저장되지 않은 변경이 있습니다. 페이지를 벗어나면 변경이 손실됩니다. 계속하시겠습니까?",
+      "cancel": "변경 취소"
+    }
   },
   "modelConfig": {
     "title": "모델 설정",
@@ -207,7 +211,8 @@
     "copyImageUrl": "이미지 URL 복사",
     "downloadImage": "이미지 다운로드",
     "login": "로그인",
-    "signup": "회원가입"
+    "signup": "회원가입",
+    "save": "저장"
   },
   "models": {
     "title": "모델 설정",
@@ -216,6 +221,7 @@
     "instructionsSetting": "프롬프트 설정",
     "listTitle": "서비스 공급자 구성",
     "optional": "(선택 사항)",
+    "selfOptional": "(선택 사항)",
     "unSupportModelCount": "{{count}}개의 지원되지 않는 모델이 선택되었습니다",
     "deleteTitle": "{{name}} 키를 삭제하시겠습니까?",
     "deleteDescription": "이 작업은 되돌릴 수 없습니다.",
@@ -341,7 +347,8 @@
     "tokenPackageHint": "토큰 패키지는 만료일이 없으며, 매월 계획 할당량이 소진된 후 사용됩니다.",
     "tokenPackageRemainingUsage": "남은 사용량",
     "tokenPackageWarningTitle": "토큰 사용량이 초과되었습니다.",
-    "tokenPackageWarning": "OAPhub <planLink>Dashboard 페이지</planLink>에서 더 많은 토큰 사용량을 충전할 수 있습니다."
+    "tokenPackageWarning": "OAPhub <planLink>Dashboard 페이지</planLink>에서 더 많은 토큰 사용량을 충전할 수 있습니다.",
+    "skipTlsVerifyWarning": "보안 경고: 인증서 검증을 무시하면 연결 보안이 감소할 수 있습니다. 신뢰할 수 있는 네트워크 환경에서 사용하는 것이 좋습니다."
   },
   "toast": {
     "copiedToClipboard": "클립보드에 복사되었습니다",

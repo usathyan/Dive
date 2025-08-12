@@ -175,15 +175,19 @@
       "clear_filter": "Clear Filter",
       "hint": "High-level MCP Servers require upgrading to the Pro version to install",
       "high_cost_title": "Enable High-Cost MCP Servers",
-      "high_cost_desc": "You have selected MCP Servers that consume many tokens. Please check if your plan usage is sufficient.",
-      "pro_only": "Pro plan users can install"
+      "high_cost_desc": "You have selected MCP Servers that consume many tokens. Please check if your plan usage is sufficient."
     },
     "tabAll": "All Tools",
     "tabOap": "OAP Tools",
     "tabLocal": "Custom Tools",
     "oapStoreLinkAlt": "View Details",
     "subToolsCount": "Tools Enabled：{{count}} / {{total}}",
-    "disabledDescription": "Disabled"
+    "disabledDescription": "Disabled",
+    "unsavedSubtools": {
+      "title": "Unsaved Changes",
+      "desc": "You have unsaved changes. If you leave this page, the changes will be lost. Do you want to continue?",
+      "cancel": "Cancel Changes"
+    }
   },
   "modelConfig": {
     "title": "Model Settings",
@@ -207,7 +211,8 @@
     "copyImageUrl": "Copy Image URL",
     "downloadImage": "Download Image",
     "login": "Login",
-    "signup": "Sign Up"
+    "signup": "Sign Up",
+    "save": "Save"
   },
   "models": {
     "title": "Model Settings",
@@ -216,6 +221,7 @@
     "instructionsSetting": "Instruction Settings",
     "listTitle": "Service Provider Configuration",
     "optional": "(Optional)",
+    "selfOptional": "(Optional)",
     "unSupportModelCount": "You have selected {{count}} unsupported models",
     "deleteTitle": "Confirm deletion of {{name}} Key?",
     "deleteDescription": "This action cannot be undone.",
@@ -341,7 +347,8 @@
     "tokenPackageHint": "Token packages have no expiration date and will only be used after the monthly plan quota is exhausted.",
     "tokenPackageRemainingUsage": "Remaining usage",
     "tokenPackageWarningTitle": "Token quota used up.",
-    "tokenPackageWarning": "You can replenish more token usage at the OAPhub <planLink>Dashboard page</planLink>."
+    "tokenPackageWarning": "You can replenish more token usage at the OAPhub <planLink>Dashboard page</planLink>.",
+    "skipTlsVerifyWarning": "Security warning: Ignoring certificate verification may reduce connection security. It is recommended to use in trusted network environments."
   },
   "toast": {
     "copiedToClipboard": "Copied to clipboard",

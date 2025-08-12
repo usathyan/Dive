@@ -175,15 +175,19 @@
       "clear_filter": "清除篩選條件",
       "hint": "高階 MCP Server 需要升級 Pro 版本方能安裝",
       "high_cost_title": "啟用昂貴的MCP Server",
-      "high_cost_desc": "您有勾選到以下使用較多 Token數量的 MCP Server。 確定要啟用嗎？",
-      "pro_only": "Pro 方案用戶才能安裝"
+      "high_cost_desc": "您有勾選到以下使用較多 Token數量的 MCP Server。 確定要啟用嗎？"
     },
     "tabAll": "所有工具",
     "tabOap": "OAP工具",
     "tabLocal": "自訂工具",
     "oapStoreLinkAlt": "詳細說明",
     "subToolsCount": "工具啟用：{{count}} / {{total}}",
-    "disabledDescription": "已停用"
+    "disabledDescription": "已停用",
+    "unsavedSubtools": {
+      "title": "未儲存的變更",
+      "desc": "您有未儲存的變更，若離開此頁面，變更將會遺失。確定繼續？",
+      "cancel": "取消變更"
+    }
   },
   "modelConfig": {
     "title": "模型設定",
@@ -207,7 +211,8 @@
     "copyImageUrl": "複製圖片URL",
     "downloadImage": "下載圖片",
     "login": "登入",
-    "signup": "註冊"
+    "signup": "註冊",
+    "save": "儲存"
   },
   "models": {
     "title": "模型設定",
@@ -216,6 +221,7 @@
     "instructionsSetting": "提示詞設定",
     "listTitle": "服務提供者配置",
     "optional": "（可選填）",
+    "selfOptional": "（可自選）",
     "unSupportModelCount": "你已選取 {{count}} 個不支援模型",
     "deleteTitle": "確定刪除此筆 {{name}} Key？",
     "deleteDescription": "一經刪除即無法復原。",
@@ -341,7 +347,8 @@
     "tokenPackageHint": "Token 包裝包沒有到期日，將在每月計劃配額耗盡後使用。",
     "tokenPackageRemainingUsage": "剩餘使用量",
     "tokenPackageWarningTitle": "Token 使用量已達上限。",
-    "tokenPackageWarning": "您可以前往 OAPhub <planLink>Dashboard 頁面</planLink>補充更多 Token 使用量。"
+    "tokenPackageWarning": "您可以前往 OAPhub <planLink>Dashboard 頁面</planLink>補充更多 Token 使用量。",
+    "skipTlsVerifyWarning": "安全提醒：忽略憑證驗證會降低連接安全性，建議您在信任的網路環境中使用。"
   },
   "toast": {
     "copiedToClipboard": "已複製到剪貼簿",
