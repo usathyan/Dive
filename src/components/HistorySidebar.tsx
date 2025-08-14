@@ -187,11 +187,18 @@ const HistorySidebar = ({ onNewChat }: Props) => {
     const menuItem = target?.closest(".history-sidebar-side-menu-item")
     const menuLabel = target?.closest(".history-sidebar-side-menu-trigger")
 
+    let delay = 0
+    if (window.PLATFORM === "darwin") {
+      delay = 500
+    }
+
     if (containerRef.current &&
         !containerRef.current.contains(e.relatedTarget as Node) &&
         !menuItem &&
         !menuLabel) {
-      setVisible(false)
+      setTimeout(() => {
+        setVisible(false)
+      }, delay)
     }
   }
 
