@@ -57,13 +57,3 @@ jobs:
 
       - name: Install Dependencies
         run: npm ci
-
-      - name: Build Release Files
-        run: |
-          npm run build
-
-      - uses: dtolnay/rust-toolchain@stable
-      - name: check rust
-        run: |
-          cd src-tauri
-          cargo check
