@@ -117,6 +117,8 @@
     "fieldTitle": "Field",
     "fieldTitleAlt": "Fields usually satisfy most needs, but if your MCP settings require additional fields or different types, you can directly edit in the JSON TextArea on the right to meet your program requirements",
     "initialTimeoutAlt": "The initial connection waiting time is set to 10 seconds by default, but can be set to any floating-point number of 10 seconds or more. There is no limit on the number of seconds. It is recommended to adjust this value if the server has a slow connection.",
+    "initialTimeoutPlaceholder": "Enter Initial Timeout...",
+    "initialTimeoutError": "Please enter a number greater than or equal to 10",
     "editJsonTool": "MCP Tools Settings",
     "addTool": "Add MCP Tools",
     "jsonDesc": "Please enter or paste MCP Server Json in the field",

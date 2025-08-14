@@ -1392,12 +1392,8 @@ const McpEditPopup = React.memo(({ _type, _config, _mcpName, onDelete, onCancel,
             }
           }
           if(FieldType[fieldKey].type === "number") {
-            if("min" in FieldType[fieldKey] && newMcpServers[fieldKey] < FieldType[fieldKey].min) {
-              return false
-            }
-            if("max" in FieldType[fieldKey] && newMcpServers[fieldKey] > FieldType[fieldKey].max) {
-              return false
-            }
+            const isRangeError = isValidRange(newMcpServers, fieldKey)
+            return !isRangeError?.isError
           }
         }
       }
@@ -1407,7 +1403,7 @@ const McpEditPopup = React.memo(({ _type, _config, _mcpName, onDelete, onCancel,
     }
   }
 
-  const isValidRange = (value: Record<string, any>) => {
+  const isValidRange = (value: Record<string, any>, field?: keyof typeof FieldType) => {
     try {
       let newMcpServers = value
       if(newMcpServers.mcpServers) {
@@ -1416,14 +1412,15 @@ const McpEditPopup = React.memo(({ _type, _config, _mcpName, onDelete, onCancel,
 
       // check value is in range
       for(const fieldKey of Object.keys(FieldType) as Array<keyof typeof FieldType>) {
-        if(newMcpServers[fieldKey]) {
-          if(FieldType[fieldKey].type === "number") {
-            if("min" in FieldType[fieldKey] && newMcpServers[fieldKey] < FieldType[fieldKey].min) {
-              return { isError: true, fieldKey: fieldKey }
-            }
-            if("max" in FieldType[fieldKey] && newMcpServers[fieldKey] > FieldType[fieldKey].max) {
-              return { isError: true, fieldKey: fieldKey }
-            }
+        if(field && fieldKey !== field) {
+          continue
+        }
+        if(FieldType[fieldKey].type === "number") {
+          if("min" in FieldType[fieldKey] && (isNaN(newMcpServers[fieldKey]) || (newMcpServers[fieldKey] ?? 0) < FieldType[fieldKey].min)) {
+            return { isError: true, fieldKey: fieldKey }
+          }
+          if("max" in FieldType[fieldKey] && (newMcpServers[fieldKey] ?? 0) > FieldType[fieldKey].max) {
+            return { isError: true, fieldKey: fieldKey }
           }
         }
       }
@@ -1687,7 +1684,7 @@ const McpEditPopup = React.memo(({ _type, _config, _mcpName, onDelete, onCancel,
                       {isError ? (
                         <Tooltip content={t("tools.inputKeyError", { name: "ENV" })} side="left">
                           <div
-                            className="env-key-error"
+                            className="key-input-error"
                             onClick={(e) => {
                               const input = e.currentTarget.parentElement?.parentElement?.querySelector("input")
                               if (input) {
@@ -1739,7 +1736,7 @@ const McpEditPopup = React.memo(({ _type, _config, _mcpName, onDelete, onCancel,
             />
           </div>
           {/* Initial Timeout (s) */}
-          <div className={`field-item ${currentMcpServers.initialTimeout && currentMcpServers.initialTimeout < FieldType.initialTimeout.min ? "error" : ""}`}>
+          <div className={`field-item ${isValidRange(currentMcpServers, "initialTimeout")?.isError ? "error" : ""}`}>
             <div className="field-item-title">
               <label>Initial Timeout (s)</label>
               <Tooltip content={t("tools.initialTimeoutAlt")} side="bottom" align="start" maxWidth={402}>
@@ -1749,13 +1746,27 @@ const McpEditPopup = React.memo(({ _type, _config, _mcpName, onDelete, onCancel,
                 </svg>
               </Tooltip>
             </div>
-            <input
-              placeholder={t("tools.initialTimeoutPlaceholder")}
-              type="number"
-              min={FieldType.initialTimeout.min}
-              value={currentMcpServers.initialTimeout || 10}
-              onChange={(e) => handleMcpChange("initialTimeout", parseFloat(e.target.value) || 10)}
-            />
+            <div className="key-input-wrapper">
+              <input
+                placeholder={t("tools.initialTimeoutPlaceholder")}
+                type="number"
+                value={currentMcpServers.initialTimeout}
+                onChange={(e) => handleMcpChange("initialTimeout", parseFloat(e.target.value))}
+              />
+              {isValidRange(currentMcpServers, "initialTimeout")?.isError ? (
+                <Tooltip content={t("tools.initialTimeoutError")} side="left">
+                  <div
+                    className="key-input-error"
+                    onClick={(e) => {
+                      const input = e.currentTarget.parentElement?.parentElement?.querySelector("input")
+                      if (input) {
+                        input.focus()
+                      }
+                    }}
+                  />
+                </Tooltip>
+              ) : null}
+            </div>
           </div>
         </div>
       </div>
@@ -1785,12 +1796,6 @@ const McpEditPopup = React.memo(({ _type, _config, _mcpName, onDelete, onCancel,
               } else if(FieldType[fieldKey].type !== fieldType) {
                 return false
               }
-              //  else if(FieldType[fieldKey].type === "number") {
-              //   if(("min" in FieldType[fieldKey] && newMcpServers[mcp][fieldKey] < FieldType[fieldKey].min)
-              //     || ("max" in FieldType[fieldKey] && newMcpServers[mcp][fieldKey] > FieldType[fieldKey].max)) {
-              //     return false
-              //   }
-              // }
             }
           }
         }
@@ -1876,7 +1881,7 @@ const McpEditPopup = React.memo(({ _type, _config, _mcpName, onDelete, onCancel,
                     severity: "error",
                   }]
                 }else if(parsed.mcpServers[mcp]?.[fieldKey] && FieldType[fieldKey].type === "number") {
-                  if("min" in FieldType[fieldKey] && parsed.mcpServers[mcp][fieldKey] < FieldType[fieldKey].min) {
+                  if("min" in FieldType[fieldKey] && (isNaN(parsed.mcpServers[mcp][fieldKey]) || parsed.mcpServers[mcp][fieldKey] < FieldType[fieldKey].min)) {
                     setIsRangeError(true)
                     return [{
                       from: 0,

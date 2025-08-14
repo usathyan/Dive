@@ -118,6 +118,8 @@
     "fieldTitle": "欄位",
     "fieldTitleAlt": "欄位通常能滿足大多數需求，但若您的 MCP 設定需要額外欄位或不同型態，您可以直接在右側 JSON TextArea 進行編輯，以符合您程式的要求",
     "initialTimeoutAlt": "初始連線等待時間預設為 10 秒，可自訂為 10 秒以上的任意浮點數，沒有最大秒數限制。若遇連線較慢的伺服器，請適度調整此數值。",
+    "initialTimeoutPlaceholder": "輸入Initial Timeout...",
+    "initialTimeoutError": "請輸入至少 10 秒以上的任意浮點數",
     "addTool": "新增 MCP Tools",
     "jsonDesc": "請在欄位輸入或直接貼上MCP Server Json",
     "addArg": "新增參數",
