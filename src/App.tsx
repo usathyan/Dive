@@ -138,6 +138,9 @@ function App() {
     })
     .then(loadOapTools)
     .catch(console.error)
+    .then(removeOapConfig)
+    .then(writeOapConfig)
+    .catch(console.error)
   }, [])
 
   // set system theme
