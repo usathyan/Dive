@@ -120,6 +120,7 @@ impl Command {
 
     /// Exclude this command from management (no-op on non-Windows)
     #[cfg(not(target_os = "windows"))]
+    #[allow(dead_code)]
     pub fn without_job_management(self) -> Self {
         self
     }
