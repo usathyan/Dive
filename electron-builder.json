@@ -183,6 +183,9 @@
     "allowToChangeInstallationDirectory": true,
     "deleteAppDataOnUninstall": true
   },
+  "appImage": {
+    "artifactName": "${productName}-${os}-${arch}.${ext}"
+  },
   "extraResources": [
     {
       "from": "prebuilt",
