@@ -207,7 +207,7 @@ impl OAPAPIClient {
 
     pub async fn search_mcp_server(&self, params: MCPServerSearchParam) -> Result<Value> {
         let url = self.build_url("/api/v1/user/mcp/search");
-        let res = self.fetch(self.client.post(url).json(&params)).await?;
+        let res = self.fetch(self.client.post(url).form(&params.into_form())).await?;
         Ok(res)
     }
 
