@@ -1,7 +1,7 @@
 import "@/styles/components/_ModelSelect.scss"
 import { useTranslation } from "react-i18next"
 import Select from "./Select"
-import { useEffect, useMemo, useState } from "react"
+import { useCallback, useEffect, useMemo, useState } from "react"
 import { isProviderIconNoFilter, PROVIDER_ICONS } from "../atoms/interfaceState"
 import { useAtomValue, useSetAtom } from "jotai"
 import { configAtom, writeRawConfigAtom } from "../atoms/configState"
@@ -11,6 +11,7 @@ import Tooltip from "./Tooltip"
 import { systemThemeAtom, userThemeAtom } from "../atoms/themeState"
 import { modelSettingsAtom } from "../atoms/modelState"
 import { getGroupTerm, getModelTerm, getTermFromRawModelConfig, GroupTerm, intoRawModelConfig, ModelTerm, queryGroup, queryModel } from "../helper/model"
+import isEqual from "lodash/isEqual"
 
 const DEFAULT_MODEL = {group: {}, model: {}}
 
@@ -89,6 +90,14 @@ const ModelSelect = () => {
     }
   }
 
+  const equalCustomizer = useCallback((a: {group: GroupTerm, model: ModelTerm}, b: {group: GroupTerm, model: ModelTerm}) => {
+    if (b.group.modelProvider === "openai" && b.group.baseURL) {
+      b.group.modelProvider = "openai_compatible"
+    }
+
+    return isEqual(a, b)
+  }, [])
+
   return (
     <div className="model-select">
       <Select
@@ -113,6 +122,7 @@ const ModelSelect = () => {
         onSelect={handleModelChange}
         className={`${modelList.length === 0 ? "disabled" : ""}`}
         contentClassName="model-select-content"
+        equalCustomizer={equalCustomizer}
       />
       <Tooltip
         content={t("chat.modelSettings")}

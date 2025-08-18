@@ -22,6 +22,7 @@ interface Props<T = string>{
   fullWidth?: boolean
   align?: "center" | "start" | "end"
   leftSlotType?: "col" | "row"
+  equalCustomizer?: (a: T, b: T) => boolean
 }
 
 /** DropdownMenu */
@@ -47,9 +48,15 @@ const Select = forwardRef<HTMLButtonElement|null, Props>(({
   fullWidth,
   align = "start",
   leftSlotType = "col",
+  equalCustomizer = isEqual,
   ...rest
 }, ref) => {
-  const currentOption = useMemo(() => options.find((option) => typeof value === "string" ? option.value === value : isEqual(option.value, value)) || null, [options, value])
+  const currentOption = useMemo(() => options.find((option) =>
+    typeof value === "string"
+      ? option.value === value
+      : equalCustomizer(option.value, value))
+  , [options, value, equalCustomizer]) || null
+
   const displayLabel = currentOption && currentOption.label || placeholder || "Select..."
   const triggerRef = useRef<HTMLButtonElement>(null)
   const [width, setWidth] = useState<number | undefined>(undefined)
