@@ -58,10 +58,16 @@ if [ "$mode" = "electron" ]; then
     exit 1
   fi
 elif [ "$mode" = "tauri" ]; then
+  source_paths=()
   if [ -d "$project_root/src-tauri/target/release/bundle" ]; then
-    source_paths=("$project_root/src-tauri/target/release/bundle")
-  else
-    echo "Error: Source directory '$project_root/src-tauri/target/release/bundle' does not exist"
+    source_paths+=("$project_root/src-tauri/target/release/bundle")
+  fi
+  if [ -d "$project_root/src-tauri/target/x86_64-apple-darwin/release/bundle" ]; then
+    source_paths+=("$project_root/src-tauri/target/x86_64-apple-darwin/release/bundle")
+  fi
+  if [ ${#source_paths[@]} -eq 0 ]; then
+    echo "Error: No valid source directories found for tauri mode"
+    echo "Expected at least one of: $project_root/src-tauri/target/release/bundle, $project_root/src-tauri/target/x86_64-apple-darwin/release/bundle"
     exit 1
   fi
 else
