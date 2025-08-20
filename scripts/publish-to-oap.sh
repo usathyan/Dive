@@ -65,6 +65,9 @@ elif [ "$mode" = "tauri" ]; then
   if [ -d "$project_root/src-tauri/target/x86_64-apple-darwin/release/bundle" ]; then
     source_paths+=("$project_root/src-tauri/target/x86_64-apple-darwin/release/bundle")
   fi
+  if [ -d "$project_root/src-tauri/target/aarch64-apple-darwin/release/bundle" ]; then
+    source_paths+=("$project_root/src-tauri/target/aarch64-apple-darwin/release/bundle")
+  fi
   if [ ${#source_paths[@]} -eq 0 ]; then
     echo "Error: No valid source directories found for tauri mode"
     echo "Expected at least one of: $project_root/src-tauri/target/release/bundle, $project_root/src-tauri/target/x86_64-apple-darwin/release/bundle"
