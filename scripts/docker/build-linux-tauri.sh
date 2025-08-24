@@ -9,9 +9,7 @@ docker build -f docker/linux-tauri-build/Dockerfile \
 # Create output directory
 mkdir -p release/tauri
 
-# Run container - directly mount output directory
+# Run container - directly mount working tree
 docker run --rm \
   -v $(pwd):/app \
   dive-builder
-
-chown -R $(id -u):$(id -g) ./

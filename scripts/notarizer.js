@@ -9,6 +9,17 @@ export default async function notarizing(context) {
     return
   }
 
+  // Skip notarization if credentials are not provided or explicitly disabled
+  if (
+    process.env.SKIP_NOTARIZE === "1" ||
+    !process.env.APPLEID ||
+    !process.env.APPLEIDPASS ||
+    !process.env.APPLETEAMID
+  ) {
+    console.log("[notarizer] Skipping notarization (missing credentials or SKIP_NOTARIZE=1)")
+    return
+  }
+
   const appName = context.packager.appInfo.productFilename
 
   return await notarize({

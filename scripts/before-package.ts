@@ -6,6 +6,11 @@ import { StdioOptions } from "child_process"
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
+if (process.env.SKIP_HOST_DEPS === "1") {
+  console.log("[before-package] SKIP_HOST_DEPS=1 set. Skipping prepare-python.")
+  process.exit(0)
+}
+
 const httpdScript = `# -*- coding: utf-8 -*-
 import re
 import sys

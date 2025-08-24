@@ -35,8 +35,12 @@ ARG USER_ID=1000
 ARG GROUP_ID=1000
 ARG USERNAME=builduser
 
-# Create group and user
-RUN groupadd -g ${GROUP_ID} ${USERNAME} && \
+# Create group and user (handle pre-existing GID from host)
+RUN if getent group ${GROUP_ID} >/dev/null; then \
+      echo "Group with GID ${GROUP_ID} already exists"; \
+    else \
+      groupadd -g ${GROUP_ID} ${USERNAME}; \
+    fi && \
     useradd -u ${USER_ID} -g ${GROUP_ID} -m -s /bin/bash ${USERNAME}
 
 # Install Rust as root first, then copy to user
@@ -62,6 +66,7 @@ set -e\n\
 echo "=== Installing Node.js dependencies ==="\n\
 npm ci\n\
 echo "=== Building Tauri packages ==="\n\
+export TAURI_BUNDLE_TARGETS="deb,rpm"\n\
 cargo tauri build --config src-tauri/tauri.beta.conf.json -v\n\
 ' > /build.sh && chmod +x /build.sh
 

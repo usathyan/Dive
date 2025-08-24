@@ -1,5 +1,10 @@
 {
   "bundle": {
-    "createUpdaterArtifacts": false
+    "active": true,
+    "createUpdaterArtifacts": false,
+    "targets": [
+      "deb",
+      "rpm"
+    ]
   }
 }
