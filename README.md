@@ -80,7 +80,7 @@ npm run build
 npx @tauri-apps/cli build
 
 # Artifacts:
-#   src-tauri/target/release/bundle/macos/*.dmg
+#   src-tauri/target/aarch64-apple-darwin/release/bundle/macos/*.dmg
 ```
 
 Signing/notarization (optional): configure Apple credentials in env and follow Tauri docs.
