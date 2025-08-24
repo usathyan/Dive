@@ -1,201 +1,214 @@
-# Dive AI Agent 🤿 🤖
+# Dive (UB) - Tauri-first Build, Usage, and Update Guide
 
-![GitHub stars](https://img.shields.io/github/stars/OpenAgentPlatform/Dive?style=social)
-![GitHub forks](https://img.shields.io/github/forks/OpenAgentPlatform/Dive?style=social)
-![GitHub watchers](https://img.shields.io/github/watchers/OpenAgentPlatform/Dive?style=social)
-![GitHub repo size](https://img.shields.io/github/repo-size/OpenAgentPlatform/Dive)
-![GitHub language count](https://img.shields.io/github/languages/count/OpenAgentPlatform/Dive)
-![GitHub top language](https://img.shields.io/github/languages/top/OpenAgentPlatform/Dive)
-![GitHub last commit](https://img.shields.io/github/last-commit/OpenAgentPlatform/Dive?color=red)
-[![Discord](https://img.shields.io/badge/Discord-Dive-blue?logo=discord&logoColor=white)](https://discord.com/invite/qceMERf4y2)
-[![Twitter Follow](https://img.shields.io/twitter/follow/Dive_ai_agent?style=social)](https://twitter.com/Dive_ai_agent)
+This document captures the standard, Tauri-first workflow to build, use, and update Dive locally, while keeping build artifacts and steps separate from normal `git pull` operations.
 
-Dive is an open-source MCP Host Desktop Application that seamlessly integrates with any LLMs supporting function calling capabilities. ✨
+## Prerequisites
 
-![Dive Demo](./docs/0.8.0_DiveGIF.gif)
+- Node.js >= 18 and npm
+- Rust toolchain (required for Tauri)
+- Tauri 2 runtime dependencies for your OS
+- uv (Python/packaging manager) for MCP servers and tooling
+- Git
 
+Recommended:
+- macOS 14+ or a modern Linux/Windows host
 
-## Features 🎯
+## One-time setup
 
-- 🌐 **Universal LLM Support**: Compatible with ChatGPT, Anthropic, Ollama and OpenAI-compatible models
-- 💻 **Cross-Platform**: Available for Windows, MacOS, and Linux
-- 🔄 **Model Context Protocol**: Enabling seamless MCP AI agent integration on both stdio and SSE mode
-- ☁️ **OAP Cloud Integration**: One-click access to managed MCP servers via [OAPHub.ai](https://oaphub.ai/) - eliminates complex local deployments
-- 🏗️ **Dual Architecture**: Modern Tauri version alongside traditional Electron version for optimal performance
-- 🌍 **Multi-Language Support**: Traditional Chinese, Simplified Chinese, English, Spanish, Japanese, Korean with more coming soon
-- ⚙️ **Advanced API Management**: Multiple API keys and model switching support with `model_settings.json`
-- 🛠️ **Granular Tool Control**: Enable/disable individual MCP tools for precise customization
-- 💡 **Custom Instructions**: Personalized system prompts for tailored AI behavior
-- 🔄 **Auto-Update Mechanism**: Automatically checks for and installs the latest application updates
+```bash
+# Clone with submodules
+git clone --recurse-submodules https://github.com/OpenAgentPlatform/Dive.git
+cd Dive
 
-## Recent updates(2025/7/31) - v0.9.0 🎉
+# Install Node dependencies cleanly
+rm -rf node_modules
+npm ci
 
-### Major Architecture Changes
-- 🏗️ **Dual Architecture Support**: Dive now supports both **Electron** and **Tauri** frameworks simultaneously
-- ⚡ **Tauri Version**: New modern architecture with optimized installer size (Windows < 30MB)
-- 🌐 **OAP Platform Integration**: Native support for [OAPHub.ai](https://oaphub.ai/) cloud services with one-click MCP server deployment
-
-### New Features & Improvements
-- 🔐 **OAP Authentication**: Comprehensive OAP login and authentication support
-- 📁 **Enhanced Model Configuration**: Complete restructuring with `model_settings.json` for managing multiple models
-- 🛠️ **Granular MCP Control**: Individual tool enable/disable functionality for better customization
-- 🎨 **UI/UX Enhancements**: Various interface improvements across the application
-- 🔄 **Updated dive-mcp-host**: Latest architectural improvements incorporated
-
-### Platform Availability
-- **Windows**: Available in both Electron and Tauri versions ✅
-- **macOS**: Currently Electron only 🔜
-- **Linux**: Currently Electron only 🔜
-
-> **Migration Note:** Existing local MCP/LLM configurations remain fully supported. OAP integration is additive and does not affect current workflows.
-
-## Download and Install ⬇️
-
-Get the latest version of Dive:
-[![Download](https://img.shields.io/badge/Download-Latest%20Release-blue.svg)](https://github.com/OpenAgentPlatform/Dive/releases/latest)
-
-### Windows users: 🪟
-Choose between two architectures:
-- **Tauri Version** (Recommended): Smaller installer (<30MB), modern architecture
-- **Electron Version**: Traditional architecture, fully stable
-- Python and Node.js environments will be downloaded automatically after launching
-
-### MacOS users: 🍎
-- **Electron Version**: Download the .dmg version
-- You need to install Python and Node.js (with npx uvx) environments yourself
-- Follow the installation prompts to complete setup
-
-### Linux users: 🐧
-- **Electron Version**: Download the .AppImage version
-- You need to install Python and Node.js (with npx uvx) environments yourself
-- For Ubuntu/Debian users:
-  - You may need to add `--no-sandbox` parameter
-  - Or modify system settings to allow sandbox
-  - Run `chmod +x` to make the AppImage executable
-
-## MCP Setup Options
-
-Dive offers two ways to access MCP tools: **OAP Cloud Services** (recommended for beginners) and **Local MCP Servers** (for advanced users).
-
-### Option 1: Local MCP Servers 🛠️
-
-For advanced users who prefer local control. The system comes with a default echo MCP Server, and you can add more powerful tools like Fetch and Youtube-dl.
-
-![Set MCP](./docs/ToolsManager.png)
-
-### Option 2: OAP Cloud Services ☁️
-
-The easiest way to get started! Access enterprise-grade MCP tools instantly:
-
-1. **Sign up** at [OAPHub.ai](https://oaphub.ai/) 
-2. **Connect** to Dive using one-click deep links or configuration files
-3. **Enjoy** managed MCP servers with zero setup - no Python, Docker, or complex dependencies required
-
-Benefits:
-- ✅ Zero configuration needed
-- ✅ Cross-platform compatibility
-- ✅ Enterprise-grade reliability
-- ✅ Automatic updates and maintenance
-
-
-
-
-#### Quick Local Setup
-
-Add this JSON configuration to your Dive MCP settings to enable local tools:
-
-```json
- "mcpServers":{
-    "fetch": {
-      "command": "uvx",
-      "args": [
-        "mcp-server-fetch",
-        "--ignore-robots-txt"
-      ],
-      "enabled": true
-    },
-    "filesystem": {
-      "command": "npx",
-      "args": [
-        "-y",
-        "@modelcontextprotocol/server-filesystem",
-        "/path/to/allowed/files"
-      ],
-      "enabled": true
-    },
-    "youtubedl": {
-      "command": "npx",
-      "args": [
-        "@kevinwatt/yt-dlp-mcp"
-      ],
-      "enabled": true
-    }
-  }
+# Prepare local MCP host (Python) deps using uv
+cd mcp-host
+uv sync --frozen
+cd ..
 ```
 
-#### Using Streamable HTTP for Cloud MCP Services
+Notes:
+- The project contains an Electron build path. This guide standardizes on the Tauri build path for smaller, faster installers.
+- Some build scripts still reference Electron for compatibility; ignore those unless you explicitly need Electron bundles.
 
-You can connect to external cloud MCP servers via Streamable HTTP transport. Here's the Dive configuration example for SearXNG service from OAPHub:
+## Daily update (no build)
+
+To refresh code without rebuilding installers:
+
+```bash
+git pull --rebase
+git submodule update --init --recursive
+```
+
+This updates sources only. Build steps are manual and separate (see below).
+
+## Tauri build targets
+
+Dive includes a Tauri app alongside Electron. Typical targets:
+- macOS: `dmg` (arm64/x64)
+- Linux: `deb`, `rpm`
+- Windows: `msi` or `nsis` (via cross build, or build on Windows)
+
+Ensure Tauri deps per OS are available (GTK/WebKit for Linux, code signing optional for macOS/Windows).
+
+## Build sequences (manual)
+
+### macOS (Tauri, dmg)
+
+```bash
+# Start from repo root
+npm run dev:tauri # optional: verify frontend builds
+
+# Build dmg (arm64)
+# Uses existing vite build + tauri bundling
+# If you also use Electron locally, keep environments separate.
+
+# If you need Python/node bins prepped for runtime, use the existing scripts
+# only if you’re packaging Electron bundles. For Tauri, system Python is not required.
+
+# Build release
+cargo --version >/dev/null 2>&1 || echo "Install Rust toolchain first"
+
+# Tauri bundling is invoked via Vite/Tauri config in this repo. If you use the Tauri CLI directly:
+# npx @tauri-apps/cli build --target aarch64-apple-darwin
+
+# Recommended: Use vite build then tauri build
+npm run build
+npx @tauri-apps/cli build
+
+# Artifacts:
+#   src-tauri/target/release/bundle/macos/*.dmg
+```
+
+Signing/notarization (optional): configure Apple credentials in env and follow Tauri docs.
+
+### Linux (Tauri, deb/rpm)
+
+```bash
+# Install distro deps for Tauri (GTK/WebKit/GStreamer)
+# See docker/linux-tauri-build/Dockerfile for exact packages
+
+npm run build
+npx @tauri-apps/cli build --bundles deb rpm
+
+# Artifacts:
+#   src-tauri/target/release/bundle/deb/*.deb
+#   src-tauri/target/release/bundle/rpm/*.rpm
+```
+
+Tip: You can also use the provided container to reproduce `deb/rpm` builds. See `docker/linux-tauri-build/Dockerfile` and `scripts/docker/build-linux-tauri.sh` for reference.
+
+### Windows (Tauri)
+
+Run on Windows for the smoothest experience:
+
+```powershell
+npm ci
+npm run build
+npx @tauri-apps/cli build # produces .msi or .nsis based on config
+```
+
+Cross-compiling from macOS/Linux to Windows is not recommended for Tauri; prefer native builds.
+
+## Using Dive (Tauri)
+
+- Launch the built app from your OS’s bundle output.
+- On first run, configure MCP servers via the app’s MCP Server Management.
+- For local MCP servers (optional advanced):
 
 ```json
 {
   "mcpServers": {
-    "SearXNG_MCP_Server": {
-      "transport": "streamable",
-      "url": "https://proxy.oaphub.ai/v1/mcp/181672830075666436",
-      "headers": {
-        "Authorization": "GLOBAL_CLIENT_TOKEN"
-      }
-    }
+    "fetch": { "command": "uvx", "args": ["mcp-server-fetch"] }
   }
 }
 ```
 
-Reference: [@https://oaphub.ai/mcp/181672830075666436](https://oaphub.ai/mcp/181672830075666436)
+- For OAP cloud services, follow in-app instructions or the main `README.md`.
 
-#### Using SSE Server (Non-Local MCP)
+## Keeping build details separate
 
-You can also connect to external MCP servers (not local ones) via SSE (Server-Sent Events). Add this configuration to your Dive MCP settings:
+- Development and update flow:
+  - `git pull` and `git submodule update` only refresh source code.
+  - Build is triggered manually with the sequences above.
+  - This avoids unintended rebuilds and keeps local artifacts out of the repo.
 
-```json
-{
-  "mcpServers": {
-    "MCP_SERVER_NAME": {
-      "enabled": true,
-      "transport": "sse",
-      "url": "YOUR_SSE_SERVER_URL"
-    }
-  }
-}
-```
+Optional local helpers (existing):
+- `docker/linux-tauri-build/Dockerfile` and `scripts/docker/build-linux-tauri.sh` to produce `deb/rpm` via container.
+- These are reference-only; not required for macOS/Windows Tauri builds.
 
-#### Additional Setup for yt-dlp-mcp
+## Troubleshooting
 
-yt-dlp-mcp requires the yt-dlp package. Install it based on your operating system:
-
-#### Windows
+- If Vite can’t find a platform-specific Rollup binary, reinstall modules:
 ```bash
-winget install yt-dlp
+rm -rf node_modules
+npm ci
 ```
+- Ensure Rust is installed and up to date: `rustup update`.
+- For Linux GUI deps, mirror packages from the Dockerfile.
 
-#### MacOS
+## Contributing and personal Git setup
+
+You can put this code on your own Git in one of two common ways: fork or mirror.
+
+### Option A: Fork on GitHub (keeps upstream link)
+
+1. Click Fork on the GitHub repo UI.
+2. Rename your fork as needed.
+3. Locally, point `origin` to your fork and keep upstream:
+
 ```bash
-brew install yt-dlp
+# Show current remotes
+git remote -v
+
+# Set origin to your fork
+git remote set-url origin git@github.com:YOUR_NAME/Dive.git
+
+# Add upstream to original repo (read-only)
+git remote add upstream https://github.com/OpenAgentPlatform/Dive.git || true
+
+# Fetch and rebase regularly
+git fetch upstream
+git rebase upstream/main
 ```
 
-#### Linux
+Push your local work to your fork:
 ```bash
-pip install yt-dlp
+git push origin your-branch
 ```
 
-## Build 🛠️
+### Option B: Full mirror to your own Git server (no ties)
 
-See [BUILD.md](BUILD.md) for more details.
+```bash
+# Create a bare mirror
+mkdir -p ~/mirrors && cd ~/mirrors
+git clone --mirror https://github.com/OpenAgentPlatform/Dive.git Dive.git
+cd Dive.git
 
-## Connect With Us 🌐
-- 💬 Join our [Discord](https://discord.com/invite/qceMERf4y2)
-- 🐦 Follow us on [Twitter/X](https://x.com/Dive_ai_agent) [Reddit](https://www.reddit.com/user/BigGo_official/) [Thread](https://www.threads.net/@dive_mcpserver)
-- ⭐ Star us on GitHub
-- 🐛 Report issues on our [Issue Tracker](https://github.com/OpenAgentPlatform/Dive/issues)
+# Push to your own server (example)
+git remote add myserver ssh://git@your.git.server/your-namespace/Dive.git
+git push --mirror myserver
+```
 
+Use the mirrored repo as your canonical origin:
+```bash
+cd /path/to/workspace
+rm -rf Dive
+git clone ssh://git@your.git.server/your-namespace/Dive.git
+cd Dive
+git remote -v
+```
 
+To sever the link to GitHub in an existing checkout and make your server the only remote:
+```bash
+# Replace origin, remove upstream if present
+git remote set-url origin ssh://git@your.git.server/your-namespace/Dive.git
+git remote remove upstream 2>/dev/null || true
+```
+
+## License
+
+Unless you change licensing for your fork/mirror, this project is MIT-licensed. See `LICENSE`.
