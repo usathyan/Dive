@@ -42,8 +42,13 @@ function App() {
   }, [modelSetting])
 
   useEffect(() => {
-    loadTools()
-    loadMcpConfig()
+    // Load tools and MCP config in parallel for better performance
+    Promise.all([
+      loadTools().catch(console.error),
+      loadMcpConfig().catch(console.error)
+    ]).then(() => {
+      console.log("Parallel initialization completed")
+    }).catch(console.error)
   }, [])
 
   // init app

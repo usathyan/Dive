@@ -4,9 +4,51 @@ import React, { useEffect, useState, useRef, useMemo, useCallback, memo } from "
 import { useTranslation } from "react-i18next"
 import { useAtom, useAtomValue, useSetAtom } from "jotai"
 import { showToastAtom } from "../../atoms/toastState"
-import CodeMirror, { EditorView } from "@uiw/react-codemirror"
-import { json } from "@codemirror/lang-json"
-import { linter, lintGutter } from "@codemirror/lint"
+// Lazy load CodeMirror to reduce initial bundle size
+const CodeMirrorPromise = import("@uiw/react-codemirror").then(module => ({
+  CodeMirror: module.default,
+  EditorView: module.EditorView
+}))
+const CodeMirrorJsonPromise = import("@codemirror/lang-json")
+const CodeMirrorLintPromise = import("@codemirror/lint")
+
+// Lazy CodeMirror component
+const LazyCodeMirror = memo((props: any) => {
+  const [CodeMirrorComponent, setCodeMirrorComponent] = useState<React.ComponentType<any> | null>(null)
+  const [jsonExtension, setJsonExtension] = useState<any>(null)
+  const [lintGutter, setLintGutter] = useState<any>(null)
+
+  useEffect(() => {
+    Promise.all([CodeMirrorPromise, CodeMirrorJsonPromise, CodeMirrorLintPromise]).then(([
+      { CodeMirror: CM },
+      { json: jsonExt },
+      { linter: _, lintGutter: lg }
+    ]) => {
+      setCodeMirrorComponent(() => CM)
+      setJsonExtension(() => jsonExt)
+      setLintGutter(() => lg)
+    })
+  }, [])
+
+  if (!CodeMirrorComponent) {
+    return <div className="loading-editor">Loading editor...</div>
+  }
+
+  // Clone props and replace extensions with loaded ones if needed
+  const newProps = { ...props }
+  if (newProps.extensions && Array.isArray(newProps.extensions)) {
+    newProps.extensions = newProps.extensions.map((ext: any) => {
+      if (typeof ext === 'function') {
+        // Replace function calls with loaded extensions
+        if (ext.name === 'json') return jsonExtension?.()
+        if (ext.name === 'lintGutter') return lintGutter?.()
+      }
+      return ext
+    })
+  }
+
+  return <CodeMirrorComponent {...newProps} />
+})
 import { systemThemeAtom, themeAtom } from "../../atoms/themeState"
 import { closeOverlayAtom } from "../../atoms/layerState"
 import Switch from "../../components/Switch"
@@ -2018,7 +2060,7 @@ const McpEditPopup = React.memo(({ _type, _config, _mcpName, onDelete, onCancel,
             {t("tools.jsonDesc")}
           </div>
         </div>
-        <CodeMirror
+        <LazyCodeMirror
           minWidth={(typeRef.current === "edit-json" || typeRef.current === "add-json") ? "670px" : "400px"}
           placeholder={"{\n \"mcpServers\":{}\n}"}
           theme={theme === "system" ? systemTheme : theme}

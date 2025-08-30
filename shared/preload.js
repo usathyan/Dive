@@ -90,3 +90,83 @@ window.onmessage = (ev) => {
 }
 
 setTimeout(removeLoading, 120000)
+
+// Performance optimization: Preload critical resources
+const preloadCriticalResources = () => {
+  // Preload critical fonts and assets with priority
+  const criticalResources = [
+    { url: '/assets/index-DMTyPHfp.css', as: 'style', priority: 'high' },
+    { url: '/assets/Pretendard-Regular-BhrLQoBv.woff2', as: 'font', priority: 'high' },
+    { url: '/assets/react-vendor.js', as: 'script', priority: 'high' },
+    { url: '/assets/state.js', as: 'script', priority: 'high' },
+    { url: '/assets/i18n.js', as: 'script', priority: 'high' }
+  ]
+
+  criticalResources.forEach(resource => {
+    const link = document.createElement('link')
+    link.rel = 'preload'
+    link.href = resource.url
+    link.as = resource.as
+
+    if (resource.as === 'font') {
+      link.type = 'font/woff2'
+      link.crossOrigin = 'anonymous'
+    }
+
+    // Set fetch priority for modern browsers
+    if ('fetchPriority' in link) {
+      link.fetchPriority = resource.priority as any
+    }
+
+    document.head.appendChild(link)
+  })
+
+  // Prefetch non-critical resources for better caching
+  const prefetchResources = [
+    '/assets/ui-vendor.js',
+    '/assets/utils.js',
+    '/assets/markdown.js'
+  ]
+
+  prefetchResources.forEach(resource => {
+    const link = document.createElement('link')
+    link.rel = 'prefetch'
+    link.href = resource
+    document.head.appendChild(link)
+  })
+}
+
+// Add performance observer for monitoring
+const observePerformance = () => {
+  if ('PerformanceObserver' in window) {
+    // Monitor long tasks (>50ms)
+    const longTaskObserver = new PerformanceObserver((list) => {
+      for (const entry of list.getEntries()) {
+        if (entry.duration > 100) {
+          console.log('Long task detected:', entry.duration, 'ms')
+        }
+      }
+    })
+    longTaskObserver.observe({ entryTypes: ['longtask'] })
+
+    // Monitor layout shifts
+    const layoutShiftObserver = new PerformanceObserver((list) => {
+      let clsValue = 0
+      for (const entry of list.getEntries()) {
+        if (!entry.hadRecentInput) {
+          clsValue += entry.value
+        }
+      }
+      if (clsValue > 0.1) {
+        console.log('High CLS detected:', clsValue)
+      }
+    })
+    layoutShiftObserver.observe({ entryTypes: ['layout-shift'] })
+  }
+}
+
+// Start preloading and monitoring after DOM is ready
+domReady().then(() => {
+  preloadCriticalResources()
+  observePerformance()
+})

@@ -1,29 +1,52 @@
 import { createHashRouter } from "react-router-dom"
-import Layout from "./views/Layout"
-import Chat from "./views/Chat"
-import Welcome from "./views/Welcome"
-import Setup from "./views/Setup"
+import { lazy, Suspense } from "react"
+
+// Lazy load all heavy components
+const Layout = lazy(() => import("./views/Layout"))
+const Chat = lazy(() => import("./views/Chat"))
+const Welcome = lazy(() => import("./views/Welcome"))
+const Setup = lazy(() => import("./views/Setup"))
+
+// Loading fallback component
+const LoadingFallback = () => (
+  <div style={{
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    height: '100vh',
+    fontSize: '16px'
+  }}>
+    Loading...
+  </div>
+)
+
+// Wrapper component with Suspense
+const SuspenseWrapper = ({ children }: { children: React.ReactNode }) => (
+  <Suspense fallback={<LoadingFallback />}>
+    {children}
+  </Suspense>
+)
 
 export const router = createHashRouter([
   {
     path: "/",
-    element: <Layout />,
+    element: <SuspenseWrapper><Layout /></SuspenseWrapper>,
     children: [
       {
         index: true,
-        element: <Welcome />
+        element: <SuspenseWrapper><Welcome /></SuspenseWrapper>
       },
       {
         path: "chat",
-        element: <Chat />
+        element: <SuspenseWrapper><Chat /></SuspenseWrapper>
       },
       {
         path: "chat/:chatId",
-        element: <Chat />
+        element: <SuspenseWrapper><Chat /></SuspenseWrapper>
       },
       {
         path: "setup",
-        element: <Setup />
+        element: <SuspenseWrapper><Setup /></SuspenseWrapper>
       }
     ]
   }

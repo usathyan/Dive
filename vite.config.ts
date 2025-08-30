@@ -20,6 +20,60 @@ export default defineConfig(() => {
       minify: !process.env.TAURI_ENV_DEBUG ? "esbuild" as const : false,
       // produce sourcemaps for debug builds
       sourcemap: !!process.env.TAURI_ENV_DEBUG,
+      // Optimize chunk splitting for better performance
+      rollupOptions: {
+        output: {
+          manualChunks: (id) => {
+            // React and core libraries
+            if (id.includes('node_modules/react') ||
+                id.includes('node_modules/react-dom') ||
+                id.includes('node_modules/react-router')) {
+              return 'react-vendor'
+            }
+            // UI libraries
+            if (id.includes('node_modules/@radix-ui')) {
+              return 'ui-vendor'
+            }
+            // Code editor
+            if (id.includes('node_modules/@codemirror') ||
+                id.includes('node_modules/@uiw/react-codemirror')) {
+              return 'codemirror'
+            }
+            // Markdown and math
+            if (id.includes('node_modules/react-markdown') ||
+                id.includes('node_modules/remark') ||
+                id.includes('node_modules/rehype') ||
+                id.includes('node_modules/katex')) {
+              return 'markdown'
+            }
+            // Charts and diagrams
+            if (id.includes('node_modules/mermaid')) {
+              return 'diagrams'
+            }
+            // Internationalization
+            if (id.includes('node_modules/i18next') ||
+                id.includes('node_modules/react-i18next')) {
+              return 'i18n'
+            }
+            // State management
+            if (id.includes('node_modules/jotai')) {
+              return 'state'
+            }
+            // Utility libraries
+            if (id.includes('node_modules/lodash') ||
+                id.includes('node_modules/clsx') ||
+                id.includes('node_modules/classnames')) {
+              return 'utils'
+            }
+            // Other heavy libraries
+            if (id.includes('node_modules/@anthropic-ai/sdk') ||
+                id.includes('node_modules/openai') ||
+                id.includes('node_modules/@aws-sdk')) {
+              return 'ai-vendor'
+            }
+          }
+        }
+      }
     },
     resolve: {
       alias: {
