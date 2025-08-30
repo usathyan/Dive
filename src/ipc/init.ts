@@ -9,18 +9,26 @@ import { setOapHost } from "./oap"
 async function waitHostBus(): Promise<number> {
   const home = await path.homeDir()
   const file = await path.join(home, ".dive", "host_cache", "bus")
-  const read = async (file: string) => {
-    const body = await readTextFile(file)
-    if (!body) {
-      return
-    }
 
-    const content = JSON.parse(body)
-    if (content?.server?.listen?.port) {
-      return content.server.listen.port
+  const read = async (file: string) => {
+    try {
+      const body = await readTextFile(file)
+      if (!body) {
+        return null
+      }
+
+      const content = JSON.parse(body)
+      if (content?.server?.listen?.port) {
+        return content.server.listen.port
+      }
+    } catch (error) {
+      console.warn("Error reading bus file:", error)
+      return null
     }
+    return null
   }
 
+  // First, try to read the file immediately
   if (await exists(file)) {
     const port = await read(file)
     if (port) {
@@ -28,18 +36,38 @@ async function waitHostBus(): Promise<number> {
     }
   }
 
-  return new Promise((resolve) => {
-    const unwatch = watch(
-      file,
-      async () => {
-        const port = await read(file)
-        if (port) {
-          unwatch.then(unwatch => unwatch())
-          resolve(port)
+  // If file doesn't exist or doesn't have port, poll for it
+  return new Promise((resolve, reject) => {
+    let attempts = 0
+    const maxAttempts = 50 // 5 seconds max
+
+    const checkFile = async () => {
+      attempts++
+      try {
+        if (await exists(file)) {
+          const port = await read(file)
+          if (port) {
+            resolve(port)
+            return
+          }
         }
-      },
-      { delayMs: 100 }
-    )
+
+        if (attempts >= maxAttempts) {
+          reject(new Error("Bus file not found or port not available after maximum attempts"))
+          return
+        }
+
+        setTimeout(checkFile, 100)
+      } catch (error) {
+        if (attempts >= maxAttempts) {
+          reject(error)
+        } else {
+          setTimeout(checkFile, 100)
+        }
+      }
+    }
+
+    checkFile()
   })
 }
 
@@ -66,7 +94,6 @@ async function getPort() {
 
 export async function initFetch() {
   const port = await getPort()
-  console.log("host port", port)
   setOapHost(`http://localhost:${port}`)
 
   if (isElectron) {
